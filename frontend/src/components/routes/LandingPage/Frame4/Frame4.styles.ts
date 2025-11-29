@@ -17,6 +17,10 @@ export const Frame4Wrapper = styled.section`
   justify-content: center;
   padding: 80px 40px;
 
+  @media (max-width: 1920px) {
+    padding: 60px 30px;
+  }
+
   @media (max-width: 768px) {
     background-image: url(${bgMobile});
     background-size: cover;
@@ -30,6 +34,12 @@ export const Container = styled.div`
   display: grid;
   grid-template-columns: 1fr 2fr;
   width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+
+  @media (max-width: 1920px) {
+    max-width: 1600px;
+  }
 `;
 
 export const Column1 = styled.div`
@@ -37,15 +47,27 @@ export const Column1 = styled.div`
   align-items: center;
   justify-content: center;
   margin-right: -50px;
+  margin-left: -30px;
+
+  @media (max-width: 1920px) {
+    margin-right: -40px;
+    margin-left: -25px;
+  }
 
   @media (max-width: 768px) {
     order: 2;
+    margin-right: 0;
+    margin-left: 0;
   }
 `;
 
 export const ArtImage = styled.img`
   height: 1005px;
   width: auto;
+
+  @media (max-width: 1920px) {
+    height: 760px;
+  }
 `;
 
 export const Column2 = styled.div`
@@ -55,9 +77,15 @@ export const Column2 = styled.div`
   max-width: 1100px;
   align-items: center;
 
+  @media (max-width: 1920px) {
+    max-width: 950px;
+    gap: 25px;
+  }
+
   @media (max-width: 768px) {
     order: 1;
     gap: 20px;
+    max-width: 100%;
   }
 `;
 
@@ -67,6 +95,10 @@ export const TitleImage = styled.img`
   max-width: none;
   display: block;
   object-fit: contain;
+
+  @media (max-width: 1920px) {
+    height: 105px;
+  }
 `;
 
 export const DescImage = styled.img`
@@ -75,6 +107,10 @@ export const DescImage = styled.img`
   max-width: none;
   display: block;
   object-fit: contain;
+
+  @media (max-width: 1920px) {
+    height: 43px;
+  }
 `;
 
 export const EventsGrid = styled.div`
@@ -82,6 +118,11 @@ export const EventsGrid = styled.div`
   grid-template-columns: repeat(2, 1fr);
   gap: 40px;
   margin-top: 10px;
+
+  @media (max-width: 1920px) {
+    gap: 30px;
+    margin-top: 8px;
+  }
 `;
 
 export const EventBox = styled.div`
@@ -102,6 +143,12 @@ export const EventBox = styled.div`
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
   }
 
+  @media (max-width: 1920px) {
+    width: 360px;
+    height: 208px;
+    padding: 6px;
+  }
+
   @media (max-width: 1366px) {
     padding: 6px;
   }
@@ -111,6 +158,7 @@ export const EventBox = styled.div`
   }
 
   @media (max-width: 768px) {
+    width: 100%;
     aspect-ratio: 16 / 10;
     padding: 4px;
   }
@@ -142,4 +190,11 @@ export const EventName = styled.div`
   text-align: center;
   font-family: 'GS3 Sachsenwald', sans-serif;
   min-width: 200px;
+
+  @media (max-width: 1920px) {
+    font-size: 18px;
+    padding: 8px 12px;
+    bottom: -20px;
+    min-width: 150px;
+  }
 `;
