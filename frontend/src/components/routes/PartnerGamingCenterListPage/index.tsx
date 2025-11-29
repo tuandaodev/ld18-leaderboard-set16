@@ -254,7 +254,7 @@ export default function PartnerGamingCenterListPage() {
                   src={getImageUrl(selectedGamingCenter.logoFile)}
                   alt={selectedGamingCenter.gamingCenterName}
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=No+Image';
+                    (e.target as HTMLImageElement).src = 'https://placehold.co/400x300?text=No+Image';
                   }}
                 />
                 <SelectedGamingCenterInfo>
@@ -308,7 +308,7 @@ export default function PartnerGamingCenterListPage() {
                               src={getImageUrl(center.logoFile)}
                               alt={center.gamingCenterName}
                               onError={(e) => {
-                                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80x80?text=No+Image';
+                                (e.target as HTMLImageElement).src = 'https://placehold.co/80x80?text=No+Image';
                               }}
                             />
                             <TableCellName>{center.gamingCenterName}</TableCellName>

@@ -27,7 +27,6 @@ import { cn, throttle } from "@lib/utils";
 // styles
 import { useAuth } from "@store/useAuth";
 
-import { format, parseISO } from "date-fns";
 import { t } from "i18next";
 import {
     AccountSearchRow,
@@ -43,15 +42,10 @@ const domain = import.meta.env.DEV
 interface EventResult {
     id: number;
     eventName: string;
-    city: string;
-    eventStartTime: string;
-    eventEndTime: string;
-    eventType: string;
-    eventDescription: string;
     bannerFile: string;
     eventUrl: string;
-    totalPrize: string | null;
     isPublic: boolean;
+    priority: number;
     createdAt: string;
     updatedAt: string;
 }
@@ -191,32 +185,6 @@ export default function Events() {
                 <p>{eventName}</p>
             ),
         },
-
-        {
-            title: t("City"),
-            key: "city",
-            render: ({ city }) => (
-                <p>{city}</p>
-            ),
-        },
-        {
-            title: t("Start Time"),
-            key: "eventStartTime",
-            render: ({ eventStartTime }) => {
-                if (!eventStartTime) return "";
-                const date = parseISO(eventStartTime);
-                return format(date, 'dd/MM/yyyy');
-            },
-        },
-        {
-            title: t("End Time"),
-            key: "eventEndTime",
-            render: ({ eventEndTime }) => {
-                if (!eventEndTime) return "";
-                const date = parseISO(eventEndTime);
-                return format(date, 'dd/MM/yyyy');
-            },
-        },
         {
             title: t("Event URL"),
             key: "eventUrl",
@@ -225,18 +193,18 @@ export default function Events() {
             ),
         },
         {
-            title: t("Total Prize"),
-            key: "totalPrize",
-            render: ({ totalPrize }) => (
-                <p>{totalPrize || "-"}</p>
-            ),
-        },
-        {
             title: t("Is Public"),
             key: "isPublic",
             render: ({ isPublic }) => {
                 return isPublic ? "Yes" : "No";
             },
+        },
+        {
+            title: t("Priority"),
+            key: "priority",
+            render: ({ priority }) => (
+                <p>{priority ?? 0}</p>
+            ),
         },
         {
             title: <p className="text-center">Action</p>,

@@ -120,12 +120,13 @@ export const VideoButton = styled.button<{ active?: boolean }>`
   justify-content: center;
 
   &:hover {
-    // transform: translateY(-2px);
-    // box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+    filter: brightness(1.1);
   }
 
   &:active {
-    // transform: translateY(0);
+    transform: translateY(0);
+
   }
 `;
 

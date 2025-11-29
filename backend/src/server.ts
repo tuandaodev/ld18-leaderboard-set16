@@ -160,10 +160,13 @@ i18next
 
 app.disable("x-powered-by");
 
-app.use(helmet());
-// app.use(helmet({
-//   crossOriginResourcePolicy: false,
-// }));
+if (process.env.NODE_ENV === "development") {
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  }));
+} else {
+  app.use(helmet());
+}
 
 // Middleware
 app.use(cors());

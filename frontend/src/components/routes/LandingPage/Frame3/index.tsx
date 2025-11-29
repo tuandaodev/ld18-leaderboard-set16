@@ -1,41 +1,38 @@
-import titleImg from '../../../../img/f3/title.png';
+import { ENDPOINTS } from "@components/api/endpoints";
+import useAxiosSWR from "@components/api/useAxiosSWR";
+import { useState } from "react";
+import mainArtImg from '../../../../img/f3/MAIN ART.png';
+import btnRulesImg from '../../../../img/f3/btn_rules.png';
+import ctaImg from '../../../../img/f3/cta.png';
 import phanThuongTextImg from '../../../../img/f3/phan thuong text.png';
+import tableTitleImg from '../../../../img/f3/table_title.png';
+import titleImg from '../../../../img/f3/title.png';
 import top1Img from '../../../../img/f3/top1.png';
 import top2Img from '../../../../img/f3/top2.png';
 import top3Img from '../../../../img/f3/top3.png';
-import btnRulesImg from '../../../../img/f3/btn_rules.png';
-import tableTitleImg from '../../../../img/f3/table_title.png';
-import mainArtImg from '../../../../img/f3/MAIN ART.png';
-import ctaImg from '../../../../img/f3/cta.png';
-import { useState } from "react";
-import useAxiosSWR from "@components/api/useAxiosSWR";
-import { ENDPOINTS } from "@components/api/endpoints";
-import LeaderDetailPopup from "./LeaderDetailPopup";
 import {
   ContentContainer,
   ContentWrapper,
+  CTAButton,
   Frame3Wrapper,
+  MainArtImage,
+  PhanThuongTextImage,
   RankingsLayout,
   RankingTableContainer,
-  TableTitleImage,
-  MobileOnly,
+  RankingTableWrapper,
+  RulesButtonImage,
   TableCell,
   TableContent,
   TableHeader,
   TableRow,
+  TableTitleImage,
   TitleImage,
-  TopThreeContainer,
-  PhanThuongTextImage,
   Top1Image,
   Top2Image,
   Top3Image,
-  RulesButtonImage,
-  MainArtImage,
-  CTAButton,
-  RankingTableWrapper
+  TopThreeContainer
 } from "./Frame3.styles";
-import PrimaryButton from "../PrimaryButton";
-import RankingTableModal from "./RankingTableModal";
+import RuleDetailPopup from "./RuleDetailPopup";
 
 interface LeaderboardItem {
   id: number;
@@ -50,9 +47,7 @@ interface GetLeaderboardResponse {
 }
 
 export default function Frame3() {
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [isRankingModalOpen, setIsRankingModalOpen] = useState(false);
-  const [selectedLeaderId, setSelectedLeaderId] = useState<number | null>(null);
+  const [isRuleDetailOpen, setIsRuleDetailOpen] = useState(false);
   
   // Fetch leaderboard from API
   const { data: leaderboardData, error: leaderboardError, isLoading: isLoadingLeaderboard } = useAxiosSWR<GetLeaderboardResponse>(
@@ -64,23 +59,20 @@ export default function Frame3() {
     }
   );
   
-  const handleCardClick = (leaderId: number) => {
-    setSelectedLeaderId(leaderId);
-    setIsPopupOpen(true);
+  const handleOpenRuleDetail = () => {
+    setIsRuleDetailOpen(true);
   };
-  
-  const handleClosePopup = () => {
-    setIsPopupOpen(false);
-    setSelectedLeaderId(null);
+
+  const handleCloseRuleDetail = () => {
+    setIsRuleDetailOpen(false);
   };
 
   return (
     <Frame3Wrapper id="ranking">
       <ContentContainer>
-        <LeaderDetailPopup
-          isOpen={isPopupOpen}
-          onClose={handleClosePopup}
-          leaderId={selectedLeaderId}
+        <RuleDetailPopup
+          isOpen={isRuleDetailOpen}
+          onClose={handleCloseRuleDetail}
         />
         <ContentWrapper>
           <TitleImage src={titleImg} alt="Bảng xếp hạng nổi bật" />
@@ -100,7 +92,11 @@ export default function Frame3() {
                 <Top1Image src={top1Img} alt="Top 1" />
                 <Top2Image src={top2Img} alt="Top 2" />
                 <Top3Image src={top3Img} alt="Top 3" />
-                <RulesButtonImage src={btnRulesImg} alt="Thể lệ sự kiện" />
+                <RulesButtonImage 
+                  src={btnRulesImg} 
+                  alt="Thể lệ sự kiện" 
+                  onClick={handleOpenRuleDetail}
+                />
               </TopThreeContainer>
 
               {/* Right: Ranking Table */}
@@ -120,7 +116,6 @@ export default function Frame3() {
                         <TableRow 
                           key={leader.id} 
                           $isEven={index % 2 === 0}
-                          onClick={() => handleCardClick(leader.id)}
                           style={{ cursor: 'pointer' }}
                         >
                           <TableCell>{rank}</TableCell>
@@ -131,23 +126,17 @@ export default function Frame3() {
                     })}
                   </TableContent>
                 </RankingTableContainer>
-                <CTAButton src={ctaImg} alt="Tham Gia Ngay" />
+                <CTAButton 
+                  src={ctaImg} 
+                  alt="Tham Gia Ngay" 
+                  onClick={() => {
+                    window.open('https://dtcl.vnggames.com/en-us/', '_blank');
+                  }}
+                />
               </RankingTableWrapper>
             </RankingsLayout>
           ) : null}
-
-          
-          {/* <MobileOnly>
-            <PrimaryButton onClick={() => setIsRankingModalOpen(true)}>
-              CHI TIẾT BẢNG XẾP HẠNG
-            </PrimaryButton>
-          </MobileOnly> */}
-
-          <RankingTableModal
-            isOpen={isRankingModalOpen}
-            onClose={() => setIsRankingModalOpen(false)}
-            data={leaderboardData?.data}
-          />
+       
         </ContentWrapper>
         <MainArtImage src={mainArtImg} alt="Main Art" />
       </ContentContainer>

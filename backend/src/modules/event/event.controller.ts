@@ -1,4 +1,3 @@
-import { endOfDay, startOfDay } from "date-fns";
 import { Request, Response } from "express";
 import fs from 'fs';
 import multer from "multer";
@@ -35,14 +34,9 @@ export const createEventController = [
 
       const { 
         eventName, 
-        city, 
-        eventStartTime, 
-        eventEndTime, 
-        eventType, 
-        eventDescription,
         isPublic,
         eventUrl,
-        totalPrize
+        priority
       } = req.body;
 
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -51,21 +45,12 @@ export const createEventController = [
         throw new Error("Vui lòng tải lên ảnh banner");
       }
 
-      // Validate dates (already validated by express-validator, but need Date objects)
-      const startTime = new Date(eventStartTime);
-      const endTime = new Date(eventEndTime);
-
       const event = new Event();
 
       event.eventName = eventName;
-      event.city = city;
-      event.eventStartTime = startOfDay(startTime);
-      event.eventEndTime = endOfDay(endTime);
-      event.eventType = eventType;
-      event.eventDescription = eventDescription;
       event.isPublic = isPublic ?? false;
       event.eventUrl = eventUrl;
-      event.totalPrize = totalPrize ?? null;
+      event.priority = priority ? parseInt(priority) : 0;
       
       // Update banner
       const publicFolderPath = getImageDirPath();
@@ -147,8 +132,6 @@ export const getPublicEventsController = asyncHandler(
   async (req: Request, res: Response) => {
     let page: number = parseInt((req.query.page as string) || "1");
     let limit: number = parseInt((req.query.limit as string) || "10");
-    let status: string | undefined = req.query.status as string; // ongoing, finished
-    let city: string | undefined = req.query.city as string;
 
     // Pagination calculation
     const currentPage = page || 1;
@@ -160,33 +143,14 @@ export const getPublicEventsController = asyncHandler(
     const offset = (currentPage - 1) * pageSize;
     const endIndex = currentPage * pageSize;
 
-    const now = new Date();
-
     const baseQb = AppDataSource.getRepository(Event)
       .createQueryBuilder("entity")
       .where("entity.isPublic = :isPublic", { isPublic: true });
 
-    if (city && city.length > 0) {
-      baseQb.andWhere("entity.city = :city", { city: city });
-    }
-
-    if (status && status.length > 0) {
-      if (status === "ongoing") {
-        baseQb.andWhere("entity.eventStartTime <= :now", { now });
-        baseQb.andWhere("entity.eventEndTime >= :now", { now });
-      } else if (status === "finished") {
-        baseQb.andWhere("entity.eventEndTime < :now", { now });
-      }
-    }
-
-    // Priority sort: ongoing first, then by eventStartTime ascending
+    // Sort by priority (descending), then by id (descending)
     baseQb
-      .orderBy(
-        "CASE WHEN entity.eventStartTime <= :now AND entity.eventEndTime >= :now THEN 0 ELSE 1 END",
-        "ASC"
-      )
-      .setParameter("now", now)
-      .addOrderBy("entity.eventStartTime", "ASC")
+      .orderBy("entity.priority", "DESC")
+      .addOrderBy("entity.id", "DESC")
       .offset(offset)
       .limit(pageSize);
 
@@ -208,11 +172,9 @@ export const getPublicEventsController = asyncHandler(
           return {
             id: x.id,
             eventName: x.eventName,
-            city: x.city,
-            eventStartTime: x.eventStartTime,
-            eventEndTime: x.eventEndTime,
-            eventType: x.eventType,
-            bannerFile: x.bannerFile
+            bannerFile: x.bannerFile,
+            eventUrl: x.eventUrl,
+            priority: x.priority,
           };
         }),
       },
@@ -276,29 +238,17 @@ export const updateEventController = [
 
       const { 
         eventName, 
-        city, 
-        eventStartTime, 
-        eventEndTime, 
-        eventType, 
-        eventDescription,
         isPublic,
         eventUrl,
-        totalPrize
+        priority
       } = req.body;
 
-      // Validate dates (already validated by express-validator, but need Date objects)
-      const startTime = new Date(eventStartTime);
-      const endTime = new Date(eventEndTime);
-
       event.eventName = eventName;
-      event.city = city;
-      event.eventStartTime = startOfDay(startTime);
-      event.eventEndTime = endOfDay(endTime);
-      event.eventType = eventType;
-      event.eventDescription = eventDescription;
       event.isPublic = isPublic ?? false;
       event.eventUrl = eventUrl;
-      event.totalPrize = totalPrize ?? null;
+      if (priority !== undefined) {
+        event.priority = parseInt(priority);
+      }
 
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       const bannerFile = files['bannerFile'] ? files['bannerFile'][0] : null;

@@ -2,46 +2,26 @@
 import {
   Button,
   Checkbox,
-  DatePicker,
   Form,
   GetProp,
   Input,
-  Select,
+  InputNumber,
   Upload,
   UploadProps,
   message
 } from "antd";
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 // manual
-import useAxiosSWR, { fetcher } from "@components/api/useAxiosSWR";
+import { fetcher } from "@components/api/useAxiosSWR";
 import { ENDPOINTS } from "@components/api/endpoints";
-import { ProvinceDistrictResponse } from "types/endpoints/location";
 import Layout from "@components/common/Admin/Layout";
 import PageLoader from "@components/common/PageLoader";
 import { useAuth } from "@store/useAuth";
 import { UploadOutlined } from "@ant-design/icons";
 import { UploadChangeParam } from "antd/es/upload";
 import { t } from "i18next";
-import { RICH_TEXT_MODULES, RICH_TEXT_FORMATS } from "@lib/constants";
-import 'react-quill/dist/quill.snow.css';
-
-const ReactQuill = lazy(() => import('react-quill'));
-import dayjs from 'dayjs';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
-import advancedFormat from 'dayjs/plugin/advancedFormat';
-import localeData from 'dayjs/plugin/localeData';
-import weekday from 'dayjs/plugin/weekday';
-import weekOfYear from 'dayjs/plugin/weekOfYear';
-import weekYear from 'dayjs/plugin/weekYear';
-
-dayjs.extend(customParseFormat)
-dayjs.extend(advancedFormat)
-dayjs.extend(weekday)
-dayjs.extend(localeData)
-dayjs.extend(weekOfYear)
-dayjs.extend(weekYear)
 
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
 
@@ -52,15 +32,10 @@ const domain = import.meta.env.DEV
 interface EventResult {
   id: number;
   eventName: string;
-  city: string;
-  eventStartTime: string;
-  eventEndTime: string;
-  eventType: string;
-  eventDescription: string;
   bannerFile: string;
   eventUrl: string;
-  totalPrize: string | null;
   isPublic: boolean;
+  priority: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -74,18 +49,7 @@ export default function EventForm() {
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [existingBannerUrl, setExistingBannerUrl] = useState<string>("");
-  const [eventDescription, setEventDescription] = useState<string>("");
   const userRoleNum = useAuth(({ data }) => data.role);
-
-  // Fetch province and districts data
-  const { data: provinceData, isLoading: isLoadingProvinces } = useAxiosSWR<ProvinceDistrictResponse>(
-    ENDPOINTS.getProvinceDistricts
-  );
-
-  // Get list of provinces for the city dropdown
-  const provinces = useMemo(() => {
-    return provinceData?.data || [];
-  }, [provinceData]);
 
   useEffect(() => {
     if (isEditMode && id) {
@@ -99,15 +63,10 @@ export default function EventForm() {
           if (response.success) {
             form.setFieldsValue({
               eventName: response.data.eventName,
-              city: response.data.city,
-              eventStartTime: dayjs(response.data.eventStartTime),
-              eventEndTime: dayjs(response.data.eventEndTime),
-              eventType: response.data.eventType,
               eventUrl: response.data.eventUrl || "",
-              totalPrize: response.data.totalPrize || "",
               isPublic: response.data.isPublic,
+              priority: response.data.priority || 0,
             });
-            setEventDescription(response.data.eventDescription || "");
             setExistingBannerUrl(response.data.bannerFile);
           }
         } catch (error: any) {
@@ -148,9 +107,9 @@ export default function EventForm() {
   const handleSubmit = async (values: Record<string, any>) => {
     try {
       setIsLoading(true);
-      const { eventName, city, eventStartTime, eventEndTime, eventType, eventUrl, totalPrize, isPublic } = values;
+      const { eventName, eventUrl, isPublic, priority } = values;
       
-      if (!eventName || !city || !eventStartTime || !eventEndTime || !eventType || !eventDescription) {
+      if (!eventName) {
         message.error("Please fill in all required fields");
         return;
       }
@@ -162,14 +121,9 @@ export default function EventForm() {
 
       const formData = new FormData();
       formData.append("eventName", eventName);
-      formData.append("city", city);
-      formData.append("eventStartTime", dayjs(eventStartTime).toISOString());
-      formData.append("eventEndTime", dayjs(eventEndTime).toISOString());
-      formData.append("eventType", eventType);
-      formData.append("eventDescription", eventDescription);
       formData.append("eventUrl", eventUrl || "");
-      formData.append("totalPrize", totalPrize || "");
       formData.append("isPublic", isPublic ? "true" : "false");
+      formData.append("priority", priority ? priority.toString() : "0");
       
       if (bannerFile) {
         formData.append("bannerFile", bannerFile);
@@ -235,120 +189,6 @@ export default function EventForm() {
           </Form.Item>
 
           <Form.Item
-            label="City"
-            name="city"
-            rules={[{ required: true, message: "City is required" }]}
-          >
-            <Select
-              placeholder="Select City"
-              showSearch
-              loading={isLoadingProvinces}
-              filterOption={(input, option) =>
-                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-              }
-              options={provinces.map(province => ({
-                label: province.province,
-                value: province.province
-              }))}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="eventStartTime"
-            label="Start Time"
-            rules={[
-              { required: true, message: "Start Time is required" },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || !getFieldValue('eventEndTime')) {
-                    return Promise.resolve();
-                  }
-                  if (dayjs(value).isAfter(dayjs(getFieldValue('eventEndTime')))) {
-                    return Promise.reject(new Error('Start time must be before end time'));
-                  }
-                  return Promise.resolve();
-                },
-              }),
-            ]}
-          >
-            <DatePicker
-              format='DD/MM/YYYY'
-              placeholder='DD/MM/YYYY'
-              allowClear={false}
-              style={{ width: "100%" }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="eventEndTime"
-            label="End Time"
-            rules={[
-              { required: true, message: "End Time is required" },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || !getFieldValue('eventStartTime')) {
-                    return Promise.resolve();
-                  }
-                  if (dayjs(value).isBefore(dayjs(getFieldValue('eventStartTime')))) {
-                    return Promise.reject(new Error('End time must be after start time'));
-                  }
-                  return Promise.resolve();
-                },
-              }),
-            ]}
-          >
-            <DatePicker
-              format='DD/MM/YYYY'
-              placeholder='DD/MM/YYYY'
-              allowClear={false}
-              style={{ width: "100%" }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="Event Type"
-            name="eventType"
-            rules={[{ required: true, message: "Event Type is required" }]}
-          >
-            <Select placeholder="Select Event Type">
-              <Select.Option value="online">Online</Select.Option>
-              <Select.Option value="offline">Offline</Select.Option>
-              <Select.Option value="tournament">Tournament</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            label="Event Description"
-            rules={[{ required: true, message: "Event Description is required" }]}
-          >
-            <Suspense fallback={<div>Loading editor...</div>}>
-              <div 
-                style={{ 
-                  height: '400px', 
-                  marginBottom: '42px' 
-                }}
-                className="richTextWrapper"
-              >
-                <style>{`
-                  .richTextWrapper .ql-container {
-                    height: 350px;
-                  }
-                  .richTextWrapper .ql-editor {
-                    min-height: 350px;
-                  }
-                `}</style>
-                <ReactQuill
-                  theme="snow"
-                  modules={RICH_TEXT_MODULES}
-                  formats={RICH_TEXT_FORMATS}
-                  value={eventDescription}
-                  onChange={setEventDescription}
-                />
-              </div>
-            </Suspense>
-          </Form.Item>
-
-          <Form.Item
             label="Banner Image"
             rules={isEditMode ? [] : [{ required: true, message: "Banner Image is required" }]}
           >
@@ -388,18 +228,23 @@ export default function EventForm() {
           </Form.Item>
 
           <Form.Item
-            label="Total Prize"
-            name="totalPrize"
-          >
-            <Input placeholder="Enter Total Prize (optional)" />
-          </Form.Item>
-
-          <Form.Item
             name="isPublic"
             label="Is Public"
             valuePropName="checked"
           >
             <Checkbox>Is Public</Checkbox>
+          </Form.Item>
+
+          <Form.Item
+            label="Priority"
+            name="priority"
+            rules={[{ required: false }]}
+          >
+            <InputNumber 
+              placeholder="Enter Priority (default: 0)" 
+              min={0}
+              style={{ width: "100%" }}
+            />
           </Form.Item>
 
           <Form.Item>

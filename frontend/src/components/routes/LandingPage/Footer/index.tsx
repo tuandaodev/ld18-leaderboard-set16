@@ -1,29 +1,44 @@
-import { FooterWrapper, LogoContainer, Logo, InfoContainer, InfoText } from "./Footer.styles";
-import logo from '@images/footer/logo.png';
+import {
+  FooterWrapper,
+  FooterContainer,
+  LogoContainer,
+  Logo,
+  CopyrightContainer,
+  CopyrightText,
+  LinksContainer,
+  FooterLink,
+} from "./Footer.styles";
+import footerLogo from '../../../../img/footer/footer_logo.png';
 
 export default function Footer() {
   return (
     <FooterWrapper>
-      <LogoContainer>
-        <Logo src={logo} alt="VNG Logo" />
-      </LogoContainer>
-      
-      <InfoContainer>
-        <InfoText>
-          Công ty Cổ phần Tập đoàn VNG: Z06 Đường số 13, Phường Tân Thuận, Thành phố Hồ Chí Minh, Việt Nam
-        </InfoText>
-        <InfoText>
-          Giấy phép cung cấp dịch vụ trò chơi điện tử G1 trên mạng số: 251/GP-BTTTT do Bộ Thông tin và Truyền thông cấp ngày 22/06/2015
-        </InfoText>
-        <InfoText>
-          Quyết định phát hành trò chơi điện tử G1 trên mạng số: 322/QĐ-PTTH&TTĐT do Cục Phát thanh Truyền hình và Thông tin Điện tử cấp ngày 17/07/2025
-        </InfoText>
-        <InfoText>
-          <a href="https://vnggames.com/vn/vi/privacy-policy-vn" target="_blank" rel="noreferrer">
-            Chính sách bảo mật
-          </a>
-        </InfoText>
-      </InfoContainer>
+      <FooterContainer>
+        <LogoContainer>
+          <Logo src={footerLogo} alt="VNG Logo" loading="lazy" />
+        </LogoContainer>
+
+        <CopyrightContainer>
+          <CopyrightText>
+            Chơi quá 180 phút một ngày sẽ ảnh hưởng xấu đến sức khỏe<br />
+            Công Ty Cổ Phần VNG. Địa chỉ: Z06 đường số 13, Phường Tân Thuận Đông, Quận 7, Thành phố Hồ Chí Minh.<br />
+            Giấy phép cung cấp dịch vụ trò chơi điện tử G1 trên mạng số: 251/GP-BTTTT do Bộ Thông tin và Truyền thông cấp ngày 22/06/2015.<br />
+            Quyết định phê duyệt nội dung kịch bản trò chơi điện tử G1 trên mạng số 15/QĐ-BTTTT do Bộ Thông tin và Truyền thông cấp ngày 08/01/2021.
+          </CopyrightText>
+        </CopyrightContainer>
+
+        <LinksContainer>
+          <FooterLink target="_blank" href="https://id.zing.vn/v2/policy/privacy" rel="noreferrer">
+            CHÍNH SÁCH BẢO MẬT
+          </FooterLink>
+          <FooterLink target="_blank" href="https://www.riotgames.com/vi/terms-of-service" rel="noreferrer">
+            ĐIỀU KHOẢN SỬ DỤNG (RIOT)
+          </FooterLink>
+          <FooterLink target="_blank" href="https://dtcl.vnggames.com/thoa-thuan-nguoi-dung" rel="noreferrer">
+            ĐIỀU KHOẢN SỬ DỤNG (VNG)
+          </FooterLink>
+        </LinksContainer>
+      </FooterContainer>
     </FooterWrapper>
   );
 }

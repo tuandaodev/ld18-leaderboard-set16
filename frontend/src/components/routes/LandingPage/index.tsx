@@ -1,15 +1,14 @@
-import { LandingPageContainer } from "./LandingPage.styles";
-import TopNavigation from "./TopNavigation";
+import { ENDPOINTS } from "@components/api/endpoints";
+import useAxiosSWR from "@components/api/useAxiosSWR";
+import { useMemo } from "react";
+import "../../../styles/landing.css";
+import Footer from "./Footer";
 import Frame1 from "./Frame1";
 import Frame2 from "./Frame2";
 import Frame3 from "./Frame3";
 import Frame4 from "./Frame4";
-import Frame5 from "./Frame5";
-import Footer from "./Footer";
-import "../../../styles/landing.css";
-import useAxiosSWR from "@components/api/useAxiosSWR";
-import { ENDPOINTS } from "@components/api/endpoints";
-import { useMemo } from "react";
+import { LandingPageContainer } from "./LandingPage.styles";
+import TopNavigation from "./TopNavigation";
 
 interface LanguageContent {
   lang: string;
@@ -77,16 +76,9 @@ export default function LandingPage() {
     <LandingPageContainer>
       <TopNavigation />
       <Frame1 description={contentValues.f1Description} />
-      <Frame2
-        programInfo={contentValues.f2ProgramInfo}
-        avatarImage={contentValues.f2AvatarImage}
-      />
+      <Frame2 />
       <Frame3 />
-      <Frame4 
-        description={contentValues.f4Description}
-        ctaUrl={contentValues.f4CtaUrl}
-      />
-      <Frame5 />
+      <Frame4 />
       <Footer />
     </LandingPageContainer>
   );

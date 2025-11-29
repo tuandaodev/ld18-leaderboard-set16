@@ -37,7 +37,7 @@ export default function Frame2() {
   };
 
   return (
-    <Frame2Wrapper id="community">
+    <Frame2Wrapper id="information">
       <FirstRow>
         <TitleImage src={titleImg} alt="Title" />
         <TitleDescImage src={titleDescImg} alt="Title Description" />
@@ -47,8 +47,7 @@ export default function Frame2() {
         <Column1>
           <Col1Image src={col1Img} alt="Column 1" />
           <Col1Button onClick={() => {
-            // Add your CTA button action here
-            console.log('CTA button clicked');
+            window.open('https://dtcl.vnggames.com/en-us/', '_blank');
           }}>
             <img src={btnCtaImg} alt="Vào Nhận Ngay" />
           </Col1Button>
@@ -73,8 +72,7 @@ export default function Frame2() {
             </video>
           </VideoPlayerContainer>
           <ThongTinButton onClick={() => {
-            // Add your button action here
-            console.log('Thông tin cơ chế Mở Khoá button clicked');
+            window.open('https://dtcl.vnggames.com/vi-vn/news/game-updates/lore-and-legends-overview/', '_blank');
           }}>
             <img src={btnThongTinImg} alt="Thông tin cơ chế Mở Khoá" />
           </ThongTinButton>

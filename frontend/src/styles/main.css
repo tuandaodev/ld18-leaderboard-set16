@@ -24,7 +24,7 @@
 }
 
 .ql-editor {
-  font-family: var(--font-nth-justice);
+  font-family: var(--font-open-sans);
 }
 
 /* ReactQuill custom font labels */

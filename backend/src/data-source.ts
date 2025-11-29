@@ -40,6 +40,6 @@ export const AppDataSource = new DataSource({
     AddTermsAgreedAt1764304202761
   ],
   cache: false,
-  synchronize: false,
+  synchronize: true,
   // dropSchema: process.env.NODE_ENV === "development" ? true : false,
 });

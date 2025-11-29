@@ -99,7 +99,7 @@ export default function GamingCenterDetail({ isOpen, onClose, gamingCenterId }: 
                   src={getImageUrl(gamingCenterDetail.logoFile)}
                   alt={gamingCenterDetail.gamingCenterName}
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=No+Image';
+                    (e.target as HTMLImageElement).src = 'https://placehold.co/400x300?text=No+Image';
                   }}
                 />
               )}

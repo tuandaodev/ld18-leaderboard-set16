@@ -1,124 +1,145 @@
 import styled from 'styled-components';
-import bg4 from '@images/f4/bg.png';
+import bg4 from '../../../../img/f4/bg.png';
 import bgMobile from '@images/mobile/f4/bg.png';
-import textBg from '@images/f4/text_bg.png';
-import ctaBg from '@images/f4/cta.png';
+import eventBorder from '../../../../img/f4/event_border.png';
+import tenBg from '../../../../img/f4/ten_bg.png';
 
 export const Frame4Wrapper = styled.section`
   width: 100%;
-  height: 100vh;
   min-height: 100vh;
   background-image: url(${bg4});
   background-size: cover;
   background-position: top;
-  // background-position-y: 60px;
   background-repeat: no-repeat;
   position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: end;
+  justify-content: center;
+  padding: 80px 40px;
 
   @media (max-width: 768px) {
     background-image: url(${bgMobile});
     background-size: cover;
     background-position: top;
-    height: 400px;
-    min-height: 400px;
-    justify-content: center;
-    align-items: center;
-    padding: 20px 15px;
+    padding: 40px 20px;
+    flex-direction: column;
   }
 `;
 
-export const TextContainer = styled.div`
-  background-image: url(${textBg});
+export const Container = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  width: 100%;
+`;
+
+export const Column1 = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: -50px;
+
+  @media (max-width: 768px) {
+    order: 2;
+  }
+`;
+
+export const ArtImage = styled.img`
+  height: 1005px;
+  width: auto;
+`;
+
+export const Column2 = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  max-width: 1100px;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    order: 1;
+    gap: 20px;
+  }
+`;
+
+export const TitleImage = styled.img`
+  height: 138px;
+  width: auto;
+  max-width: none;
+  display: block;
+  object-fit: contain;
+`;
+
+export const DescImage = styled.img`
+  width: auto;
+  height: 57px;
+  max-width: none;
+  display: block;
+  object-fit: contain;
+`;
+
+export const EventsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
+  margin-top: 10px;
+`;
+
+export const EventBox = styled.div`
+  position: relative;
+  width: 475px;
+  height: 275px;
+  // aspect-ratio: 16 / 9;
+  background-image: url(${eventBorder});
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
-  padding: 20px 80px;
-  max-width: 1200px;
-  text-align: center;
-
-  @media (max-width: 1920px) {
-    padding: 18px 70px;
-    max-width: 1100px;
-  }
-
-  @media (max-width: 1366px) {
-    padding: 15px 50px;
-    max-width: 900px;
-  }
-
-  @media (max-width: 768px) {
-    padding: 15px 30px;
-    max-width: 100%;
-    width: 100%;
-    // margin-top: -150px;
-  }
-`;
-
-export const TextContent = styled.p`
-  font-size: 1.25rem;
-  line-height: 1.8;
-  color: #ffffff;
-  margin: 0;
-  text-shadow: 1px 1px 3px rgb(0 0 0);
-
-  @media (max-width: 1920px) {
-    font-size: 1.15rem;
-    line-height: 1.75;
-  }
-
-  @media (max-width: 1366px) {
-    font-size: 1rem;
-    line-height: 1.7;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 0.9rem;
-    line-height: 1.6;
-  }
-`;
-
-export const CTAButton = styled.button`
-  background-image: url(${ctaBg});
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-color: transparent;
-  border: none;
-  width: 400px;
-  height: 85px;
-  margin: 20px 0 80px 0;
+  padding: 8px;
   cursor: pointer;
-  transition: transform 0.2s ease;
-
-  @media (max-width: 1920px) {
-    width: 360px;
-    height: 75px;
-    margin: 18px 0 70px 0;
-  }
-
-  @media (max-width: 1366px) {
-    width: 320px;
-    height: 65px;
-    margin: 15px 0 60px 0;
-  }
-
-  @media (max-width: 768px) {
-    width: 100%;
-    max-width: 250px;
-    height: 55px;
-    margin: 5px 0 0px 0;
-  }
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 
   &:hover {
-    transform: scale(1.05);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
   }
 
-  &:active {
-    transform: scale(0.98);
+  @media (max-width: 1366px) {
+    padding: 6px;
+  }
+
+  @media (max-width: 1024px) {
+    padding: 5px;
+  }
+
+  @media (max-width: 768px) {
+    aspect-ratio: 16 / 10;
+    padding: 4px;
   }
 `;
 
+export const EventImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 4px;
+`;
+
+export const EventName = styled.div`
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: fit-content;
+  max-width: 90%;
+  background-image: url(${tenBg});
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 10px 15px;
+  color: #08175a;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  font-family: 'GS3 Sachsenwald', sans-serif;
+  min-width: 200px;
+`;

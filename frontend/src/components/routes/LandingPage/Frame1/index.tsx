@@ -13,8 +13,9 @@ type VideoType = 'tong-quan' | 'ngoai-trang' | 'bang-tin';
 interface VideoConfig {
   id: VideoType;
   label: string;
-  url: string;
-  thumbnail: string;
+  url?: string;
+  thumbnail?: string;
+  externalUrl?: string;
 }
 
 const videoConfigs: VideoConfig[] = [
@@ -33,8 +34,7 @@ const videoConfigs: VideoConfig[] = [
   { 
     id: 'bang-tin', 
     label: 'Bảng tin ĐTCL', 
-    url: 'https://set16.freelancerhcm.com/video/f1_3.mp4',
-    thumbnail: 'https://set16.freelancerhcm.com/video/f1_3.png'
+    externalUrl: 'https://dtcl.vnggames.com/vi-vn/news/'
   },
 ];
 
@@ -45,6 +45,14 @@ export default function Frame1({ description }: Frame1Props) {
   const currentVideo = videoConfigs.find(v => v.id === activeVideo) || videoConfigs[0];
 
   const handleVideoChange = (videoId: VideoType) => {
+    const video = videoConfigs.find(v => v.id === videoId);
+    
+    // If this video has an external URL, open it in a new tab
+    if (video?.externalUrl) {
+      window.open(video.externalUrl, '_blank');
+      return;
+    }
+    
     setActiveVideo(videoId);
     // Play the video when switching
     setTimeout(() => {
@@ -116,8 +124,7 @@ export default function Frame1({ description }: Frame1Props) {
           </VideoButtonContainer>
           
           <CTAButton onClick={() => {
-            // Add your CTA button action here
-            console.log('CTA button clicked');
+            window.open('https://dtcl.vnggames.com/en-us/', '_blank');
           }}>
             <img src={ctaImg} alt="Vào Game Ngay" />
           </CTAButton>

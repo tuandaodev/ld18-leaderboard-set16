@@ -118,7 +118,7 @@ export const NavDivider = styled.div`
 export const NavMenu = styled.div`
   display: flex;
   align-items: center;
-  gap: 4rem;
+  gap: 3rem;
   flex: 1;
   justify-content: center;
 
@@ -139,10 +139,12 @@ export const NavMenu = styled.div`
   }
 `;
 
-export const NavItem = styled.a<{ $underlineImage?: string; $isActive?: boolean }>`
+export const NavItem = styled.a<{ $isActive?: boolean }>`
   font-size: 1.25rem;
-  font-weight: 400;
-  color: ${props => props.$isActive ? '#f0e398' : '#fafefe'};
+  font-family: 'NeueFrutigerWorld', sans-serif;
+  font-weight: bold;
+  color: ${props => props.$isActive ? '#ffffff' : '#fafefe'};
+  background-color: ${props => props.$isActive ? '#066a73' : 'transparent'};
   text-decoration: none;
   position: relative;
   transition: all 0.3s ease;
@@ -156,7 +158,8 @@ export const NavItem = styled.a<{ $underlineImage?: string; $isActive?: boolean 
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  // padding-bottom: 8px;
+  padding: 0.2rem 1rem;
+  border-radius: 4px;
 
   @media (max-width: 1366px) {
     font-size: 1.1rem;
@@ -170,18 +173,15 @@ export const NavItem = styled.a<{ $underlineImage?: string; $isActive?: boolean 
       : 'drop-shadow(0 0 5px rgba(218, 165, 32, 0.5))'};
   }
 
-  &::before {
+  &::after {
     content: '';
     position: absolute;
-    bottom: -104px;
+    bottom: -8px;
     left: 50%;
     transform: translateX(-50%) scaleX(${props => props.$isActive ? '1' : '0'});
-    width: 130px;
-    height: 139px;
-    background-image: ${props => props.$underlineImage ? `url(${props.$underlineImage})` : 'none'};
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center top;
+    width: 100%;
+    height: 3px;
+    background-color: #DAA520;
     transition: transform 0.3s ease, opacity 0.3s ease;
     opacity: ${props => props.$isActive ? '1' : '0'};
     pointer-events: none;
@@ -196,10 +196,16 @@ export const NavItem = styled.a<{ $underlineImage?: string; $isActive?: boolean 
   }
 
   &:hover {
-    color: #f0e398;
+    color: #ffffff;
+    background-color: #066a73;
     text-shadow: 
       0 0 10px rgba(255, 215, 0, 0.8),
       2px 2px 4px rgba(0, 0, 0, 0.8);
+
+    &::after {
+      transform: translateX(-50%) scaleX(1);
+      opacity: 1;
+    }
 
     &::before {
       transform: translateX(-50%) scaleX(1);
@@ -230,7 +236,7 @@ export const StyledActionButton = styled.button<{ $normalImage: string; $hoverIm
   background-repeat: no-repeat;
   background-position: center;
   border: none;
-  padding: 0.8rem 2.5rem;
+  padding: 0.5rem 1.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
   min-width: 200px;
@@ -239,6 +245,10 @@ export const StyledActionButton = styled.button<{ $normalImage: string; $hoverIm
   align-items: center;
   justify-content: center;
   font-size: 18px;
+  font-family: 'NeueFrutigerWorld', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
 
   &:hover {
     background-image: url(${props => props.$hoverImage});

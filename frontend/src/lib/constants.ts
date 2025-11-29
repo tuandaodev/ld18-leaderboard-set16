@@ -61,10 +61,10 @@ export const NAV_ITEMS: MainRoute[] = [
 ];
 
 export const RICH_TEXT_FONTS = [
-  "nth-justice",
+  // "nth-justice",
+  "open-sans",
   "inter",
   "nunito",
-  "open-sans",
   "montserrat",
   "playfair",
   "space-grotesk",

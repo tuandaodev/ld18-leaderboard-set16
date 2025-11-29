@@ -1,31 +1,21 @@
-import { ENDPOINTS } from "@components/api/endpoints";
+ import { ENDPOINTS } from "@components/api/endpoints";
 import useAxiosSWR from "@components/api/useAxiosSWR";
-import { Badge } from "antd";
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import homeIcon from "../../../../images/header/home.png";
 import logoImage from "../../../../images/header/logo.png";
-import logoutIcon from "../../../../images/header/logout_icon.png";
-import underlineImage from "../../../../images/header/menu_item_under_line.png";
-import btnNormal from "../../../../img/header/btn_normal.png";
 import btnHover from "../../../../img/header/btn_Hover.png";
+import btnNormal from "../../../../img/header/btn_normal.png";
 import { getAccessToken, getLoginInfos, useAuth } from "../../../../store/useAuth";
 import { authModal } from "../../../../store/useAuthModal";
-import LoginButton from "../LoginButton";
 import {
   LogoSection,
-  LogoutIcon,
-  MobileBottomMenu,
-  MobileNavItem,
   NavActions,
   NavContainer,
   NavItem,
   NavMenu,
   NavWrapper,
-  NotificationWrapper,
-  StyledActionButton,
-  UsernameText,
-  UserSection
+  StyledActionButton
 } from "./TopNavigation.styles";
 
 export default function TopNavigation() {
@@ -75,31 +65,14 @@ export default function TopNavigation() {
     navigate("/");
   };
 
-  // Helper function to format labels with line breaks for mobile
-  const formatMobileLabel = (label: string): string[] => {
-    const breakMap: Record<string, string[]> = {
-      "THỦ LĨNH CỘNG ĐỒNG": ["THỦ LĨNH", "CỘNG ĐỒNG"],
-      "PHÒNG MÁY ĐỐI TÁC": ["PHÒNG MÁY", "ĐỐI TÁC"],
-    };
-    return breakMap[label] || [label];
-  };
-
   const navItems = [
-    { label: "", href: "#home", icon: <img src={homeIcon} alt="Home" className="nav-icon-image" />, id: "home" },
-    { label: "THỦ LĨNH CỘNG ĐỒNG", href: "#community", id: "community" },
-    { label: "BANG HỘI", href: "#guild", id: "guild" },
-    { label: "PHÒNG MÁY ĐỐI TÁC", href: "#partners", id: "partners" },
-    { label: "SỰ KIỆN", href: "/events", id: "events" },
+    { label: "MỞ KHOÁ 100 HUYỀN THOẠI", href: "#home", id: "home" },
+    { label: "ĐẤU TRƯỜNG 100", href: "#ranking", id: "ranking" },
+    { label: "SỰ KIỆN KHÁC", href: "#events", id: "events" },
   ];
 
   // Route mappings: pathname -> section id
   const routeMappings: Record<string, string> = {
-    "/register-event": "community",
-    "/register-community-leader": "community",
-    "/register-partner-gaming-center": "partners",
-    "/manage-partner-gaming-center": "partners",
-    "/list-partner-gaming-centers": "partners",
-    "/events": "events",
   };
 
   useEffect(() => {
@@ -112,10 +85,9 @@ export default function TopNavigation() {
       const hash = window.location.hash.replace('#', '');
       if (hash) {
         // Map "ranking" to "community" so both Frame 2 and Frame 3 activate the community menu
-        const mappedHash = hash === "ranking" ? "community" : hash;
-        const matchingItem = navItems.find(item => item.id === mappedHash);
+        const matchingItem = navItems.find(item => item.id === hash);
         if (matchingItem) {
-          setActiveSection(mappedHash);
+          setActiveSection(hash);
           // Scroll to the section after a short delay to ensure page is fully loaded
           setTimeout(() => {
             const element = document.getElementById(hash);
@@ -208,10 +180,8 @@ export default function TopNavigation() {
               <NavItem
                 key={item.label || item.id}
                 href={item.href}
-                $underlineImage={underlineImage}
                 $isActive={activeSection === item.id}
               >
-                {item.icon && <span className="nav-icon">{item.icon}</span>}
                 {item.label}
               </NavItem>
             ))}
@@ -259,29 +229,6 @@ export default function TopNavigation() {
           </NavActions>
         </NavContainer>
       </NavWrapper>
-
-      <MobileBottomMenu>
-        {navItems.map((item) => (
-          <MobileNavItem
-            key={item.label || item.id}
-            href={item.href}
-            $underlineImage={underlineImage}
-            $isActive={activeSection === item.id}
-          >
-            {item.icon && item.icon}
-            {item.label && (
-              <span>
-                {formatMobileLabel(item.label).map((part, idx, arr) => (
-                  <Fragment key={`${item.id}-${idx}`}>
-                    {part}
-                    {idx < arr.length - 1 && <br />}
-                  </Fragment>
-                ))}
-              </span>
-            )}
-          </MobileNavItem>
-        ))}
-      </MobileBottomMenu>
     </>
   );
 }
