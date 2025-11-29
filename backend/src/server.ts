@@ -12,6 +12,8 @@ import { eventRouter } from "./modules/event/event.routes";
 import { cleanUpUploadFolder } from "./modules/images/images.controller";
 import { imageRouter } from "./modules/images/images.routes";
 import { leaderRouter } from "./modules/leader/leader.routes";
+import { processInitUsersLeaderBoard } from "./modules/leaderBoard/leader-board.controller";
+import { leaderBoardRouter } from "./modules/leaderBoard/leader-board.routes";
 import { locationRoutes } from "./modules/location/location.routes";
 import { notificationRouter } from "./modules/notification/notification.routes";
 import { partnerGamingCenterRouter } from "./modules/partnerGamingCenter/partnerGamingCenter.routes";
@@ -189,6 +191,7 @@ app.use("/campaigns", campaignRoutes);
 app.use("/location", locationRoutes);
 app.use("/notifications", notificationRouter);
 app.use("/leaders", leaderRouter);
+app.use("/leader-board", leaderBoardRouter);
 
 app.get("/health", async (_: Request, res: Response) => {
   try {
@@ -307,5 +310,11 @@ const processCleanUpTempFiles = async () => {
 }
 
 cron.schedule('01 2 * * *', processCleanUpTempFiles);
+
+const processInitData = async () => {
+  await processInitUsersLeaderBoard();
+}
+
+cron.schedule('30 0 * * *', processInitData);
 
 export default app;
