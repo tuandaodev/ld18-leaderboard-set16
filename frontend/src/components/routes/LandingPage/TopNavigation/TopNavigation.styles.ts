@@ -38,11 +38,12 @@ export const NavWrapper = styled.nav`
 export const NavContainer = styled.div`
   // max-width: 1600x;
   margin: 0 auto;
-  padding: 0.6rem 4rem;
+  padding: 0.8rem 4rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 3rem;
+  max-width: 95%;
 
   @media (max-width: 1366px) {
     padding: 0.5rem 2.5rem;
@@ -73,7 +74,7 @@ export const LogoSection = styled.div`
   cursor: pointer;
 
   .logo-image {
-    height: 50px;
+    height: 33px;
     width: auto;
     filter: drop-shadow(0 0 15px rgba(218, 165, 32, 0.6));
     transition: all 0.3s ease;

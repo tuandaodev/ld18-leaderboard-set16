@@ -6,6 +6,8 @@ import homeIcon from "../../../../images/header/home.png";
 import logoImage from "../../../../images/header/logo.png";
 import btnHover from "../../../../img/header/btn_Hover.png";
 import btnNormal from "../../../../img/header/btn_normal.png";
+import riotGamesLogo from "../../../../img/header/Riot Games.png";
+import tftLogo from "../../../../img/header/TFT.png";
 import { getAccessToken, getLoginInfos, useAuth } from "../../../../store/useAuth";
 import { authModal } from "../../../../store/useAuthModal";
 import {
@@ -170,8 +172,9 @@ export default function TopNavigation() {
       <NavWrapper>
         <NavContainer>
           <LogoSection>
-            <a href="https://nghichthuyhan.vnggames.com/" target="_blank" rel="noopener noreferrer">
-              <img src={logoImage} alt="Logo" className="logo-image" />
+            <a href="https://teamfighttactics.leagueoflegends.com/vi-vn/" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center' }}>
+              <img src={riotGamesLogo} alt="Riot Games" className="logo-image" style={{ marginRight: '40px' }} />
+              <img src={tftLogo} alt="TFT" className="logo-image" style={{ height: '50px' }} />
             </a>
           </LogoSection>
 
@@ -220,8 +223,7 @@ export default function TopNavigation() {
               $normalImage={btnNormal} 
               $hoverImage={btnHover}
               onClick={() => {
-                // Add your button click handler here
-                console.log("Action button clicked");
+                window.open('https://dtcl.vnggames.com/en-us/', '_blank');
               }}
             >
               VÀO CHƠI NGAY!
