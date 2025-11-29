@@ -1,0 +1,187 @@
+@import "fonts.css";
+
+html,
+body,
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  color: inherit;
+}
+
+table,
+tbody,
+tr,
+td,
+th,
+.ant-descriptions-view,
+.ant-descriptions-item-content {
+  overflow: hidden;
+}
+
+.ant-descriptions-view,
+.ant-descriptions-view table {
+  border-color: #292b2d20 !important;
+}
+
+.ant-table.ant-table-middle
+  .ant-table-tbody
+  .ant-table-wrapper:only-child
+  .ant-table {
+  margin-inline: 0 !important;
+}
+
+.ant-modal-footer {
+  margin-top: 0px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+th.ant-table-cell,
+th.ant-descriptions-item-label {
+  color: #0c0f0e !important;
+  background-color: #fafafa !important;
+}
+
+ul.ant-pagination.ant-pagination-mini.ant-table-pagination.ant-table-pagination-left {
+  margin-left: 0.5rem;
+  margin-top: 1rem;
+}
+
+@media only screen and (max-width: 1194px) {
+  ul.ant-pagination.ant-pagination-mini.ant-table-pagination.ant-table-pagination-left {
+    margin-left: 0.5rem;
+    margin-top: 1.75rem;
+  }
+}
+
+tr.ant-table-expanded-row.ant-table-expanded-row-level-1 {
+  background-color: #37383305;
+  backdrop-filter: brightness(0.98) !important;
+}
+
+td.ant-descriptions-item-content {
+  padding: 0.6rem !important;
+}
+
+.no-select {
+  -webkit-user-select: none; /* Chrome all / Safari all */
+  -moz-user-select: none; /* Firefox all */
+  -ms-user-select: none; /* IE 10+ */
+  user-select: none; /* Likely future */
+}
+
+.ant-table-filter-dropdown-btns .ant-btn-link {
+  color: #fe4767;
+}
+.ant-table-filter-dropdown-btns .ant-btn-link:disabled {
+  color: #fe476750;
+}
+.ant-spin-fullscreen .ant-spin-dot .ant-spin-dot-item {
+  background-color: #30fccc;
+}
+.ant-table-wrapper .ant-table-row-expand-icon:hover,
+.ant-table-wrapper .ant-table-row-expand-icon:focus {
+  color: #fe4767;
+}
+
+.ant-picker-range {
+  width: 100%;
+}
+
+/* hide scrollbar but allow scrolling */
+table,
+section,
+html,
+body,
+main,
+/* .date-slots-row, */
+.ant-table-wrapper,
+.timeslot-wrapper,
+.is-scroll,
+#table-row {
+  /* border: 1px solid lime; */
+  -ms-overflow-style: none !important; /* for Internet Explorer, Edge */
+  scrollbar-width: none !important; /* for Firefox */
+  /* overflow-y: scroll !important; */
+}
+
+table::-webkit-scrollbar,
+section::-webkit-scrollbar,
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+main::-webkit-scrollbar,
+/* .date-slots-row::-webkit-scrollbar, */
+.ant-table-wrapper::-webkit-scrollbar,
+.timeslot-wrapper::-webkit-scrollbar,
+.is-scroll::-webkit-scrollbar,
+#table-row::-webkit-scrollbar {
+  width: 0;
+  background-color: transparent;
+  display: none !important; /* for Chrome, Safari, and Opera */
+}
+
+html,
+body {
+  -webkit-text-size-adjust: 100%;
+  height: -webkit-fill-available;
+  height: 100%;
+}
+
+.ant-tabs-nav-wrap {
+  justify-content: center;
+}
+
+a {
+  background-color: transparent;
+  text-decoration: none;
+  color: inherit;
+}
+
+ul[role="list"],
+ol[role="list"] {
+  list-style: none;
+}
+
+.main-content {
+  margin-bottom: 46px;
+}
+
+@media (max-width: 1600px) {
+  
+}
+
+@media (max-width: 1400px) {
+ 
+}
+
+@media (max-width: 1024px) {
+  
+}
+
+/* Move required asterisk from start to end of label */
+.ant-form-item-required {
+  flex-direction: row-reverse;
+}
+
+.ant-form-item-required::before {
+  margin-left: 4px;
+}
+
+.ant-form-item-required::after {
+  width: 0;
+  margin: 0 !important;
+}

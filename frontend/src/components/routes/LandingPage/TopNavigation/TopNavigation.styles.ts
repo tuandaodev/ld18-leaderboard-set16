@@ -1,0 +1,388 @@
+import styled from 'styled-components';
+
+export const NavWrapper = styled.nav`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.95) 0%, rgb(47 34 16 / 90%) 100%);
+  backdrop-filter: blur(15px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  animation: slideDown 0.6s ease-out;
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 768px) {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    width: 100%;
+  }
+`;
+
+export const NavContainer = styled.div`
+  // max-width: 1600x;
+  margin: 0 auto;
+  padding: 0.6rem 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3rem;
+
+  @media (max-width: 1366px) {
+    padding: 0.5rem 2.5rem;
+    gap: 2rem;
+  }
+
+  @media (max-width: 1200px) {
+    padding: 0.6rem 2rem;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 968px) {
+    padding: 0.6rem 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    padding: 0.3rem 0.5rem;
+  }
+`;
+
+export const LogoSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+  cursor: pointer;
+
+  .logo-image {
+    height: 50px;
+    width: auto;
+    filter: drop-shadow(0 0 15px rgba(218, 165, 32, 0.6));
+    transition: all 0.3s ease;
+
+    &:hover {
+      filter: drop-shadow(0 0 25px rgba(218, 165, 32, 0.9));
+      transform: scale(1.05);
+    }
+  }
+
+  @media (max-width: 1366px) {
+    .logo-image {
+      height: 42px;
+    }
+  }
+
+  @media (max-width: 968px) {
+    .logo-image {
+      height: 40px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .logo-image {
+      height: 35px;
+    }
+  }
+`;
+
+export const NavDivider = styled.div`
+  color: #DAA520;
+  font-size: 1.5rem;
+  opacity: 0.6;
+  text-shadow: 0 0 10px rgba(218, 165, 32, 0.5);
+  flex-shrink: 0;
+
+  @media (max-width: 1200px) {
+    display: none;
+  }
+`;
+
+export const NavMenu = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+  flex: 1;
+  justify-content: center;
+
+  @media (max-width: 1366px) {
+    gap: 2rem;
+  }
+
+  @media (max-width: 1200px) {
+    gap: 1.2rem;
+  }
+
+  @media (max-width: 968px) {
+    gap: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+export const NavItem = styled.a<{ $underlineImage?: string; $isActive?: boolean }>`
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: ${props => props.$isActive ? '#f0e398' : '#fafefe'};
+  text-decoration: none;
+  position: relative;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: ${props => props.$isActive 
+    ? '0 0 10px rgba(255, 215, 0, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.8)' 
+    : '2px 2px 4px rgba(0, 0, 0, 0.8)'};
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  // padding-bottom: 8px;
+
+  @media (max-width: 1366px) {
+    font-size: 1.1rem;
+    letter-spacing: 0.8px;
+  }
+
+  .nav-icon {
+    font-size: 0;
+    filter: ${props => props.$isActive 
+      ? 'drop-shadow(0 0 10px rgba(218, 165, 32, 0.8))' 
+      : 'drop-shadow(0 0 5px rgba(218, 165, 32, 0.5))'};
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: -104px;
+    left: 50%;
+    transform: translateX(-50%) scaleX(${props => props.$isActive ? '1' : '0'});
+    width: 130px;
+    height: 139px;
+    background-image: ${props => props.$underlineImage ? `url(${props.$underlineImage})` : 'none'};
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center top;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: ${props => props.$isActive ? '1' : '0'};
+    pointer-events: none;
+  }
+
+  @media (max-width: 1366px) {
+    &::before {
+      bottom: -88px;
+      width: 110px;
+      height: 118px;
+    }
+  }
+
+  &:hover {
+    color: #f0e398;
+    text-shadow: 
+      0 0 10px rgba(255, 215, 0, 0.8),
+      2px 2px 4px rgba(0, 0, 0, 0.8);
+
+    &::before {
+      transform: translateX(-50%) scaleX(1);
+      opacity: 1;
+    }
+
+    .nav-icon {
+      filter: drop-shadow(0 0 10px rgba(218, 165, 32, 0.8));
+    }
+  }
+
+  @media (max-width: 968px) {
+    letter-spacing: 0.5px;
+  }
+`;
+
+export const NavActions = styled.div`
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+`;
+
+export const UserSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  color: #f0e495;
+  font-family: 'UVN La Xanh', sans-serif;
+  font-size: 1.125rem;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+
+  @media (max-width: 1366px) {
+    font-size: 1rem;
+    gap: 12px;
+  }
+`;
+
+export const LogoutIcon = styled.img`
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 0 5px rgba(218, 165, 32, 0.5));
+
+  &:hover {
+    filter: drop-shadow(0 0 15px rgba(218, 165, 32, 0.9));
+    transform: scale(1.1);
+  }
+
+  @media (max-width: 1366px) {
+    width: 26px;
+    height: 26px;
+  }
+`;
+
+export const NotificationWrapper = styled.span`
+  cursor: pointer;
+  margin-right: 12px;
+
+  @media (max-width: 1366px) {
+    margin-right: 10px;
+  }
+`;
+
+export const UsernameText = styled.span`
+  color: #f0e495;
+  font-weight: bold;
+  font-size: 1.25rem;
+  margin-right: 12px;
+
+  @media (max-width: 1366px) {
+    font-size: 1.1rem;
+    margin-right: 10px;
+  }
+`;
+
+export const MobileBottomMenu = styled.div`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.95) 0%, rgb(47 34 16 / 90%) 100%);
+    backdrop-filter: blur(15px);
+    box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.5);
+    padding: 0.8rem 0.5rem;
+    justify-content: space-around;
+    align-items: center;
+    gap: 0.5rem;
+  }
+`;
+
+export const MobileNavItem = styled.a<{ $underlineImage?: string; $isActive?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  text-decoration: none;
+  color: ${props => props.$isActive ? '#f0e398' : '#fafefe'};
+  font-size: 0.7rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: ${props => props.$isActive 
+    ? '0 0 10px rgba(255, 215, 0, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.8)' 
+    : '2px 2px 4px rgba(0, 0, 0, 0.8)'};
+  transition: all 0.3s ease;
+  flex: 1;
+  padding: 0.3rem 0.2rem;
+  min-width: 0;
+  text-align: center;
+  max-width: 100%;
+  position: relative;
+  height: 35px;
+
+  span {
+    display: block;
+    line-height: 1.3;
+    word-break: break-word;
+    white-space: normal;
+    width: 100%;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -48px;
+    left: 50%;
+    transform: translateX(-50%) scaleX(${props => props.$isActive ? '1' : '0'});
+    width: 80px;
+    height: 89px;
+    background-image: ${props => props.$underlineImage ? `url(${props.$underlineImage})` : 'none'};
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center top;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: ${props => props.$isActive ? '1' : '0'};
+    pointer-events: none;
+  }
+
+  .nav-icon-image {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    filter: ${props => props.$isActive 
+      ? 'drop-shadow(0 0 10px rgba(218, 165, 32, 0.8))' 
+      : 'drop-shadow(0 0 5px rgba(218, 165, 32, 0.5))'};
+    transition: filter 0.3s ease;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    color: #f0e398;
+    text-shadow: 
+      0 0 10px rgba(255, 215, 0, 0.8),
+      2px 2px 4px rgba(0, 0, 0, 0.8);
+
+    &::before {
+      transform: translateX(-50%) scaleX(1);
+      opacity: 1;
+    }
+
+    .nav-icon-image {
+      filter: drop-shadow(0 0 10px rgba(218, 165, 32, 0.8));
+    }
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.6rem;
+    gap: 0.2rem;
+    padding: 0.3rem 0.1rem;
+
+    .nav-icon-image {
+      width: 20px;
+      height: 20px;
+    }
+
+    span {
+      font-size: 0.65rem;
+      line-height: 1.2;
+    }
+  }
+`;
+

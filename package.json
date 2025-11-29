@@ -1,0 +1,10 @@
+{
+  "name": "tft-set16-project",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "deploy-backend": "cd backend && yarn deploy",
+    "deploy-frontend": "cd frontend && yarn deploy",
+    "deploy-all": "yarn deploy-backend && yarn deploy-frontend"
+  }
+}

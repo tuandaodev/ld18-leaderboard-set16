@@ -1,0 +1,112 @@
+/* Landing Page Specific Styles */
+
+html,
+body,
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "NTH Justice", sans-serif;
+}
+
+/* Global Ant Design Overrides */
+.ant-modal-footer {
+  margin-top: 0px;
+}
+
+.ant-tabs-nav-wrap {
+  justify-content: center;
+}
+
+.ant-spin-fullscreen .ant-spin-dot .ant-spin-dot-item {
+  background-color: #30fccc;
+}
+
+/* Global antd input styles */
+.ant-input:not(textarea),
+.ant-input-password,
+.ant-select-single,
+.ant-picker {
+  height: 50px;
+}
+
+@media (max-width: 600px) {
+  .ant-input:not(textarea),
+  .ant-input-password,
+  .ant-select-single,
+  .ant-picker {
+    height: 42px;
+  }
+
+  .ant-select-selection-item {
+  }
+
+  .ant-form-item-explain-error {
+    font-size: 12px;
+  }
+}
+
+.ant-input-affix-wrapper > input.ant-input {
+  height: auto;
+}
+
+/* TextArea should respect rows prop */
+textarea.ant-input {
+  height: auto !important;
+  min-height: auto;
+}
+
+/* Global antd form error styles */
+.ant-form-item-explain-error {
+  color: #ff3b3b;
+  font-size: 0.85rem;
+  margin-top: 0.1rem;
+  animation: slideInError 0.2s ease-out;
+}
+
+@keyframes slideInError {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ant-form-item-has-error .ant-input,
+.ant-form-item-has-error .ant-input-password,
+.ant-form-item-has-error .ant-input-affix-wrapper {
+  border-color: rgba(255, 59, 59, 0.6) !important;
+}
+
+.ant-form-item-has-error .ant-input:focus,
+.ant-form-item-has-error .ant-input-password:focus,
+.ant-form-item-has-error .ant-input-affix-wrapper:focus,
+.ant-form-item-has-error .ant-input-affix-wrapper-focused {
+  border-color: rgba(255, 59, 59, 0.8) !important;
+  box-shadow: 0 0 15px rgba(255, 59, 59, 0.2) !important;
+}
+
+.ant-form-item-has-error .ant-input:hover,
+.ant-form-item-has-error .ant-input-password:hover,
+.ant-form-item-has-error .ant-input-affix-wrapper:hover {
+  border-color: rgba(255, 59, 59, 0.5) !important;
+}
+
+/* Move required asterisk from start to end of label */
+.ant-form-item-required {
+  flex-direction: row-reverse;
+}
+
+.ant-form-item-required::before {
+  margin-left: 4px;
+}
+
+.ant-form-item-required::after {
+  width: 0;
+  margin: 0 !important;
+}

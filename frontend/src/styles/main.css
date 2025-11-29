@@ -1,0 +1,104 @@
+@import "fonts.css";
+
+:root {
+  --font-nth-justice: "NTH Justice", sans-serif;
+  --font-inter: "Inter", sans-serif;
+  --font-nunito: "Nunito", sans-serif;
+  --font-open-sans: "Open Sans", sans-serif;
+  --font-montserrat: "Montserrat", sans-serif;
+  --font-playfair: "Playfair Display", serif;
+  --font-space-grotesk: "Space Grotesk", sans-serif;
+}
+
+/* Global Ant Design Label Styles */
+.ant-form-item-label > label {
+  /* font-size: 16px !important;
+  color: #50483d !important; */
+  font-weight: 600 !important;
+}
+
+.ant-form-item-label {
+  /* font-size: 16px !important;
+  color: #50483d !important; */
+  font-weight: 600 !important;
+}
+
+.ql-editor {
+  font-family: var(--font-nth-justice);
+}
+
+/* ReactQuill custom font labels */
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="nth-justice"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="nth-justice"]::before {
+  content: "NTH Justice (Default)";
+  font-family: var(--font-nth-justice);
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label:not([data-value])::before {
+  content: "NTH Justice (Default)";
+  font-family: var(--font-nth-justice);
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="inter"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="inter"]::before {
+  content: "Inter";
+  font-family: var(--font-inter);
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="nunito"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="nunito"]::before {
+  content: "Nunito";
+  font-family: var(--font-nunito);
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="open-sans"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="open-sans"]::before {
+  content: "Open Sans";
+  font-family: var(--font-open-sans);
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="montserrat"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="montserrat"]::before {
+  content: "Montserrat";
+  font-family: var(--font-montserrat);
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="playfair"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="playfair"]::before {
+  content: "Playfair Display";
+  font-family: var(--font-playfair);
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="space-grotesk"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="space-grotesk"]::before {
+  content: "Space Grotesk";
+  font-family: var(--font-space-grotesk);
+}
+
+.ql-font-inter {
+  font-family: var(--font-inter);
+}
+
+.ql-font-nth-justice {
+  font-family: var(--font-nth-justice);
+}
+
+.ql-font-nunito {
+  font-family: var(--font-nunito);
+}
+
+.ql-font-open-sans {
+  font-family: var(--font-open-sans);
+}
+
+.ql-font-montserrat {
+  font-family: var(--font-montserrat);
+}
+
+.ql-font-playfair {
+  font-family: var(--font-playfair);
+}
+
+.ql-font-space-grotesk {
+  font-family: var(--font-space-grotesk);
+}

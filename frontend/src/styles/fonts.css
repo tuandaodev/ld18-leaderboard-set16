@@ -1,0 +1,52 @@
+
+
+/* UVN La Xanh */
+@font-face {
+  font-family: 'UVN La Xanh';
+  src: url('/src/fonts/UVNLaXanh_R.TTF');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'UVN La Xanh';
+  src: url('/src/fonts/UVNLaXanh_B.TTF');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'UVN La Xanh';
+  src: url('/src/fonts/UVNLaXanh_I.TTF');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'UVN La Xanh';
+  src: url('/src/fonts/UVNLaXanh_BI.TTF');
+  font-weight: 700;
+  font-style: italic;
+}
+
+/* NTH Justice */
+@font-face {
+  font-family: 'NTH Justice';
+  src: url('/src/fonts/NTH Justice Mist Medium.ttf');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'NTH Justice';
+  src: url('/src/fonts/NTH Justice Mist Bold.ttf');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'NTH Justice';
+  src: url('/src/fonts/NTH Justice Sword.ttf');
+  font-weight: 500;
+  font-style: normal;
+}
