@@ -1,12 +1,13 @@
 import styled from 'styled-components';
-import bg3 from '@images/f3/bg.png';
+import bg3 from '../../../../img/f3/bg.png';
 import bgMobile from '@images/mobile/f3/bg.png';
 import tabBg from '@images/f3/tab.png';
 import tabHoverBg from '@images/f3/tab_hover.png';
 import top1Bg from '@images/f3/top1_bg.png';
 import top2Bg from '@images/f3/top2_bg.png';
 import top3Bg from '@images/f3/top3_bg.png';
-import tableBg from '@images/f3/table_bg.png';
+import tableBg from '../../../../img/f3/table_bg.png';
+import tableHeaderBg from '../../../../img/f3/table_header_bg.png';
 import borderLine from '@images/f3/border_line.png';
 
 export const Frame3Wrapper = styled.section`
@@ -128,6 +129,7 @@ export const ContentContainer = styled.div`
   border: none;
   padding: 20px 30px;
   // overflow-y: auto;
+  position: relative;
 
   @media (max-width: 1920px) {
     padding: 18px 25px;
@@ -146,31 +148,20 @@ export const ContentContainer = styled.div`
   }
 `;
 
-export const TitleImage = styled.img`
+export const ContentWrapper = styled.div`
+  max-width: 1600px;
   width: 100%;
-  max-width: 600px;
-  height: auto;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+`;
+
+export const TitleImage = styled.img`
+  height: 288px;
+  width: auto;
   display: block;
-  margin: 0 auto 40px;
-
-  @media (max-width: 1920px) {
-    max-width: 550px;
-  }
-
-  @media (max-width: 1600px) {
-    max-width: 500px;
-    margin-bottom: 25px;
-  }
-
-  @media (max-width: 1366px) {
-    max-width: 400px;
-    margin-bottom: 20px;
-  }
-
-  @media (max-width: 768px) {
-    max-width: 100%;
-    margin-bottom: 50px;
-  }
+  margin: 0 0 100px 100px;
+ 
 `;
 
 export const RankingsLayout = styled.div`
@@ -211,34 +202,106 @@ export const RankingsLayout = styled.div`
 export const TopThreeContainer = styled.div`
   flex: 1;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 20px;
-  margin-top: -30px;
   width: 100%;
   max-width: 100%;
   justify-content: center;
-  align-items: flex-end;
+  align-items: center;
 
   @media (max-width: 1920px) {
-    margin-top: -25px;
+    gap: 18px;
   }
 
   @media (max-width: 1600px) {
-    margin-top: -20px;
+    gap: 15px;
   }
 
   @media (max-width: 1366px) {
-    gap: 10px;
-    margin-top: -15px;
+    gap: 12px;
   }
 
   @media (max-width: 1024px) {
-    margin-top: 0;
-    gap: 8px;
+    gap: 10px;
   }
 
   @media (max-width: 768px) {
-    gap: 5px;
+    gap: 8px;
+  }
+`;
+
+export const PhanThuongTextImage = styled.img`
+  height: 72px;
+  width: auto;
+  object-fit: contain;
+`;
+
+export const Top1Image = styled.img`
+  height: 163px;
+  width: auto;
+  object-fit: contain;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+  }
+`;
+
+export const Top2Image = styled.img`
+  height: 131px;
+  width: auto;
+  object-fit: contain;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+  }
+`;
+
+export const Top3Image = styled.img`
+  height: 122px;
+  width: auto;
+  object-fit: contain;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+  }
+`;
+
+export const RulesButtonImage = styled.img`
+  height: auto;
+  width: auto;
+  object-fit: contain;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+  }
+
+  @media (max-width: 1920px) {
+    max-height: 80px;
+  }
+
+  @media (max-width: 1600px) {
+    max-height: 70px;
+  }
+
+  @media (max-width: 1366px) {
+    max-height: 60px;
+  }
+
+  @media (max-width: 768px) {
+    max-height: 50px;
   }
 `;
 
@@ -454,18 +517,25 @@ export const TopScore = styled.div`
   }
 `;
 
-export const RankingTableContainer = styled.div`
+export const RankingTableWrapper = styled.div`
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+export const RankingTableContainer = styled.div`
+  width: 100%;
   background-image: url(${tableBg});
   background-size: 100% 100%;
   background-repeat: no-repeat;
   background-position: center;
-  border-radius: 20px;
-  // border: 2px solid rgba(255, 215, 0, 0.3);
-  overflow: hidden;
+  box-shadow: 0px 0px 21px 3px #8c9ce4;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   padding: 20px 20px;
+  position: relative;
 
   @media (max-width: 1920px) {
     padding: 18px 18px;
@@ -481,30 +551,33 @@ export const RankingTableContainer = styled.div`
   }
 `;
 
+export const TableTitleImage = styled.img`
+  width: auto;
+  height: 140px;
+  position: absolute;
+  top: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+`;
+
 export const TableHeader = styled.div`
   display: grid;
   grid-template-columns: 80px 1fr 150px;
   gap: 20px;
-  padding: 10px 20px 20px 20px;
+  padding: 10px 20px 10px 20px;
   font-weight: 700;
   font-size: 20px;
-  color: #753c05;
+  color: #0b1054;
   text-transform: uppercase;
   position: relative;
+  background-image: url(${tableHeaderBg});
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-top: 40px;
+  font-family: 'GS3 ITC Giovanni', sans-serif;
   
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 10px;
-    right: 10px;
-    height: 11px;
-    background-image: url(${borderLine});
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    background-position: center;
-  }
-
   @media (max-width: 1920px) {
     grid-template-columns: 70px 1fr 135px;
     gap: 18px;
@@ -536,6 +609,7 @@ export const TableHeader = styled.div`
 export const TableContent = styled.div`
   overflow-y: auto;
   max-height: 585px;
+  min-height: 400px;
   
   &::-webkit-scrollbar {
     width: 5px;
@@ -579,7 +653,7 @@ export const TableRow = styled.div<{ $isEven?: boolean }>`
   gap: 20px;
   padding: 15px 20px;
   background: ${props => props.$isEven ? 'rgba(255, 255, 255, 0.05)' : 'transparent'};
-  color: #584832;
+  color: #00000;
   font-size: 1.25rem;
   transition: background 0.2s ease;
 
@@ -981,5 +1055,73 @@ export const ParticipantNameText = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+`;
+
+export const MainArtImage = styled.img`
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: auto;
+  width: auto;
+  max-height: 80vh;
+  max-width: 40vw;
+  z-index: 1;
+  pointer-events: none;
+
+  @media (max-width: 1920px) {
+    max-height: 75vh;
+    max-width: 35vw;
+  }
+
+  @media (max-width: 1600px) {
+    max-height: 70vh;
+    max-width: 30vw;
+  }
+
+  @media (max-width: 1366px) {
+    max-height: 65vh;
+    max-width: 25vw;
+  }
+
+  @media (max-width: 1024px) {
+    display: none;
+  }
+`;
+
+export const CTAButton = styled.img`
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+  margin-top: 30px;
+  align-self: center;
+
+  &:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+  }
+
+  @media (max-width: 1920px) {
+    margin-top: 25px;
+  }
+
+  @media (max-width: 1600px) {
+    margin-top: 20px;
+  }
+
+  @media (max-width: 1366px) {
+    margin-top: 15px;
+  }
+
+  @media (max-width: 1024px) {
+    margin-top: 20px;
+  }
+
+  @media (max-width: 768px) {
+    margin-top: 15px;
+    max-width: 90%;
+  }
 `;
 

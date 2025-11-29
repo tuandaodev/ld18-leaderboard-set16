@@ -7,6 +7,8 @@ import homeIcon from "../../../../images/header/home.png";
 import logoImage from "../../../../images/header/logo.png";
 import logoutIcon from "../../../../images/header/logout_icon.png";
 import underlineImage from "../../../../images/header/menu_item_under_line.png";
+import btnNormal from "../../../../img/header/btn_normal.png";
+import btnHover from "../../../../img/header/btn_Hover.png";
 import { getAccessToken, getLoginInfos, useAuth } from "../../../../store/useAuth";
 import { authModal } from "../../../../store/useAuthModal";
 import LoginButton from "../LoginButton";
@@ -21,6 +23,7 @@ import {
   NavMenu,
   NavWrapper,
   NotificationWrapper,
+  StyledActionButton,
   UsernameText,
   UserSection
 } from "./TopNavigation.styles";
@@ -215,7 +218,7 @@ export default function TopNavigation() {
           </NavMenu>
 
           <NavActions>
-            {isLoggedIn ? (
+            {/* {isLoggedIn ? (
               <UserSection>
                 <NotificationWrapper
                   onClick={() => {
@@ -237,10 +240,22 @@ export default function TopNavigation() {
                 <LogoutIcon src={logoutIcon} alt="Logout" onClick={handleLogout} />
               </UserSection>
             ) : (
-              <LoginButton onClick={handleLogin}>
-                ĐĂNG NHẬP
-              </LoginButton>
-            )}
+              <>
+                <LoginButton onClick={handleLogin}>
+                  ĐĂNG NHẬP
+                </LoginButton>
+              </>
+            )} */}
+            <StyledActionButton 
+              $normalImage={btnNormal} 
+              $hoverImage={btnHover}
+              onClick={() => {
+                // Add your button click handler here
+                console.log("Action button clicked");
+              }}
+            >
+              VÀO CHƠI NGAY!
+            </StyledActionButton>
           </NavActions>
         </NavContainer>
       </NavWrapper>

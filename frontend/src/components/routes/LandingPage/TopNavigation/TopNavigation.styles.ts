@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import bg from '../../../../img/header/nav_bar_bg.png';
 
 export const NavWrapper = styled.nav`
   position: fixed;
@@ -6,8 +7,11 @@ export const NavWrapper = styled.nav`
   left: 0;
   right: 0;
   z-index: 1000;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.95) 0%, rgb(47 34 16 / 90%) 100%);
-  backdrop-filter: blur(15px);
+  background-image: url(${bg});
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  // backdrop-filter: blur(15px);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
   animation: slideDown 0.6s ease-out;
 
@@ -215,7 +219,61 @@ export const NavItem = styled.a<{ $underlineImage?: string; $isActive?: boolean 
 export const NavActions = styled.div`
   display: flex;
   align-items: center;
+  gap: 1rem;
   flex-shrink: 0;
+`;
+
+export const StyledActionButton = styled.button<{ $normalImage: string; $hoverImage: string }>`
+  background-color: transparent;
+  background-image: url(${props => props.$normalImage});
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  border: none;
+  padding: 0.8rem 2.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 200px;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+
+  &:hover {
+    background-image: url(${props => props.$hoverImage});
+    filter: brightness(1.1);
+  }
+
+  &:active {
+    transform: scale(0.98);
+    filter: brightness(0.9);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    
+    &:hover {
+      transform: none;
+      filter: none;
+    }
+  }
+
+  @media (max-width: 1200px) {
+    padding: 0.7rem 2rem;
+    min-width: 180px;
+  }
+
+  @media (max-width: 968px) {
+    padding: 0.6rem 1.8rem;
+    min-width: 130px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.5rem 1.5rem;
+    min-width: 160px;
+  }
 `;
 
 export const UserSection = styled.div`
