@@ -45,6 +45,11 @@ export const NavContainer = styled.div`
   gap: 3rem;
   max-width: 95%;
 
+  @media (max-width: 1600px) {
+    padding: 0.7rem 3rem;
+    gap: 2.5rem;
+  }
+
   @media (max-width: 1366px) {
     padding: 0.5rem 2.5rem;
     gap: 2rem;
@@ -85,9 +90,17 @@ export const LogoSection = styled.div`
     }
   }
 
-  @media (max-width: 1366px) {
+  @media (max-width: 1600px) {
+    gap: 0.8rem;
     .logo-image {
-      height: 42px;
+      height: 30px;
+    }
+  }
+
+  @media (max-width: 1366px) {
+    gap: 0.7rem;
+    .logo-image {
+      height: 28px;
     }
   }
 
@@ -122,6 +135,10 @@ export const NavMenu = styled.div`
   gap: 3rem;
   flex: 1;
   justify-content: center;
+
+  @media (max-width: 1600px) {
+    gap: 2.5rem;
+  }
 
   @media (max-width: 1366px) {
     gap: 2rem;
@@ -162,9 +179,16 @@ export const NavItem = styled.a<{ $isActive?: boolean }>`
   padding: 0.2rem 1rem;
   border-radius: 4px;
 
+  @media (max-width: 1600px) {
+    font-size: 1.15rem;
+    letter-spacing: 0.9px;
+    padding: 0.2rem 0.9rem;
+  }
+
   @media (max-width: 1366px) {
     font-size: 1.1rem;
     letter-spacing: 0.8px;
+    padding: 0.2rem 0.8rem;
   }
 
   .nav-icon {
@@ -269,6 +293,20 @@ export const StyledActionButton = styled.button<{ $normalImage: string; $hoverIm
       transform: none;
       filter: none;
     }
+  }
+
+  @media (max-width: 1600px) {
+    font-size: 16px;
+    padding: 0.5rem 1.4rem;
+    min-width: 190px;
+    letter-spacing: 1.3px;
+  }
+
+  @media (max-width: 1366px) {
+    font-size: 15px;
+    padding: 0.5rem 1.3rem;
+    min-width: 180px;
+    letter-spacing: 1.2px;
   }
 
   @media (max-width: 1200px) {

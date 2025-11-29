@@ -26,6 +26,14 @@ export const Frame3Wrapper = styled.section`
   @media (max-width: 1920px) {
     padding-top: 30px;
   }
+
+  @media (max-width: 1600px) {
+    padding-top: 25px;
+  }
+
+  @media (max-width: 1366px) {
+    padding-top: 20px;
+  }
 `;
 
 export const TabContainer = styled.div`
@@ -71,6 +79,14 @@ export const ContentContainer = styled.div`
   @media (max-width: 1920px) {
     padding: 15px 20px;
   }
+
+  @media (max-width: 1600px) {
+    padding: 12px 18px;
+  }
+
+  @media (max-width: 1366px) {
+    padding: 10px 15px;
+  }
 `;
 
 export const ContentWrapper = styled.div`
@@ -86,6 +102,14 @@ export const ContentWrapper = styled.div`
     max-width: 1400px;
     margin: 0 auto 0 0;
   }
+
+  @media (max-width: 1600px) {
+    max-width: 1200px;
+  }
+
+  @media (max-width: 1366px) {
+    max-width: 1050px;
+  }
 `;
 
 export const TitleImage = styled.img`
@@ -97,6 +121,16 @@ export const TitleImage = styled.img`
   @media (max-width: 1920px) {
     height: 220px;
     margin: 0 0 60px 70px;
+  }
+
+  @media (max-width: 1600px) {
+    height: 190px;
+    margin: 0 0 50px 60px;
+  }
+
+  @media (max-width: 1366px) {
+    height: 165px;
+    margin: 0 0 40px 50px;
   }
 `;
 
@@ -111,6 +145,18 @@ export const RankingsLayout = styled.div`
     max-width: 1400px;
     gap: 15px;
     padding: 0 15px;
+  }
+
+  @media (max-width: 1600px) {
+    max-width: 1200px;
+    gap: 12px;
+    padding: 0 12px;
+  }
+
+  @media (max-width: 1366px) {
+    max-width: 1050px;
+    gap: 10px;
+    padding: 0 10px;
   }
 `;
 
@@ -133,6 +179,14 @@ export const PhanThuongTextImage = styled.img`
   @media (max-width: 1920px) {
     height: 55px;
   }
+
+  @media (max-width: 1600px) {
+    height: 48px;
+  }
+
+  @media (max-width: 1366px) {
+    height: 42px;
+  }
 `;
 
 export const Top1Image = styled.img`
@@ -144,6 +198,14 @@ export const Top1Image = styled.img`
 
   @media (max-width: 1920px) {
     height: 125px;
+  }
+
+  @media (max-width: 1600px) {
+    height: 105px;
+  }
+
+  @media (max-width: 1366px) {
+    height: 90px;
   }
 
   &:hover {
@@ -161,6 +223,14 @@ export const Top2Image = styled.img`
 
   @media (max-width: 1920px) {
     height: 100px;
+  }
+
+  @media (max-width: 1600px) {
+    height: 85px;
+  }
+
+  @media (max-width: 1366px) {
+    height: 73px;
   }
 
   &:hover {
@@ -182,6 +252,16 @@ export const Top3Image = styled.img`
     margin-top: 8px;
   }
 
+  @media (max-width: 1600px) {
+    height: 79px;
+    margin-top: 7px;
+  }
+
+  @media (max-width: 1366px) {
+    height: 68px;
+    margin-top: 6px;
+  }
+
   &:hover {
     transform: scale(1.05);
     filter: brightness(1.1);
@@ -197,6 +277,14 @@ export const RulesButtonImage = styled.img`
 
   @media (max-width: 1920px) {
     max-height: 80px;
+  }
+
+  @media (max-width: 1600px) {
+    max-height: 68px;
+  }
+
+  @media (max-width: 1366px) {
+    max-height: 58px;
   }
 
   &:hover {
@@ -316,6 +404,14 @@ export const RankingTableContainer = styled.div`
   @media (max-width: 1920px) {
     padding: 15px 15px;
   }
+
+  @media (max-width: 1600px) {
+    padding: 12px 12px;
+  }
+
+  @media (max-width: 1366px) {
+    padding: 10px 10px;
+  }
 `;
 
 export const TableTitleImage = styled.img`
@@ -330,6 +426,16 @@ export const TableTitleImage = styled.img`
   @media (max-width: 1920px) {
     height: 105px;
     top: -60px;
+  }
+
+  @media (max-width: 1600px) {
+    height: 90px;
+    top: -50px;
+  }
+
+  @media (max-width: 1366px) {
+    height: 78px;
+    top: -45px;
   }
 `;
 
@@ -357,6 +463,22 @@ export const TableHeader = styled.div`
     margin-top: 30px;
     grid-template-columns: 70px 1fr 130px;
   }
+
+  @media (max-width: 1600px) {
+    font-size: 16px;
+    padding: 7px 12px;
+    gap: 12px;
+    margin-top: 25px;
+    grid-template-columns: 60px 1fr 110px;
+  }
+
+  @media (max-width: 1366px) {
+    font-size: 14px;
+    padding: 6px 10px;
+    gap: 10px;
+    margin-top: 22px;
+    grid-template-columns: 55px 1fr 100px;
+  }
 `;
 
 export const TableContent = styled.div`
@@ -367,6 +489,16 @@ export const TableContent = styled.div`
   @media (max-width: 1920px) {
     max-height: 450px;
     min-height: 320px;
+  }
+
+  @media (max-width: 1600px) {
+    max-height: 380px;
+    min-height: 280px;
+  }
+
+  @media (max-width: 1366px) {
+    max-height: 330px;
+    min-height: 240px;
   }
   
   &::-webkit-scrollbar {
@@ -406,6 +538,20 @@ export const TableRow = styled.div<{ $isEven?: boolean }>`
     grid-template-columns: 70px 1fr 130px;
   }
 
+  @media (max-width: 1600px) {
+    font-size: 1rem;
+    padding: 10px 12px;
+    gap: 12px;
+    grid-template-columns: 60px 1fr 110px;
+  }
+
+  @media (max-width: 1366px) {
+    font-size: 0.9rem;
+    padding: 8px 10px;
+    gap: 10px;
+    grid-template-columns: 55px 1fr 100px;
+  }
+
   &:hover {
     background: rgba(255, 215, 0, 0.1);
   }
@@ -422,6 +568,14 @@ export const TableCell = styled.div`
 
   @media (max-width: 1920px) {
     min-height: 38px;
+  }
+
+  @media (max-width: 1600px) {
+    min-height: 32px;
+  }
+
+  @media (max-width: 1366px) {
+    min-height: 28px;
   }
 `;
 
@@ -613,6 +767,16 @@ export const MainArtImage = styled.img`
     max-height: 75vh;
     max-width: 35vw;
   }
+
+  @media (max-width: 1600px) {
+    max-height: 70vh;
+    max-width: 32vw;
+  }
+
+  @media (max-width: 1366px) {
+    max-height: 65vh;
+    max-width: 30vw;
+  }
 `;
 
 export const CTAButton = styled.img`
@@ -627,6 +791,16 @@ export const CTAButton = styled.img`
   @media (max-width: 1920px) {
     margin-top: 20px;
     max-height: 60px;
+  }
+
+  @media (max-width: 1600px) {
+    margin-top: 18px;
+    max-height: 52px;
+  }
+
+  @media (max-width: 1366px) {
+    margin-top: 15px;
+    max-height: 45px;
   }
 
   &:hover {

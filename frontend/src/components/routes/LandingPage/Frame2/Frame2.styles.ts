@@ -18,6 +18,16 @@ export const Frame2Wrapper = styled.section`
   padding: 80px 100px;
   box-sizing: border-box;
   gap: 40px;
+
+  @media (max-width: 1600px) {
+    padding: 60px 80px;
+    gap: 30px;
+  }
+
+  @media (max-width: 1366px) {
+    padding: 50px 60px;
+    gap: 25px;
+  }
 `;
 
 export const FirstRow = styled.div`
@@ -33,11 +43,27 @@ export const FirstRow = styled.div`
 export const TitleImage = styled.img`
   height: 204px;
   width: auto;
+
+  @media (max-width: 1600px) {
+    height: 170px;
+  }
+
+  @media (max-width: 1366px) {
+    height: 145px;
+  }
 `;
 
 export const TitleDescImage = styled.img`
   height: 44px;
   width: auto;
+
+  @media (max-width: 1600px) {
+    height: 37px;
+  }
+
+  @media (max-width: 1366px) {
+    height: 32px;
+  }
 `;
 
 export const SecondRow = styled.div`
@@ -52,6 +78,16 @@ export const SecondRow = styled.div`
   @media (max-width: 1920px) {
     max-width: 1200px;
     gap: 15px;
+  }
+
+  @media (max-width: 1600px) {
+    max-width: 1100px;
+    gap: 12px;
+  }
+
+  @media (max-width: 1366px) {
+    max-width: 950px;
+    gap: 10px;
   }
 
   @media (max-width: 968px) {
@@ -88,6 +124,14 @@ export const Column1 = styled.div`
 export const Col1Image = styled.img`
   width: auto;
   height: 643px;
+
+  @media (max-width: 1600px) {
+    height: 540px;
+  }
+
+  @media (max-width: 1366px) {
+    height: 460px;
+  }
 `;
 
 export const Col1Button = styled.button`
@@ -115,6 +159,16 @@ export const Col1Button = styled.button`
 
   &:active {
     transform: scale(0.98);
+  }
+
+  @media (max-width: 1600px) {
+    margin-top: -60px;
+    margin-left: 40px;
+  }
+
+  @media (max-width: 1366px) {
+    margin-top: -50px;
+    margin-left: 35px;
   }
 `;
 
@@ -177,6 +231,16 @@ export const VideoPlayerContainer = styled.div`
     position: relative;
     z-index: 1;
   }
+
+  @media (max-width: 1600px) {
+    width: 560px;
+    height: 323px;
+  }
+
+  @media (max-width: 1366px) {
+    width: 480px;
+    height: 277px;
+  }
 `;
 
 export const ThongTinButton = styled.button`
@@ -210,12 +274,29 @@ export const Column3 = styled.div`
   flex: 1;
   margin-top: -100px;
 
+  @media (max-width: 1600px) {
+    margin-top: -85px;
+  }
+
+  @media (max-width: 1366px) {
+    margin-top: -70px;
+  }
+
   @media (max-width: 968px) {
     width: 100%;
+    margin-top: 0;
   }
 `;
 
 export const Col3Image = styled.img`
   width: auto;
   height: 789px;
+
+  @media (max-width: 1600px) {
+    height: 660px;
+  }
+
+  @media (max-width: 1366px) {
+    height: 565px;
+  }
 `;

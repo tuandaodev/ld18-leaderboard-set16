@@ -19,6 +19,14 @@ export const Frame1Wrapper = styled.section`
   align-items: center;
   justify-content: center;
   padding: 4rem 2rem;
+
+  @media (max-width: 1600px) {
+    padding: 3rem 1.5rem;
+  }
+
+  @media (max-width: 1366px) {
+    padding: 2.5rem 1rem;
+  }
 `;
 
 export const ContentContainer = styled.div`
@@ -30,6 +38,16 @@ export const ContentContainer = styled.div`
   justify-content: center;
   gap: 4rem;
   margin: 0 auto;
+
+  @media (max-width: 1600px) {
+    max-width: 1400px;
+    gap: 3rem;
+  }
+
+  @media (max-width: 1366px) {
+    max-width: 1200px;
+    gap: 2.5rem;
+  }
 `;
 
 export const Column1 = styled.div`
@@ -84,6 +102,28 @@ export const VideoPlayerContainer = styled.div`
     position: relative;
     z-index: 1;
   }
+
+  @media (max-width: 1600px) {
+    width: 680px;
+    height: 392px;
+
+    iframe,
+    video {
+      width: 680px;
+      height: 392px;
+    }
+  }
+
+  @media (max-width: 1366px) {
+    width: 580px;
+    height: 335px;
+
+    iframe,
+    video {
+      width: 580px;
+      height: 335px;
+    }
+  }
 `;
 
 export const VideoButtonContainer = styled.div`
@@ -95,6 +135,16 @@ export const VideoButtonContainer = styled.div`
   flex-wrap: wrap;
   align-items: center;
   height: 75px;
+
+  @media (max-width: 1600px) {
+    height: 65px;
+    gap: 0.8rem;
+  }
+
+  @media (max-width: 1366px) {
+    height: 60px;
+    gap: 0.7rem;
+  }
 `;
 
 export const VideoButton = styled.button<{ active?: boolean }>`
@@ -128,6 +178,20 @@ export const VideoButton = styled.button<{ active?: boolean }>`
     transform: translateY(0);
 
   }
+
+  @media (max-width: 1600px) {
+    font-size: 0.85rem;
+    min-width: 180px;
+    height: ${props => props.active ? '65px' : '40px'};
+    padding: 0.65rem 1.3rem;
+  }
+
+  @media (max-width: 1366px) {
+    font-size: 0.8rem;
+    min-width: 160px;
+    height: ${props => props.active ? '60px' : '38px'};
+    padding: 0.6rem 1.2rem;
+  }
 `;
 
 export const CTAButton = styled.button`
@@ -159,11 +223,27 @@ export const CTAButton = styled.button`
 export const TitleImage = styled.img`
   height: 241px;
   width: auto;
+
+  @media (max-width: 1600px) {
+    height: 200px;
+  }
+
+  @media (max-width: 1366px) {
+    height: 170px;
+  }
 `;
 
 export const DescImage = styled.img`
   height: 307px;
   width: auto;
+
+  @media (max-width: 1600px) {
+    height: 255px;
+  }
+
+  @media (max-width: 1366px) {
+    height: 220px;
+  }
 `;
 
 export const TitleContainer = styled.div`
