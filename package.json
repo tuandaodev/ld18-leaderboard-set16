@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "dev": "cd backend && yarn dev",
+    "devf": "cd frontend && yarn dev",
+    "install-all": "cd backend && yarn install && cd ../frontend && yarn install",
     "deploy-backend": "cd backend && yarn deploy",
     "deploy-frontend": "cd frontend && yarn deploy",
     "deploy-all": "yarn deploy-backend && yarn deploy-frontend"

@@ -1,152 +1,89 @@
-import avatarDefault from '@images/f2/avatar_default.png';
-import banner from '@images/f2/banner.png';
-import trangTri from '@images/f2/trang tri.png';
-import { useAuth } from '../../../../store/useAuth';
-import { authModal } from '../../../../store/useAuthModal';
-import { useNavigate } from 'react-router-dom';
-import PrimaryButton from '../PrimaryButton';
-import useAxiosSWR from '@components/api/useAxiosSWR';
-import { ENDPOINTS } from '@components/api/endpoints';
-import LeaderInfoModal from '../LeaderInfoModal';
-import { useMemo, useState } from 'react';
-import { API_DOMAIN } from '@components/api/AxiosFetcher';
-import DOMPurify from 'dompurify';
+import { useRef } from 'react';
+import titleImg from '../../../../img/f2/title.png';
+import titleDescImg from '../../../../img/f2/title_desc.png';
+import col1Img from '../../../../img/f2/col1.png';
+import btnCtaImg from '../../../../img/f2/btn_cta.png';
+import btnThongTinImg from '../../../../img/f2/btn_thongtin.png';
+import col2TextImg from '../../../../img/f2/col2_text.png';
+import col3Img from '../../../../img/f2/col3.png';
 import {
-  AvatarCaption,
-  AvatarImage,
-  AvatarWrapper,
-  BannerImage,
-  ButtonContainer,
-  ContentContainer,
-  ContentText,
-  DecoratorImage,
   Frame2Wrapper,
-  LeftColumn,
-  RightColumn,
-  ScrollableContent,
-  ScrollableWrapper
-} from "./Frame2.styles";
+  FirstRow,
+  SecondRow,
+  TitleImage,
+  TitleDescImage,
+  Column1,
+  Column2,
+  Column3,
+  Col1Image,
+  Col1Button,
+  Col2TextImage,
+  VideoPlayerContainer,
+  ThongTinButton,
+  Col3Image,
+} from './Frame2.styles';
 
-interface LeaderStatusData {
-  id: number;
-  fullName: string;
-  email: string;
-  phone: string;
-  dateOfBirth: string;
-  city: string;
-  district: string;
-  facebookLink: string;
-  gameCharacterName: string;
-  gameUID: string;
-  communityGroups: string;
-  isGuildMaster: boolean;
-  guildName: string;
-  managementExperience: string;
-  eventExperience: string;
-  avatar: string;
-  status: string;
-}
+export default function Frame2() {
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-interface LeaderStatusResponse {
-  success: boolean;
-  data: LeaderStatusData | null;
-}
-
-interface Frame2Props {
-  programInfo?: string;
-  avatarImage?: string;
-}
-
-export default function Frame2({ programInfo, avatarImage }: Frame2Props) {
-  const { data } = useAuth();
-  const navigate = useNavigate();
-  const isLoggedIn = data.isAuthenticated;
-  const [isLeaderInfoModalOpen, setIsLeaderInfoModalOpen] = useState(false);
-
-  // Fetch leader status when user is logged in
-  const shouldFetchLeaderStatus = isLoggedIn;
-  const { data: leaderStatusRes, isLoading: isLoadingLeaderStatus, error: leaderStatusError } = useAxiosSWR<LeaderStatusResponse>(
-    shouldFetchLeaderStatus ? ENDPOINTS.getLeaderStatus : '',
-    {
-      forSWR: {
-        revalidateOnMount: shouldFetchLeaderStatus,
-        shouldRetryOnError: false,
-        revalidateOnFocus: false,
+  const handleVideoClick = () => {
+    if (videoRef.current) {
+      if (videoRef.current.paused) {
+        videoRef.current.play();
+      } else {
+        videoRef.current.pause();
       }
     }
-  );
-
-  const hasLeaderRegistered = leaderStatusRes?.success && leaderStatusRes?.data != null;
-  const avatarImageSrc = avatarImage
-    ? (avatarImage.startsWith("http") ? avatarImage : `${API_DOMAIN}${avatarImage}`)
-    : avatarDefault;
-  const sanitizedProgramInfo = useMemo(
-    () => (programInfo ? DOMPurify.sanitize(programInfo) : null),
-    [programInfo]
-  );
+  };
 
   return (
     <Frame2Wrapper id="community">
-      <ContentContainer>
-        <LeftColumn>
-          <AvatarWrapper>
-            <AvatarImage src={avatarImageSrc} alt="Thủ Lĩnh" />
-            <AvatarCaption>
-              {leaderStatusRes?.data?.fullName
-                ? leaderStatusRes.data.fullName
-                : "Thủ Lĩnh Cộng Đồng"}
-            </AvatarCaption>
-          </AvatarWrapper>
-        </LeftColumn>
-        <RightColumn>
-          <BannerImage src={banner} alt="Banner" />
-          <ScrollableWrapper>
-            <ScrollableContent>
-              <ContentText>
-                {sanitizedProgramInfo ? (
-                  <div dangerouslySetInnerHTML={{ __html: sanitizedProgramInfo }} />
-                ) : (
-                  <p>Đang tải nội dung...</p>
-                )}
-              </ContentText>
-            </ScrollableContent>
-          </ScrollableWrapper>
-        </RightColumn>
-      </ContentContainer>
-      <DecoratorImage src={trangTri} alt="Decorator" />
-      <ButtonContainer>
-        {!hasLeaderRegistered && (
-          <PrimaryButton onClick={() => {
-            if (isLoggedIn) {
-              navigate('/register-community-leader');
-            } else {
-              authModal.openLogin();
-            }
+      <FirstRow>
+        <TitleImage src={titleImg} alt="Title" />
+        <TitleDescImage src={titleDescImg} alt="Title Description" />
+      </FirstRow>
+
+      <SecondRow>
+        <Column1>
+          <Col1Image src={col1Img} alt="Column 1" />
+          <Col1Button onClick={() => {
+            // Add your CTA button action here
+            console.log('CTA button clicked');
           }}>
-            Đăng ký trở thành <br/> thủ lĩnh cộng đồng ngay
-          </PrimaryButton>
-        )}
+            <img src={btnCtaImg} alt="Vào Nhận Ngay" />
+          </Col1Button>
+        </Column1>
 
-        {isLoggedIn && hasLeaderRegistered && (
-          <>
-            <PrimaryButton onClick={() => setIsLeaderInfoModalOpen(true)}>
-              Thông tin của bạn
-            </PrimaryButton>
-            <PrimaryButton onClick={() => navigate('/register-event')}>
-              Đăng ký tổ chức sự kiện <br/> Offline hoặc giải đấu
-            </PrimaryButton>
-          </>
-        )}
+        <Column2>
+          <Col2TextImage src={col2TextImg} alt="Column 2 Text" />
+          <VideoPlayerContainer>
+            <video 
+              ref={videoRef}
+              controls={false} 
+              loop 
+              muted 
+              playsInline
+              preload="none"
+              poster={'https://set16.freelancerhcm.com/video/f2.png'}
+              onClick={handleVideoClick}
+              style={{ cursor: 'pointer' }}
+            >
+              <source src="https://set16.freelancerhcm.com/video/f2.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </VideoPlayerContainer>
+          <ThongTinButton onClick={() => {
+            // Add your button action here
+            console.log('Thông tin cơ chế Mở Khoá button clicked');
+          }}>
+            <img src={btnThongTinImg} alt="Thông tin cơ chế Mở Khoá" />
+          </ThongTinButton>
+        </Column2>
 
-      </ButtonContainer>
-
-      <LeaderInfoModal 
-        isOpen={isLeaderInfoModalOpen}
-        onClose={() => setIsLeaderInfoModalOpen(false)}
-        leaderData={leaderStatusRes?.data || null}
-      />
-    
+        <Column3>
+          <Col3Image src={col3Img} alt="Column 3" />
+        </Column3>
+      </SecondRow>
     </Frame2Wrapper>
   );
 }
-

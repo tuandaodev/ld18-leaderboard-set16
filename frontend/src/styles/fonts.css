@@ -1,52 +1,24 @@
 
-
-/* UVN La Xanh */
+/* GS3 Hustralge */
 @font-face {
-  font-family: 'UVN La Xanh';
-  src: url('/src/fonts/UVNLaXanh_R.TTF');
+  font-family: 'GS3 Hustralge';
+  src: url('/src/fonts/GS3 Hustralge Regular.ttf');
   font-weight: 400;
   font-style: normal;
 }
 
+/* GS3 Sachsenwald */
 @font-face {
-  font-family: 'UVN La Xanh';
-  src: url('/src/fonts/UVNLaXanh_B.TTF');
-  font-weight: 700;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'UVN La Xanh';
-  src: url('/src/fonts/UVNLaXanh_I.TTF');
-  font-weight: 400;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'UVN La Xanh';
-  src: url('/src/fonts/UVNLaXanh_BI.TTF');
-  font-weight: 700;
-  font-style: italic;
-}
-
-/* NTH Justice */
-@font-face {
-  font-family: 'NTH Justice';
-  src: url('/src/fonts/NTH Justice Mist Medium.ttf');
+  font-family: 'GS3 Sachsenwald';
+  src: url('/src/fonts/GS3 Sachsenwald Regular.ttf');
   font-weight: 400;
   font-style: normal;
 }
 
+/* GS3 ITC Giovanni */
 @font-face {
-  font-family: 'NTH Justice';
-  src: url('/src/fonts/NTH Justice Mist Bold.ttf');
-  font-weight: 700;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'NTH Justice';
-  src: url('/src/fonts/NTH Justice Sword.ttf');
-  font-weight: 500;
+  font-family: 'GS3 ITC Giovanni';
+  src: url('/src/fonts/GS3 ITC Giovanni Std Book.ttf');
+  font-weight: 400;
   font-style: normal;
 }
