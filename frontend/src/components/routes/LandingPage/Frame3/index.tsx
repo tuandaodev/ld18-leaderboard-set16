@@ -35,8 +35,8 @@ import {
 import RuleDetailPopup from "./RuleDetailPopup";
 
 interface LeaderboardItem {
-  riotIdGameName: string;
-  riotIdTagline: string;
+  gameName: string;
+  tagLine: string;
   totalPoints: number;
 }
 
@@ -115,12 +115,12 @@ export default function Frame3() {
                         
                         return (
                           <TableRow 
-                            key={leader.riotIdGameName} 
+                            key={leader.gameName} 
                             $isEven={index % 2 === 0}
                             style={{ cursor: 'pointer' }}
                           >
                             <TableCell>{rank}</TableCell>
-                            <TableCell>{leader?.riotIdGameName ?? ''}</TableCell>
+                            <TableCell>{leader?.gameName ?? ''}</TableCell>
                             <TableCell>{leader?.totalPoints?.toLocaleString('vi-VN') || '0'}</TableCell>
                           </TableRow>
                         );

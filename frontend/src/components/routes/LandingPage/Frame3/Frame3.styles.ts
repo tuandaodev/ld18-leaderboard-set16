@@ -527,7 +527,7 @@ export const TableRow = styled.div<{ $isEven?: boolean }>`
   gap: 20px;
   padding: 15px 20px;
   background: ${props => props.$isEven ? 'rgba(255, 255, 255, 0.05)' : 'transparent'};
-  color: #00000;
+  color: #ffffff;
   font-size: 1.25rem;
   transition: background 0.2s ease;
 
