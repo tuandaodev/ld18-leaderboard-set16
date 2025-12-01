@@ -15,7 +15,7 @@
     "typeorm": "ts-node ./node_modules/typeorm/cli",
     "typeorm-migration-clean": "ts-node ./node_modules/typeorm/cli query \"DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT USAGE ON SCHEMA public to PUBLIC; GRANT CREATE ON SCHEMA public to PUBLIC; COMMENT ON SCHEMA public IS 'standard public schema';\" -d ./dist/src/data-source.js",
     "typeorm-migration": "ts-node ./node_modules/typeorm/cli migration:run -d ./dist/src/data-source.js",
-    "deploy-pm2": "pm2 delete khdhapi || true && pm2 start \"yarn serve\" --name khdhapi && pm2 save",
+    "deploy-pm2": "pm2 delete tft-set16-api || true && pm2 start \"yarn serve\" --name tft-set16-api && pm2 save",
     "deploy": "yarn && yarn build && yarn deploy-pm2"
   },
   "keywords": [],
