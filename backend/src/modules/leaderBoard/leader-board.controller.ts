@@ -5,8 +5,8 @@ import path from "path";
 import { Like } from "typeorm";
 import { ContentConfig } from "../../entity/ContentConfig";
 import { asyncHandler } from "../../middleware/async";
-import { AccountDto, CsvTeamDto, LeaderBoardDto, RiotAccountDto } from "./leader-board.dto";
-import { convertToAccountDto, convertToCsvTeamDto, getChampionMasteriesDetail, getCSVForTeams, getCSVForUsers, getRiotAccountById } from "./leader-board.service";
+import { AccountDto, CsvTeamDto, LeaderBoardDto, MatchInfo, RiotAccountDto } from "./leader-board.dto";
+import { convertToAccountDto, convertToCsvTeamDto, getCSVForTeams, getCSVForUsers, getMatchDetail, getMatches, getRiotAccountById } from "./leader-board.service";
 
 // Configure multer for file upload
 const upload = multer({ dest: 'uploads/' }).fields([
@@ -91,24 +91,102 @@ export const processInitUsersLeaderBoard = async () => {
   };
   fs.writeFileSync(cachedPath, JSON.stringify(dataAccounts), 'utf8');
 
-  // console.log('dataAccounts', dataAccounts);
+  const count = 100;
+  let flatMatchIds: string[] = [];    
+  for (const acc of dataAccounts.filter(e => e != null)) {
+    if (acc?.puuid == null) continue;
+    let start = 0;
+    while (true) {
+      const accRes = await getMatches(acc.puuid, start, count, configData.startDate, configData.endDate);
+      await delay(1000);
 
-  const champion_id_raw = configs.find(e => e.contentId == 'config_champion_id');
-  const champion_id = champion_id_raw?.translate[0].value;
-  if (!champion_id) {
-    console.log('champion_id is required');
-    return;
+      if (accRes == null) {
+        break;
+      }
+      if (accRes != null) {
+        flatMatchIds.push(...accRes);
+        if (accRes.length < count) {
+          break;
+        }
+      }
+      start = start + count;
+    }
   }
 
-  // console.log('champion_id', champion_id);
-  // console.log('dataAccounts', dataAccounts);
+  flatMatchIds = flatMatchIds.filter((value, index, array) => array.indexOf(value) === index);
+  console.log('matchIds', flatMatchIds.length);
+
+  // cache
+  let jsonMatchData: MatchInfo[] = [];
+  const cachedMatchPath = path.resolve(__dirname, "../../data/riot-matches.json");
+  try {
+    const jsonString = fs.readFileSync(cachedMatchPath, 'utf-8');
+    jsonMatchData = JSON.parse(jsonString);
+    console.log('loaded cached matches', jsonMatchData.length);
+  } catch (error) {
+  }
+
+  let matches: MatchInfo[] = [];    
+  let idx = 0;
+  for (const matchId of flatMatchIds) {
+    let matchRes = jsonMatchData.find(e => e.matchId == matchId)
+    if (matchRes == null) {
+      const rawRes = await getMatchDetail(matchId);
+      await delay(1000);
+      if (rawRes != null && rawRes?.info?.endOfGameResult == 'GameComplete' && rawRes?.info?.tft_game_type == 'standard') {
+        matchRes = {
+          matchId: rawRes.metadata.match_id,
+          endOfGameResult:    rawRes.info.endOfGameResult,
+          gameMode:           rawRes.info.tft_game_type,
+          participants:       rawRes.info.participants.map(x => {
+            let totalPoints = 0;
+            if (x.players_eliminated > 1200) {
+              if (x.placement == 1) {
+                totalPoints = 10;
+              }
+              if (x.placement == 2) {
+                totalPoints = 8;
+              }
+              if (x.placement == 3) {
+                totalPoints = 6;
+              }
+              if (x.placement == 4) {
+                totalPoints = 4;
+              }
+            }
+            return {
+              riotIdGameName:                 x.riotIdGameName,
+              riotIdTagline:                  x.riotIdTagline,
+              placement:                      x.placement,
+              playersEliminated:              x.players_eliminated,
+              totalPoints:                    totalPoints,
+            }
+          })
+        }
+      }
+    }
+    if (matchRes != null) {
+      matches.push(matchRes);
+    }
+    idx++;
+    if (idx % 100 == 0) {
+      console.log(`processed ${idx}/${flatMatchIds.length} matches`);
+    }
+  }
+  console.log(`completed ${idx}/${flatMatchIds.length} matches`);
+  fs.writeFileSync(cachedMatchPath, JSON.stringify(matches), 'utf8');
 
   for (const acc of dataAccounts.filter(e => e != null)) {
     if (acc?.puuid == null) continue;
-    const championDetail = await getChampionMasteriesDetail(acc.puuid, champion_id);
-    if (championDetail != null) {
-      acc.championPoints = championDetail.championPoints;
+    let totalPoints = 0;
+    for (const match of matches) {
+      for (const participant of match.participants) {
+        if (participant.riotIdGameName?.toLowerCase() == acc.gameName?.toLowerCase() && participant.riotIdTagline?.toLowerCase() == acc.tagLine?.toLowerCase()) {
+          totalPoints += participant.totalPoints ?? 0;
+        }
+      }
     }
+    acc.totalPoints = totalPoints;
   }
 
   let result: LeaderBoardDto = {

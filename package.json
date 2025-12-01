@@ -8,6 +8,9 @@
     "install-all": "cd backend && yarn install && cd ../frontend && yarn install",
     "deploy-backend": "cd backend && yarn deploy",
     "deploy-frontend": "cd frontend && yarn deploy",
-    "deploy-all": "yarn deploy-backend && yarn deploy-frontend"
+    "deploy-all": "yarn deploy-backend && yarn deploy-frontend",
+    "build-backend": "cd backend && yarn build",
+    "build-frontend": "cd frontend && yarn build",
+    "build-all": "yarn build-backend && yarn build-frontend"
   }
 }

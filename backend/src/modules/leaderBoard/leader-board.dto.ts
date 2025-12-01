@@ -39,7 +39,7 @@ export class RiotAccountDto {
   puuid: string;
   gameName: string;
   tagLine: string;
-  championPoints: number;
+  totalPoints?: number;
 }
 
 export class MatchDetailDto {
@@ -61,25 +61,16 @@ export interface MatchInfo {
 export interface MinParticipant {
   riotIdGameName:                 string;
   riotIdTagline:                  string;
-  teamId:                         number;
-  totalDamageDealt:               number;
+  placement:                        number;
+  playersEliminated:               number;
+  totalPoints?:                    number;
 }
 
-export class LeaderBoardTeamDto {
-  teamNumber: string;
-  teamName: string;
-  users: AccountDto[];
-
-  // totalDamageDealt: number;
-  // matchId: string;
-  totalWinMatchCount: number;
-}
-
-export class LeaderBoardTeamsDto {
-  teams: LeaderBoardTeamDto[];
-  createdDate: string;
-  createdIn: number;
-}
+// export class LeaderBoardTeamsDto {
+//   teams: LeaderBoardTeamDto[];
+//   createdDate: string;
+//   createdIn: number;
+// }
 
 export class LeaderBoardUserDto {
   gameName: string;
