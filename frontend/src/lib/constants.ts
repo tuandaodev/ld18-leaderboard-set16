@@ -52,10 +52,10 @@ type MainRoute = Route & { subpages?: Route[] };
 
 export const NAV_ITEMS: MainRoute[] = [
   // { title: "campaigns", route: "/cp/campaigns", icon: Content },
-  { title: "leaders", route: "/cp/leaders", icon: Content },
-  { title: "community_events", route: "/cp/community-events", icon: Content },
-  { title: "partner_gaming_centers", route: "/cp/partner-gaming-centers", icon: Content },
-  { title: "CMS", route: "/cp/cms", icon: Content },
+  // { title: "leaders", route: "/cp/leaders", icon: Content },
+  // { title: "community_events", route: "/cp/community-events", icon: Content },
+  // { title: "partner_gaming_centers", route: "/cp/partner-gaming-centers", icon: Content },
+  // { title: "CMS", route: "/cp/cms", icon: Content },
   { title: "cms_events", route: "/cp/events", icon: Content },
   { title: "accounts", route: "/cp/accounts", icon: Users },
 ];
