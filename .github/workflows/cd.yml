@@ -1,0 +1,51 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CD
+
+# Controls when the action will run.
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deploy using ssh
+      uses: appleboy/ssh-action@master
+      with:
+        host: 103.173.227.57
+        username: root
+        key: ${{ secrets.PRIVATE_KEY }}
+        port: 22
+        # debug: true
+        script: |
+          export NVM_DIR=~/.nvm
+          source ~/.nvm/nvm.sh
+          cd /home/set16freelancerhcmcom/set16.freelancerhcm.com/ld18-leaderboard-set16
+          git pull origin main
+          yarn deploy-all
+
+          # Health check with retries
+          echo "Performing health check..."
+          max_attempts=10
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            if curl -f -s https://set16.freelancerhcm.com/api/health > /dev/null; then
+              echo "Health check passed! Application is running."
+              break
+            else
+              echo "Health check attempt $attempt/$max_attempts failed. Retrying in 3 seconds..."
+              if [ $attempt -eq $max_attempts ]; then
+                echo "Health check failed after $max_attempts attempts. Application may not be running correctly."
+                exit 1
+              fi
+              sleep 3
+              attempt=$((attempt + 1))
+            fi
+          done
+
+          echo "Deployment completed successfully."
