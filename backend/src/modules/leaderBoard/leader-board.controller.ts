@@ -28,12 +28,13 @@ export const getLeaderBoardList = asyncHandler(
       const jsonString = fs.readFileSync(userFilePath, 'utf-8');
       userData = JSON.parse(jsonString);
     } catch (error) {
-      userData = [];
+      userData = { users: [] };
     }
 
+    const users: RiotAccountDto[] = (userData?.users ?? []).filter((user: RiotAccountDto) => (user.totalPoints ?? 0) > 0);
     res.status(200).json({
       success: true,
-      user: userData
+      data: users
     });
   }
 );

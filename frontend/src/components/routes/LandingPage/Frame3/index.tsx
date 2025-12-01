@@ -108,21 +108,23 @@ export default function Frame3() {
                     <TableCell style={{ whiteSpace: 'nowrap' }}>ĐIỂM</TableCell>
                   </TableHeader>
                   <TableContent>
-                    {leaderboardData.data.map((leader, index) => {
-                      const rank = index + 1; // Starting from rank 4
-                      
-                      return (
-                        <TableRow 
-                          key={leader.riotIdGameName} 
-                          $isEven={index % 2 === 0}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          <TableCell>{rank}</TableCell>
-                          <TableCell>{leader?.riotIdGameName ?? ''}</TableCell>
-                          <TableCell>{leader?.totalPoints?.toLocaleString('vi-VN') || '0'}</TableCell>
-                        </TableRow>
-                      );
-                    })}
+                    {leaderboardData.data
+                      .sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0))
+                      .map((leader, index) => {
+                        const rank = index + 1; // Starting from rank 1
+                        
+                        return (
+                          <TableRow 
+                            key={leader.riotIdGameName} 
+                            $isEven={index % 2 === 0}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <TableCell>{rank}</TableCell>
+                            <TableCell>{leader?.riotIdGameName ?? ''}</TableCell>
+                            <TableCell>{leader?.totalPoints?.toLocaleString('vi-VN') || '0'}</TableCell>
+                          </TableRow>
+                        );
+                      })}
                   </TableContent>
                 </RankingTableContainer>
                 <CTAButton 
