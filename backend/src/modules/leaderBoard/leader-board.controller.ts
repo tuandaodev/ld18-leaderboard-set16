@@ -140,7 +140,7 @@ export const processInitUsersLeaderBoard = async () => {
           gameMode:           rawRes.info.tft_game_type,
           participants:       rawRes.info.participants.map(x => {
             let totalPoints = 0;
-            if (x.players_eliminated > 1200) {
+            if (x.time_eliminated > 1200) {
               if (x.placement == 1) {
                 totalPoints = 10;
               }
@@ -158,7 +158,7 @@ export const processInitUsersLeaderBoard = async () => {
               riotIdGameName:                 x.riotIdGameName,
               riotIdTagline:                  x.riotIdTagline,
               placement:                      x.placement,
-              playersEliminated:              x.players_eliminated,
+              timeEliminated:              x.time_eliminated,
               totalPoints:                    totalPoints,
             }
           })

@@ -62,7 +62,7 @@ export interface MinParticipant {
   riotIdGameName:                 string;
   riotIdTagline:                  string;
   placement:                        number;
-  playersEliminated:               number;
+  timeEliminated:               number;
   totalPoints?:                    number;
 }
 
