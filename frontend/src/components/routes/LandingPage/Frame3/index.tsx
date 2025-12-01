@@ -35,10 +35,9 @@ import {
 import RuleDetailPopup from "./RuleDetailPopup";
 
 interface LeaderboardItem {
-  id: number;
-  fullName: string;
-  avatar: string | null;
-  totalPoint: number;
+  riotIdGameName: string;
+  riotIdTagline: string;
+  totalPoints: number;
 }
 
 interface GetLeaderboardResponse {
@@ -51,7 +50,7 @@ export default function Frame3() {
   
   // Fetch leaderboard from API
   const { data: leaderboardData, error: leaderboardError, isLoading: isLoadingLeaderboard } = useAxiosSWR<GetLeaderboardResponse>(
-    ENDPOINTS.getLeaderboard,
+    ENDPOINTS.getLeaderboardList,
     {
       forSWR: {
         revalidateOnMount: true,
@@ -114,13 +113,13 @@ export default function Frame3() {
                       
                       return (
                         <TableRow 
-                          key={leader.id} 
+                          key={leader.riotIdGameName} 
                           $isEven={index % 2 === 0}
                           style={{ cursor: 'pointer' }}
                         >
                           <TableCell>{rank}</TableCell>
-                          <TableCell>{leader.fullName}</TableCell>
-                          <TableCell>{leader.totalPoint?.toLocaleString('vi-VN') || '0'}</TableCell>
+                          <TableCell>{leader?.riotIdGameName ?? ''}</TableCell>
+                          <TableCell>{leader?.totalPoints?.toLocaleString('vi-VN') || '0'}</TableCell>
                         </TableRow>
                       );
                     })}

@@ -14,7 +14,7 @@ export const ENDPOINTS = {
   
     // leaders
     getAllLeaders: "/leaders/all",
-    getLeaderboard: "/leaders/leaderboard",
+    getLeaderboardList: "/leader-board/list",
     getLeaderDetail: "/leaders",  // GET /:id/detail (public)
     registerLeader: "/leaders/register",
     getLeaderStatus: "/leaders/status",
