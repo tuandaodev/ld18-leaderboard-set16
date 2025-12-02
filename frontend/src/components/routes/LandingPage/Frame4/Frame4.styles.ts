@@ -119,7 +119,8 @@ export const ArtImage = styled.img`
 
   @media (max-width: 1024px) and (orientation: landscape) {
     height: 350px;
-    margin-left: -100px;
+    margin-left: -85px;
+    margin-right: -90px;
   }
 `;
 

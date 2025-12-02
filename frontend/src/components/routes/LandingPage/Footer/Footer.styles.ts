@@ -102,6 +102,10 @@ export const CopyrightText = styled.p`
     line-height: 1.5;
     padding: 0 0.5rem;
   }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    font-size: 10px;
+  }
 `;
 
 export const LinksContainer = styled.div`
@@ -131,6 +135,10 @@ export const FooterLink = styled.a`
 
   @media (max-width: 768px) {
     font-size: 0.75rem;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    font-size: 10px;
   }
 `;
 

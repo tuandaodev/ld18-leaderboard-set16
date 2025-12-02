@@ -22,14 +22,14 @@ const videoConfigs: VideoConfig[] = [
   { 
     id: 'tong-quan', 
     label: 'Tổng quan mùa 16', 
-    url: 'https://set16.freelancerhcm.com/video/f1_1.mp4',
-    thumbnail: 'https://set16.freelancerhcm.com/video/f1_1.png'
+    url: 'video/f1_1.mp4',
+    thumbnail: 'video/f1_1.png'
   },
   { 
     id: 'ngoai-trang', 
     label: 'Ngoại trang mới', 
-    url: 'https://set16.freelancerhcm.com/video/f1_2.mp4',
-    thumbnail: 'https://set16.freelancerhcm.com/video/f1_2.png'
+    url: 'video/f1_2.mp4',
+    thumbnail: 'video/f1_2.png'
   },
   { 
     id: 'bang-tin', 

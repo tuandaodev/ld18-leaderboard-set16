@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import titleImg from '../../../../img/f2/title.png';
 import titleDescImg from '../../../../img/f2/title_desc.png';
 import col1Img from '../../../../img/f2/col1.png';
@@ -36,6 +36,37 @@ export default function Frame2() {
     }
   };
 
+  useEffect(() => {
+    const videoEl = videoRef.current;
+    if (!videoEl) return;
+
+    const handleIntersection: IntersectionObserverCallback = (entries) => {
+      entries.forEach((entry) => {
+        if (!videoRef.current) return;
+
+        if (entry.isIntersecting) {
+          // Try to play when video comes into view
+          videoRef.current.play().catch(() => {
+            // Autoplay can be blocked; ignore the error
+          });
+        } else {
+          // Pause when video leaves view
+          videoRef.current.pause();
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(handleIntersection, {
+      threshold: 0.4,
+    });
+
+    observer.observe(videoEl);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   return (
     <Frame2Wrapper id="information">
       <FirstRow>
@@ -61,11 +92,11 @@ export default function Frame2() {
               controls={false} 
               playsInline
               preload="none"
-              poster={'https://set16.freelancerhcm.com/video/f2.png'}
+              poster={'video/f2.png'}
               onClick={handleVideoClick}
               style={{ cursor: 'pointer' }}
             >
-              <source src="https://set16.freelancerhcm.com/video/f2.mp4" type="video/mp4" />
+              <source src="video/f2.png" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </VideoPlayerContainer>
