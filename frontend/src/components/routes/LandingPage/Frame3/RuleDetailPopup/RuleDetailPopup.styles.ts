@@ -201,7 +201,7 @@ export const RuleTitle = styled.h3`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    font-size: 20px;
+    font-size: 24px;
   }
 `;
 
@@ -226,7 +226,7 @@ export const RuleContent = styled.p`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    font-size: 12px;
+    font-size: 12px !important;
   }
 `;
 

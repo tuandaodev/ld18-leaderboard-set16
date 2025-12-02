@@ -105,6 +105,7 @@ export const CopyrightText = styled.p`
 
   @media (max-width: 1024px) and (orientation: landscape) {
     font-size: 10px;
+    font-family: 'Open Sans', sans-serif;
   }
 `;
 
@@ -139,6 +140,7 @@ export const FooterLink = styled.a`
 
   @media (max-width: 1024px) and (orientation: landscape) {
     font-size: 10px;
+    font-family: 'Open Sans', sans-serif;
   }
 `;
 
