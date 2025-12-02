@@ -182,15 +182,15 @@ app.use(apiRateLimiter);
 app.use("/auth", authRouter);
 app.use("/admin", adminRoutes);
 app.use("/log", logRouter);
-app.use("/community-events", communityEventRouter);
-app.use("/partner-gaming-centers", partnerGamingCenterRouter);
+// app.use("/community-events", communityEventRouter);
+// app.use("/partner-gaming-centers", partnerGamingCenterRouter);
 app.use("/events", eventRouter);
 app.use("/images", imageRouter);
 app.use("/contents", contentRoutes);
 app.use("/campaigns", campaignRoutes);
-app.use("/location", locationRoutes);
-app.use("/notifications", notificationRouter);
-app.use("/leaders", leaderRouter);
+// app.use("/location", locationRoutes);
+// app.use("/notifications", notificationRouter);
+// app.use("/leaders", leaderRouter);
 app.use("/leader-board", leaderBoardRouter);
 
 app.get("/health", async (_: Request, res: Response) => {

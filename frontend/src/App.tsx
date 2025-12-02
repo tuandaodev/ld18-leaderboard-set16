@@ -43,7 +43,7 @@ const EventForm = lazy(() => import("@components/routes/Admin/Events/EventForm")
 const Leaders = lazy(() => import("@components/routes/Admin/Leaders"));
 const CommunityEvents = lazy(() => import("@components/routes/Admin/CommunityEvents"));
 const PartnerGamingCenter = lazy(() => import("@components/routes/Admin/PartnerGamingCenter"));
-const Home = lazy(() => import("@components/routes/Admin/CMS"));
+const CMS = lazy(() => import("@components/routes/Admin/CMS"));
 const LandingPage = lazy(() => import("@components/routes/LandingPage"));
 
 function App() {
@@ -79,14 +79,15 @@ function App() {
     // allow to go to Landing Page and Community Leader Registration (auth checked in component)
     if (location.pathname === "/" 
       || location.pathname === "/landing" 
-      || location.pathname === "/register-community-leader" 
-      || location.pathname === "/register-event"
-      || location.pathname === "/register-partner-gaming-center"
-      || location.pathname === "/manage-partner-gaming-center"
-      || location.pathname === "/list-partner-gaming-centers"
-      || location.pathname === "/notification"
-      || location.pathname === "/events"
-      || location.pathname.startsWith("/events/")) return;
+      // || location.pathname === "/register-community-leader" 
+      // || location.pathname === "/register-event"
+      // || location.pathname === "/register-partner-gaming-center"
+      // || location.pathname === "/manage-partner-gaming-center"
+      // || location.pathname === "/list-partner-gaming-centers"
+      // || location.pathname === "/notification"
+      // || location.pathname === "/events"
+      // || location.pathname.startsWith("/events/")
+    ) return;
 
     // is there is a critical key missing
     const isInvalidToProceed = isInvalidTicket();
@@ -117,8 +118,8 @@ function App() {
       };
 
       saveLogin(updateInfos);
-      if (updateInfos.role === 1 && location.pathname !== "/cp/leaders") {
-        location.pathname = "/cp/leaders";
+      if (updateInfos.role === 1 && location.pathname !== "/cp/cms") {
+        location.pathname = "/cp/cms";
         return;
       }
     }
@@ -218,7 +219,7 @@ function App() {
               // --- Admin Section ---
               <Route
                 path="/cp"
-                element={<AdminProtectedElement mainRoute={Leaders} />}
+                element={<AdminProtectedElement mainRoute={CMS} />}
               />
               <Route
                 path="/cp/campaigns"
@@ -238,7 +239,7 @@ function App() {
               /> */}
               <Route
                 path="/cp/cms"
-                element={<AuthElement mainRoute={Home} />}
+                element={<AuthElement mainRoute={CMS} />}
               />
               <Route
                 path="/cp/accounts"

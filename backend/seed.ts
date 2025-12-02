@@ -3,13 +3,9 @@ import "dotenv/config";
 import { DataSource } from "typeorm";
 import { AdminLog } from "./src/entity/AdminLog";
 import { Campaign } from "./src/entity/Campaign";
-import { CommunityEvent } from "./src/entity/CommunityEvent";
 import { ContentConfig, ControlType } from "./src/entity/ContentConfig";
-import { Leader } from "./src/entity/Leader";
-import { PartnerGamingCenter } from "./src/entity/PartnerGamingCenter";
-import { User, UserRole } from "./src/entity/User";
-import { Notification } from "./src/entity/Notification";
 import { Event } from "./src/entity/Event";
+import { User, UserRole } from "./src/entity/User";
 
 const bcrypt = require("bcrypt");
 
@@ -24,7 +20,7 @@ const SeedDatasource = new DataSource({
   synchronize: true,
   logging: false,
   entities: [
-    AdminLog, User, Leader, ContentConfig, Campaign, CommunityEvent, Event, PartnerGamingCenter, Notification
+    AdminLog, User, ContentConfig, Campaign, Event
   ],
   subscribers: [],
   migrations: [],
