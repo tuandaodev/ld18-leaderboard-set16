@@ -516,11 +516,11 @@ export const TableHeader = styled.div`
 
 export const TableContent = styled.div`
   overflow-y: auto;
-  max-height: 585px;
+  max-height: 450px;
   min-height: 400px;
 
   @media (max-width: 1920px) {
-    max-height: 450px;
+    max-height: 400px;
     min-height: 320px;
   }
 
@@ -532,6 +532,11 @@ export const TableContent = styled.div`
   @media (max-width: 1366px) {
     max-height: 330px;
     min-height: 240px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    max-height: 250px;
+    min-height: 200px;
   }
   
   &::-webkit-scrollbar {

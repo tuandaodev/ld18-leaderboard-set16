@@ -22,8 +22,8 @@ import {
   SorterResult,
 } from "antd/es/table/interface";
 // manual
-import useAxiosSWR, { fetcher } from "@components/api/useAxiosSWR";
 import { ENDPOINTS } from "@components/api/endpoints";
+import useAxiosSWR, { fetcher } from "@components/api/useAxiosSWR";
 import Layout from "@components/common/Admin/Layout";
 import PageLoader from "@components/common/PageLoader";
 import { cn, debounce, throttle } from "@lib/utils";
@@ -42,7 +42,7 @@ import weekOfYear from 'dayjs/plugin/weekOfYear';
 import weekYear from 'dayjs/plugin/weekYear';
 import { t } from "i18next";
 import { FindAllCampaignsResponse } from "types/endpoints/campaign-find-all";
-import { UpdateContentResponse } from "types/endpoints/current-week";
+import { UpdateContentResponse } from "types/endpoints/content";
 import { FindAllResponse, Result } from "types/endpoints/gift-code-item-find-all";
 import {
   AccountSearchRow,
