@@ -81,7 +81,6 @@ export default function TopNavigation() {
       // Set initial active section based on URL hash and scroll to it
       const hash = window.location.hash.replace('#', '');
       if (hash) {
-        // Map "ranking" to "community" so both Frame 2 and Frame 3 activate the community menu
         const matchingItem = navItems.find(item => item.id === hash);
         if (matchingItem) {
           setActiveSection(hash);
@@ -103,11 +102,9 @@ export default function TopNavigation() {
       }
       const newHash = window.location.hash.replace('#', '');
       if (newHash) {
-        // Map "ranking" to "community" so both Frame 2 and Frame 3 activate the community menu
-        const mappedHash = newHash === "ranking" ? "community" : newHash;
-        const matchingItem = navItems.find(item => item.id === mappedHash);
+        const matchingItem = navItems.find(item => item.id === newHash);
         if (matchingItem) {
-          setActiveSection(mappedHash);
+          setActiveSection(newHash);
           // Scroll to the section
           const element = document.getElementById(newHash);
           if (element) {
@@ -133,9 +130,7 @@ export default function TopNavigation() {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const sectionId = entry.target.id;
-          // Map "ranking" to "community" so both Frame 2 and Frame 3 activate the community menu
-          const mappedSectionId = sectionId === "ranking" ? "community" : sectionId;
-          setActiveSection(mappedSectionId);
+          setActiveSection(sectionId);
         }
       });
     };
@@ -149,12 +144,6 @@ export default function TopNavigation() {
         observer.observe(element);
       }
     });
-
-    // Also observe the "ranking" section (Frame 3) so it activates the community menu
-    const rankingElement = document.getElementById("ranking");
-    if (rankingElement) {
-      observer.observe(rankingElement);
-    }
 
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
