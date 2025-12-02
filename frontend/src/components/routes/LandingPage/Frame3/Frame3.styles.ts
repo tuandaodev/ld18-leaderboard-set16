@@ -228,6 +228,10 @@ export const Top1Image = styled.img`
     height: 90px;
   }
 
+  @media (max-width: 1024px) and (orientation: landscape) {
+    height: 80px;
+  }
+
   &:hover {
     transform: scale(1.05);
     filter: brightness(1.1);
@@ -251,6 +255,10 @@ export const Top2Image = styled.img`
 
   @media (max-width: 1366px) {
     height: 73px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    height: 65px;
   }
 
   &:hover {
@@ -282,6 +290,11 @@ export const Top3Image = styled.img`
     margin-top: 6px;
   }
 
+  @media (max-width: 1024px) and (orientation: landscape) {
+    height: 60px;
+    margin-top: 5px;
+  }
+
   &:hover {
     transform: scale(1.05);
     filter: brightness(1.1);
@@ -308,7 +321,7 @@ export const RulesButtonImage = styled.img`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    max-height: 38px;
+    max-height: 30px;
   }
 
   &:hover {

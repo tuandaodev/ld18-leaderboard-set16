@@ -71,8 +71,10 @@ export const NavContainer = styled.div`
 
   /* Điện thoại màn hình ngang */
   @media (max-width: 1024px) and (orientation: landscape) {
-    padding: 0.2rem 1.2rem;
-    gap: 1.2rem;
+    padding: 0.5rem 5px;
+    gap: 0.5rem;
+    margin: 0 auto;
+    max-width: unset;
   }
 `;
 
@@ -124,6 +126,7 @@ export const LogoSection = styled.div`
   @media (max-width: 1024px) and (orientation: landscape) {
     .logo-image {
       height: 30px !important;
+      margin-right: 5px !important;
     }
   }
 `;
@@ -164,12 +167,12 @@ export const NavMenu = styled.div`
   }
 
   @media (max-width: 768px) {
-    display: none;
+    gap: 0.5rem;
   }
 
   /* Điện thoại màn hình ngang */
   @media (max-width: 1024px) and (orientation: landscape) {
-    gap: 1.2rem;
+    gap: 10px;
   }
 `;
 
@@ -264,8 +267,8 @@ export const NavItem = styled.a<{ $isActive?: boolean }>`
 
   /* Điện thoại màn hình ngang */
   @media (max-width: 1024px) and (orientation: landscape) {
-    font-size: 0.8rem;
-    padding: 0.15rem 0.7rem;
+    font-size: 10px;
+    padding: 0.15rem 8px;
   }
 `;
 
@@ -348,9 +351,9 @@ export const StyledActionButton = styled.button<{ $normalImage: string; $hoverIm
 
   /* Điện thoại màn hình ngang */
   @media (max-width: 1024px) and (orientation: landscape) {
-    font-size: 14px;
-    padding: 0.45rem 1.3rem;
-    min-width: 150px;
+    font-size: 11px;
+    padding: 0.2rem 0.75rem;
+    min-width: 120px;
     letter-spacing: 1px;
   }
 `;

@@ -45,14 +45,6 @@ const CommunityEvents = lazy(() => import("@components/routes/Admin/CommunityEve
 const PartnerGamingCenter = lazy(() => import("@components/routes/Admin/PartnerGamingCenter"));
 const Home = lazy(() => import("@components/routes/Admin/CMS"));
 const LandingPage = lazy(() => import("@components/routes/LandingPage"));
-const CommunityLeaderRegisterPage = lazy(() => import("@components/routes/CommunityLeaderRegisterPage"));
-const EventRegisterPage = lazy(() => import("@components/routes/EventRegisterPage"));
-const PartnerGamingCenterRegisterPage = lazy(() => import("@components/routes/PartnerGamingCenterRegisterPage"));
-const PartnerGamingCenterManagePage = lazy(() => import("@components/routes/PartnerGamingCenterManagePage"));
-const PartnerGamingCenterListPage = lazy(() => import("@components/routes/PartnerGamingCenterListPage"));
-const NotificationListPage = lazy(() => import("@components/routes/NotificationListPage"));
-const EventListPage = lazy(() => import("@components/routes/EventListPage"));
-const EventDetailPage = lazy(() => import("@components/routes/EventDetailPage"));
 
 function App() {
   // zustand
@@ -221,14 +213,6 @@ function App() {
               // --- Landing Page ---
               <Route path="/" element={<LandingPage />} />
               <Route path="/landing" element={<LandingPage />} />
-              <Route path="/register-community-leader" element={<CommunityLeaderRegisterPage />} />
-              <Route path="/register-event" element={<EventRegisterPage />} />
-              <Route path="/register-partner-gaming-center" element={<PartnerGamingCenterRegisterPage />} />
-              <Route path="/manage-partner-gaming-center" element={<PartnerGamingCenterManagePage />} />
-              <Route path="/list-partner-gaming-centers" element={<PartnerGamingCenterListPage />} />
-              <Route path="/notification" element={<NotificationListPage />} />
-              <Route path="/events" element={<EventListPage />} />
-              <Route path="/events/:id" element={<EventDetailPage />} />
               // --- End Landing Page ---
 
               // --- Admin Section ---
@@ -240,7 +224,7 @@ function App() {
                 path="/cp/campaigns"
                 element={<AuthElement mainRoute={Campaign} />}
               />
-              <Route
+              {/* <Route
                 path="/cp/events"
                 element={<AuthElement mainRoute={Events} />}
               />
@@ -251,7 +235,7 @@ function App() {
               <Route
                 path="/cp/events/edit/:id"
                 element={<AuthElement mainRoute={EventForm} />}
-              />
+              /> */}
               <Route
                 path="/cp/cms"
                 element={<AuthElement mainRoute={Home} />}
@@ -260,18 +244,18 @@ function App() {
                 path="/cp/accounts"
                 element={<AuthElement mainRoute={Account} />}
               />
-              <Route
+              {/* <Route
                 path="/cp/leaders"
                 element={<AuthElement mainRoute={Leaders} />}
               />
               <Route
                 path="/cp/community-events"
                 element={<AuthElement mainRoute={CommunityEvents} />}
-              />
-              <Route
+              /> */}
+              {/* <Route
                 path="/cp/partner-gaming-centers"
                 element={<AuthElement mainRoute={PartnerGamingCenter} />}
-              />
+              /> */}
               // --- End Admin Section ---
 
               <Route path="*" element={<NotFound />} />

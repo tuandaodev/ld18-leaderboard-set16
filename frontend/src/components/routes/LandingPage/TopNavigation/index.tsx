@@ -68,7 +68,7 @@ export default function TopNavigation() {
   };
 
   const navItems = [
-    { label: "MỞ KHOÁ 100 HUYỀN THOẠI", href: "#home", id: "home" },
+    { label: "MỞ KHOÁ 100 HUYỀN THOẠI", href: "#information", id: "information" },
     { label: "ĐẤU TRƯỜNG 100", href: "#ranking", id: "ranking" },
     { label: "SỰ KIỆN KHÁC", href: "#events", id: "events" },
   ];
