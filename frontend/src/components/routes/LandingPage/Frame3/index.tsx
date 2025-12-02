@@ -34,6 +34,10 @@ import {
 } from "./Frame3.styles";
 import RuleDetailPopup from "./RuleDetailPopup";
 
+interface Frame3Props {
+  f3Rule: string;
+}
+
 interface LeaderboardItem {
   gameName: string;
   tagLine: string;
@@ -45,7 +49,7 @@ interface GetLeaderboardResponse {
   data: LeaderboardItem[];
 }
 
-export default function Frame3() {
+export default function Frame3({ f3Rule }: Frame3Props) {
   const [isRuleDetailOpen, setIsRuleDetailOpen] = useState(false);
   
   // Fetch leaderboard from API
@@ -72,6 +76,7 @@ export default function Frame3() {
         <RuleDetailPopup
           isOpen={isRuleDetailOpen}
           onClose={handleCloseRuleDetail}
+          f3Rule={f3Rule}
         />
         <ContentWrapper>
           <TitleImage src={titleImg} alt="Bảng xếp hạng nổi bật" />
@@ -131,7 +136,7 @@ export default function Frame3() {
                   src={ctaImg} 
                   alt="Tham Gia Ngay" 
                   onClick={() => {
-                    window.open('https://dtcl.vnggames.com/en-us/', '_blank');
+                    window.open('https://forms.gle/zAvraST9pEtNEkM17', '_blank');
                   }}
                 />
               </RankingTableWrapper>

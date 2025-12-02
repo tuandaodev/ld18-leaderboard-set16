@@ -223,7 +223,7 @@ export default function TopNavigation() {
               $normalImage={btnNormal} 
               $hoverImage={btnHover}
               onClick={() => {
-                window.open('https://dtcl.vnggames.com/en-us/', '_blank');
+                window.open('https://dtcl.vnggames.com/vi-vn/', '_blank');
               }}
             >
               VÀO CHƠI NGAY!

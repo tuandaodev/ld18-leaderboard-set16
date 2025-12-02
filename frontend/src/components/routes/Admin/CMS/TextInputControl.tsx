@@ -5,14 +5,11 @@ import {
     Input,
     Row,
 } from "antd";
-import { lazy, useEffect, useState } from 'react';
-//style
-import 'react-quill/dist/quill.snow.css';
+import { useEffect, useState } from 'react';
 
 //manual
-import { RICH_TEXT_FORMATS, RICH_TEXT_MODULES } from "@lib/constants";
 import { t } from "i18next";
-import { ContentItem } from "types/endpoints/current-week";
+import { ContentItem } from "types/endpoints/content";
 
 type Props = {
     setModalData: React.Dispatch<React.SetStateAction<JSX.Element | null>>
@@ -29,9 +26,6 @@ type Props = {
     langCode: string,
     valueType?: string | undefined
 };
-
-const ReactQuill = lazy(() => import('react-quill'));
-
 
 export default function TextInputControl({
     isMedium,

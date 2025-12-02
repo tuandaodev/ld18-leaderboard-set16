@@ -42,7 +42,7 @@ export const Container = styled.div`
   display: grid;
   grid-template-columns: 1fr 2fr;
   width: 100%;
-  max-width: 1600px;
+  max-width: 2000px;
   margin: 0 auto;
 
   @media (max-width: 1920px) {

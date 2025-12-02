@@ -36,7 +36,6 @@ export const NavWrapper = styled.nav`
 `;
 
 export const NavContainer = styled.div`
-  // max-width: 1600x;
   margin: 0 auto;
   padding: 0.8rem 4rem;
   display: flex;
@@ -46,28 +45,28 @@ export const NavContainer = styled.div`
   max-width: 95%;
 
   @media (max-width: 1600px) {
-    padding: 0.7rem 3rem;
+    padding: 0.5rem 3rem;
     gap: 2.5rem;
   }
 
   @media (max-width: 1366px) {
-    padding: 0.5rem 2.5rem;
+    padding: 0.4rem 2.5rem;
     gap: 2rem;
   }
 
   @media (max-width: 1200px) {
-    padding: 0.6rem 2rem;
+    padding: 0.3rem 2rem;
     gap: 1.5rem;
   }
 
   @media (max-width: 968px) {
-    padding: 0.6rem 1.5rem;
+    padding: 0.2rem 1.5rem;
   }
 
   @media (max-width: 768px) {
     flex-wrap: wrap;
     gap: 0.6rem;
-    padding: 0.3rem 0.5rem;
+    padding: 0.2rem 0.5rem;
   }
 `;
 
@@ -180,13 +179,13 @@ export const NavItem = styled.a<{ $isActive?: boolean }>`
   border-radius: 4px;
 
   @media (max-width: 1600px) {
-    font-size: 1.15rem;
+    font-size: 1rem;
     letter-spacing: 0.9px;
     padding: 0.2rem 0.9rem;
   }
 
   @media (max-width: 1366px) {
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     letter-spacing: 0.8px;
     padding: 0.2rem 0.8rem;
   }

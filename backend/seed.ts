@@ -4,7 +4,7 @@ import { DataSource } from "typeorm";
 import { AdminLog } from "./src/entity/AdminLog";
 import { Campaign } from "./src/entity/Campaign";
 import { CommunityEvent } from "./src/entity/CommunityEvent";
-import { ContentConfig } from "./src/entity/ContentConfig";
+import { ContentConfig, ControlType } from "./src/entity/ContentConfig";
 import { Leader } from "./src/entity/Leader";
 import { PartnerGamingCenter } from "./src/entity/PartnerGamingCenter";
 import { User, UserRole } from "./src/entity/User";
@@ -81,18 +81,21 @@ const _seedAdmin = async () => {
   await User.save(admin);
 
   let contents = [
-    { contentId: "f2_program_info", description: "Frame 2: Thông tin chương trình Thủ Lĩnh Cộng Đồng", valueType: "text" },
-    { contentId: "f2_avatar_image", description: "Frame 2: Avatar image", valueType: "image" },
-    { contentId: "f4_description", description: "Frame 4: Mô tả", valueType: "text" },
-    { contentId: "f4_cta_url", description: "Frame 4: URL button TÌM HIỂU NGAY", valueType: "text" },
+    { contentId: "f3_rule", contentGroup: "Frame 3", description: "Frame 3: Thể lệ", valueType: "text", controlType: ControlType.TextArea, translate: [{"lang": "vi", "image": "", "value": "Thể lệ của sự kiện"}] },
   ]
 
+  let order = 0;
   await ContentConfig.save(contents.map(x => {
     let content = new ContentConfig();
     content.contentId = x.contentId;
+    content.contentGroup = x.contentGroup ?? null;
     content.description = x.description;
     content.valueType = x.valueType;
-    content.translate = [];
+    content.controlType = x.controlType;
+    // content.meta = x.meta ?? null;
+    content.translate = x.translate ?? [];
+    content.order = order++;
+    content.isPublic = true;
     return content;
   }));
 

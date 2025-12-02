@@ -18,6 +18,7 @@ export const Frame2Wrapper = styled.section`
   padding: 80px 100px;
   box-sizing: border-box;
   gap: 40px;
+  overflow: hidden;
 
   @media (max-width: 1600px) {
     padding: 60px 80px;
@@ -45,11 +46,11 @@ export const TitleImage = styled.img`
   width: auto;
 
   @media (max-width: 1600px) {
-    height: 170px;
+    height: 150px;
   }
 
   @media (max-width: 1366px) {
-    height: 145px;
+    height: 130px;
   }
 `;
 
@@ -58,11 +59,11 @@ export const TitleDescImage = styled.img`
   width: auto;
 
   @media (max-width: 1600px) {
-    height: 37px;
+    height: 34px;
   }
 
   @media (max-width: 1366px) {
-    height: 32px;
+    height: 28px;
   }
 `;
 
@@ -126,11 +127,11 @@ export const Col1Image = styled.img`
   height: 643px;
 
   @media (max-width: 1600px) {
-    height: 540px;
+    height: 500px;
   }
 
   @media (max-width: 1366px) {
-    height: 460px;
+    height: 420px;
   }
 `;
 
@@ -148,7 +149,7 @@ export const Col1Button = styled.button`
   img {
     display: block;
     width: auto;
-    height: auto;
+    height: 95px;
     max-width: 100%;
   }
 
@@ -164,11 +165,19 @@ export const Col1Button = styled.button`
   @media (max-width: 1600px) {
     margin-top: -60px;
     margin-left: 40px;
+
+    img {
+      height: 85px;
+    }
   }
 
   @media (max-width: 1366px) {
     margin-top: -50px;
     margin-left: 35px;
+
+    img {
+      height: 75px;
+    }
   }
 `;
 
@@ -233,13 +242,13 @@ export const VideoPlayerContainer = styled.div`
   }
 
   @media (max-width: 1600px) {
-    width: 560px;
-    height: 323px;
+    width: 520px;
+    height: 300px;
   }
 
   @media (max-width: 1366px) {
-    width: 480px;
-    height: 277px;
+    width: 440px;
+    height: 255px;
   }
 `;
 
@@ -293,10 +302,10 @@ export const Col3Image = styled.img`
   height: 789px;
 
   @media (max-width: 1600px) {
-    height: 660px;
+    height: 620px;
   }
 
   @media (max-width: 1366px) {
-    height: 565px;
+    height: 530px;
   }
 `;

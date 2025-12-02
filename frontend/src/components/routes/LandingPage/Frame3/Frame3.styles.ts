@@ -95,20 +95,25 @@ export const ContentWrapper = styled.div`
   margin: 0 auto;
   position: relative;
   z-index: 2;
-  margin-right: auto;
+  margin-left: min(10%, 300px);
 
+  @media (max-width: 2560px) {
+    margin-left: 200px;
+  }
 
   @media (max-width: 1920px) {
     max-width: 1400px;
-    margin: 0 auto 0 0;
+    margin-left: 50px;
   }
 
   @media (max-width: 1600px) {
     max-width: 1200px;
+    margin-left: 30px;
   }
 
   @media (max-width: 1366px) {
     max-width: 1050px;
+    margin-left: 20px;
   }
 `;
 
@@ -137,37 +142,35 @@ export const TitleImage = styled.img`
 export const RankingsLayout = styled.div`
   display: flex;
   gap: 20px;
-  max-width: 1600px;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 0 20px;
 
   @media (max-width: 1920px) {
-    max-width: 1400px;
+    max-width: 1300px;
     gap: 15px;
     padding: 0 15px;
   }
 
   @media (max-width: 1600px) {
-    max-width: 1200px;
+    max-width: 1100px;
     gap: 12px;
     padding: 0 12px;
   }
 
   @media (max-width: 1366px) {
-    max-width: 1050px;
+    max-width: 900px;
     gap: 10px;
     padding: 0 10px;
   }
 `;
 
 export const TopThreeContainer = styled.div`
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  width: 100%;
-  max-width: 100%;
-  justify-content: center;
+  flex: 0 0 auto;
+  width: fit-content;
   align-items: center;
 `;
 
@@ -400,17 +403,21 @@ export const RankingTableContainer = styled.div`
   flex-direction: column;
   padding: 20px 20px;
   position: relative;
+  max-width: 800px;
 
   @media (max-width: 1920px) {
     padding: 15px 15px;
+    max-width: 700px;
   }
 
   @media (max-width: 1600px) {
     padding: 12px 12px;
+    max-width: 600px;
   }
 
   @media (max-width: 1366px) {
     padding: 10px 10px;
+    max-width: 500px;
   }
 `;
 

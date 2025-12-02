@@ -7,7 +7,12 @@ import Frame1 from "./Frame1";
 import Frame2 from "./Frame2";
 import Frame3 from "./Frame3";
 import Frame4 from "./Frame4";
-import { LandingPageContainer } from "./LandingPage.styles";
+import btnNap from "../../../img/float/btn_nap.png";
+import {
+  LandingPageContainer,
+  FloatTopupWrapper,
+  FloatTopupButton,
+} from "./LandingPage.styles";
 import TopNavigation from "./TopNavigation";
 
 interface LanguageContent {
@@ -27,6 +32,8 @@ interface ContentConfigsResponse {
   success: boolean;
   data: ContentConfig[];
 }
+
+const NAP_XU_URL = "https://shop.vnggames.com/vn/game/dtcl";
 
 // Helper function to get content by contentId (only one language: vi)
 function getContentValue(
@@ -64,22 +71,29 @@ export default function LandingPage() {
   const contentValues = useMemo(() => {
     const configs = contentConfigsResponse?.data || [];
     return {
-      f1Description: getContentValue(configs, "f1_description"),
-      f2ProgramInfo: getContentValue(configs, "f2_program_info"),
-      f2AvatarImage: getContentImage(configs, "f2_avatar_image"),
-      f4Description: getContentValue(configs, "f4_description"),
-      f4CtaUrl: getContentValue(configs, "f4_cta_url"),
+      f3Rule: getContentValue(configs, "f3_rule"),
     };
   }, [contentConfigsResponse?.data]);
+
+  const handleOpenNapXu = () => {
+    window.open(NAP_XU_URL, "_blank");
+  };
 
   return (
     <LandingPageContainer>
       <TopNavigation />
-      <Frame1 description={contentValues.f1Description} />
+      <Frame1 />
       <Frame2 />
-      <Frame3 />
+      <Frame3 f3Rule={contentValues.f3Rule} />
       <Frame4 />
       <Footer />
+      <FloatTopupWrapper>
+        <FloatTopupButton
+          src={btnNap}
+          alt="Nạp Xu ĐTCL - Ưu đãi đến 17%"
+          onClick={handleOpenNapXu}
+        />
+      </FloatTopupWrapper>
     </LandingPageContainer>
   );
 }

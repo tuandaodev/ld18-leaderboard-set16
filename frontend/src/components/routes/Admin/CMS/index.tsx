@@ -1,29 +1,27 @@
 // libraries
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import useAxiosSWR, { fetcher } from "@components/api/useAxiosSWR";
-import { ENDPOINTS } from "@components/api/endpoints";
 import { Card, Form, Modal, Select, Tooltip, message } from "antd";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
 
-// types
-import { ContentItem, GetAllContentConfig, UpdateContentResponse } from "types/endpoints/current-week";
-
 // manual
-import Layout from "@components/common/Admin/Layout";
 
 import PageLoader from "@components/common/PageLoader";
 import { COLORS, FRONTEND_LANGUAGES } from "@lib/constants";
-import TextControl from "./TextControl";
-import ImageControl from "./ImageControl";
+import SelectControl from "./SelectControl";
+import TextInputControl from "./TextInputControl";
+import TextAreaControl from "./TextAreaControl";
 
 // styles
+import { ENDPOINTS } from "@components/api/endpoints";
+import Layout from "@components/common/Admin/Layout";
 import { t } from "i18next";
+import { GetAllContentConfig, UpdateContentResponse } from "types/endpoints/content";
 import { HomeWrapper } from "./style";
-import TextInputControl from "./TextInputControl";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -31,6 +29,12 @@ dayjs.extend(timezone);
 export interface LayoutType {
   labelCol: { span: number };
   wrapperCol: { span: number };
+}
+
+export interface CurrentWeekData {
+  isAllowedToBook: boolean;
+  weekDayGameFormat: string;
+  weekendGameFormat: string;
 }
 
 export default function Dashboard() {
@@ -46,7 +50,7 @@ export default function Dashboard() {
   const [langCode, setLangCode] = useState<string>("vi");
   const isMedium = useMediaQuery("(max-width: 1194px)");
 
-  // Get Current Week
+  // Get Content
   const { data, error, isLoading, mutate } = useAxiosSWR<GetAllContentConfig>(
     ENDPOINTS.findAllContentConfigsForAdmin
   );
@@ -55,26 +59,81 @@ export default function Dashboard() {
   const [modalData, setModalData] = useState<JSX.Element | null>(null);
   const [modalFunction, setModalFunction] = useState<JSX.Element | null>(null);
 
-  const [f1Description, setF1Description] = useState<ContentItem | undefined>(undefined);
-  const [f2ProgramInfo, setF2ProgramInfo] = useState<ContentItem | undefined>(undefined);
-  const [f2AvatarImage, setF2AvatarImage] = useState<ContentItem | undefined>(undefined);
-  const [f4Description, setF4Description] = useState<ContentItem | undefined>(undefined);
-  const [f4CtaUrl, setF4CtaUrl] = useState<ContentItem | undefined>(undefined);
-
-  // Call the function with the current state value
-  useEffect(() => {
-    if (!isLoading && !error && data) {
-      setF1Description(data?.data?.find((item) => item.contentId === 'f1_description'));
-      setF2ProgramInfo(data?.data?.find((item) => item.contentId === 'f2_program_info'));
-      setF2AvatarImage(data?.data?.find((item) => item.contentId === 'f2_avatar_image'));
-      setF4Description(data?.data?.find((item) => item.contentId === 'f4_description'));
-      setF4CtaUrl(data?.data?.find((item) => item.contentId === 'f4_cta_url'));
-    }
-  }, [data, error, isLoading]);
-
   // Handling Loading and Error
   if (isLoading) return <PageLoader />;
   if (error) return <div>Error occurred</div>;
+
+  // Sort all items by order to render them in the correct order, mixing all control types
+  const allItemsSorted = data?.data
+    ?.sort((a, b) => a.order - b.order) || [];
+
+  // Group items by contentGroup
+  const groupedItems = allItemsSorted.reduce((acc, item) => {
+    const groupKey = item.contentGroup || "Ungrouped";
+    if (!acc[groupKey]) {
+      acc[groupKey] = [];
+    }
+    acc[groupKey].push(item);
+    return acc;
+  }, {} as Record<string, typeof allItemsSorted>);
+
+  // Get group keys sorted by the first item's order in each group
+  const groupKeys = Object.keys(groupedItems).sort((a, b) => {
+    const aFirstOrder = groupedItems[a][0]?.order ?? 0;
+    const bFirstOrder = groupedItems[b][0]?.order ?? 0;
+    return aFirstOrder - bFirstOrder;
+  });
+
+  // Helper function to render a control based on its type
+  const renderControl = (item: typeof allItemsSorted[0]) => {
+    let controlComponent = null;
+
+    if (item.controlType === "textinput") {
+      controlComponent = (
+        <TextInputControl
+          isMedium={isMedium}
+          setModalData={setModalData}
+          setModalFunction={setModalFunction}
+          setModal2Open={setModal2Open}
+          modifyContentConfig={modifyContentConfig}
+          data={item}
+          langCode={langCode}
+        />
+      );
+    } else if (item.controlType === "select") {
+      controlComponent = (
+        <SelectControl
+          isMedium={isMedium}
+          setModalData={setModalData}
+          setModalFunction={setModalFunction}
+          setModal2Open={setModal2Open}
+          modifyContentConfig={modifyContentConfig}
+          data={item}
+          langCode={langCode}
+        />
+      );
+    } else if (item.controlType === "textarea") {
+      controlComponent = (
+        <TextAreaControl
+          isMedium={isMedium}
+          setModalData={setModalData}
+          setModalFunction={setModalFunction}
+          setModal2Open={setModal2Open}
+          modifyContentConfig={modifyContentConfig}
+          data={item}
+          langCode={langCode}
+        />
+      );
+    }
+
+    if (!controlComponent) return null;
+
+    return (
+      <div key={item.contentId} style={{ width: '100%', marginBottom: '1rem' }}>
+        {controlComponent}
+      </div>
+    );
+  };
 
   const modifyContentConfig = async (
     contentId: string,
@@ -82,6 +141,7 @@ export default function Dashboard() {
     value: string | null,
     image: File | null
   ) => {
+    console.log(image);
     try {
       const formData = new FormData();
       formData.append("contentId", contentId);
@@ -193,56 +253,16 @@ export default function Dashboard() {
             </Form.Item>
           </Form>
 
-          <TextInputControl
-            isMedium={isMedium}
-            setModalData={setModalData}
-            setModalFunction={setModalFunction}
-            setModal2Open={setModal2Open}
-            modifyContentConfig={modifyContentConfig}
-            data={f1Description}
-            langCode={langCode}
-          />
+          {/* Render controls grouped by contentGroup */}
+          {groupKeys.map((groupKey) => (
+            <div key={groupKey} style={{ marginBottom: '2rem', width: '100%' }}>
+              <h2 style={{ marginBottom: '1rem', fontSize: '20px', fontWeight: 'bold' }}>
+                {groupKey}
+              </h2>
+              {groupedItems[groupKey].map((item) => renderControl(item))}
+            </div>
+          ))}
 
-          <TextControl
-            isMedium={isMedium}
-            setModalData={setModalData}
-            setModalFunction={setModalFunction}
-            setModal2Open={setModal2Open}
-            modifyContentConfig={modifyContentConfig}
-            data={f2ProgramInfo}
-            langCode={langCode}
-          />
-
-          <ImageControl
-            isMedium={isMedium}
-            setModalData={setModalData}
-            setModalFunction={setModalFunction}
-            setModal2Open={setModal2Open}
-            modifyContentConfig={modifyContentConfig}
-            data={f2AvatarImage}
-            langCode={langCode}
-          />
-
-          <TextInputControl
-            isMedium={isMedium}
-            setModalData={setModalData}
-            setModalFunction={setModalFunction}
-            setModal2Open={setModal2Open}
-            modifyContentConfig={modifyContentConfig}
-            data={f4Description}
-            langCode={langCode}
-          />
-
-          <TextInputControl
-            isMedium={isMedium}
-            setModalData={setModalData}
-            setModalFunction={setModalFunction}
-            setModal2Open={setModal2Open}
-            modifyContentConfig={modifyContentConfig}
-            data={f4CtaUrl}
-            langCode={langCode}
-          />
-          
         </Card>
       </HomeWrapper>
     </Layout>

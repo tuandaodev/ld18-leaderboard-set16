@@ -3,15 +3,13 @@ import {
     Button,
     Col,
     Row,
+    Select,
 } from "antd";
-import { lazy, useEffect, useState } from 'react';
-//style
-import 'react-quill/dist/quill.snow.css';
+import { useEffect, useState } from 'react';
 
 //manual
-import { RICH_TEXT_FONTS, RICH_TEXT_FORMATS, RICH_TEXT_MODULES } from "@lib/constants";
 import { t } from "i18next";
-import { ContentItem } from "types/endpoints/current-week";
+import { ContentItem } from "types/endpoints/content";
 
 type Props = {
     setModalData: React.Dispatch<React.SetStateAction<JSX.Element | null>>
@@ -28,12 +26,7 @@ type Props = {
     langCode: string,
 };
 
-const loadReactQuill = () => import('react-quill');
-const ReactQuill = lazy(loadReactQuill);
-let quillFontsRegistered = false;
-
-
-export default function TextControl({
+export default function SelectControl({
     isMedium,
     setModalData,
     setModalFunction,
@@ -45,21 +38,12 @@ export default function TextControl({
 
     const [value, setValue] = useState<string>('');
     useEffect(() => {
-        if (quillFontsRegistered) return;
-
-        loadReactQuill().then(({ Quill }) => {
-            if (!Quill) return;
-            const Font = Quill.import('formats/font');
-            Font.whitelist = RICH_TEXT_FONTS;
-            Quill.register(Font, true);
-            quillFontsRegistered = true;
-        });
-    }, []);
-
-    useEffect(() => {
-        const value = data?.translate.find((item) => item.lang === langCode);
-        setValue(value?.value || '');
+        const translateItem = data?.translate.find((item) => item.lang === langCode);
+        setValue(translateItem?.value || '');
     }, [data, langCode])
+
+    // Get options from meta field, fallback to empty array if not available
+    const selectOptions = data?.meta?.[0]?.options || [];
 
     return (
         <>
@@ -74,18 +58,18 @@ export default function TextControl({
                     }}
                 >{t("Cập nhật") } { data?.description }</Col>
                 <Col span={24}>
-
                     <div
                         className="richTextWrapper"
                     >
-                        <ReactQuill
-                            theme="snow"
-                            modules={RICH_TEXT_MODULES}
-                            formats={RICH_TEXT_FORMATS}
-                            value={value}
-                            onChange={setValue}
+                        <Select
+                            style={{ width: '100%' }}
+                            value={value || undefined}
+                            onChange={(selectedValue) => {
+                                setValue(selectedValue);
+                            }}
+                            options={selectOptions}
+                            placeholder="Select a value"
                         />
-                        
                     </div>
                 </Col>
                 <Col span={24}
@@ -128,3 +112,4 @@ export default function TextControl({
         </>
     );
 }
+

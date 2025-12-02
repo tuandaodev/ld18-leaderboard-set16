@@ -34,7 +34,7 @@ export const ContentContainer = styled.div`
   max-width: 1800px;
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: start;
   justify-content: center;
   gap: 4rem;
   margin: 0 auto;
@@ -58,6 +58,18 @@ export const Column1 = styled.div`
   gap: 2rem;
   flex: 1;
   max-width: 50%;
+
+  @media (max-width: 1920px) {
+   gap: 1.75rem;
+  }
+
+  @media (max-width: 1600px) {
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 1366px) {
+    gap: 1.25rem;
+  }
 `;
 
 export const Column2 = styled.div`
@@ -206,7 +218,7 @@ export const CTAButton = styled.button`
   img {
     display: block;
     width: auto;
-    height: auto;
+    height: 95px;
     max-width: 100%;
   }
 
@@ -217,6 +229,24 @@ export const CTAButton = styled.button`
 
   &:active {
     transform: scale(0.98);
+  }
+
+  @media (max-width: 1920px) {
+    img {
+      height: 85px;
+    }
+  }
+
+  @media (max-width: 1600px) {
+    img {
+      height: 75px;
+    }
+  }
+
+  @media (max-width: 1366px) {
+    img {
+      height: 65px;
+    }
   }
 `;
 

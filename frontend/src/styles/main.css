@@ -102,3 +102,7 @@
 .ql-font-space-grotesk {
   font-family: var(--font-space-grotesk);
 }
+
+.ql-align-center {
+  text-align: center;
+}

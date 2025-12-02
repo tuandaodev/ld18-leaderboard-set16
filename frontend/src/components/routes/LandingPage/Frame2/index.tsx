@@ -47,7 +47,7 @@ export default function Frame2() {
         <Column1>
           <Col1Image src={col1Img} alt="Column 1" />
           <Col1Button onClick={() => {
-            window.open('https://dtcl.vnggames.com/en-us/', '_blank');
+            window.open('https://dtcl.vnggames.com/vi-vn/', '_blank');
           }}>
             <img src={btnCtaImg} alt="Vào Nhận Ngay" />
           </Col1Button>
@@ -59,8 +59,6 @@ export default function Frame2() {
             <video 
               ref={videoRef}
               controls={false} 
-              loop 
-              muted 
               playsInline
               preload="none"
               poster={'https://set16.freelancerhcm.com/video/f2.png'}

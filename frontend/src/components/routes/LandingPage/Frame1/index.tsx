@@ -38,7 +38,7 @@ const videoConfigs: VideoConfig[] = [
   },
 ];
 
-export default function Frame1({ description }: Frame1Props) {
+export default function Frame1() {
   const [activeVideo, setActiveVideo] = useState<VideoType>('tong-quan');
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -84,8 +84,6 @@ export default function Frame1({ description }: Frame1Props) {
               <video 
                 ref={videoRef}
                 controls={false} 
-                loop 
-                muted 
                 playsInline
                 preload="none"
                 poster={currentVideo.thumbnail}
@@ -124,7 +122,7 @@ export default function Frame1({ description }: Frame1Props) {
           </VideoButtonContainer>
           
           <CTAButton onClick={() => {
-            window.open('https://dtcl.vnggames.com/en-us/', '_blank');
+            window.open('https://dtcl.vnggames.com/vi-vn/', '_blank');
           }}>
             <img src={ctaImg} alt="Vào Game Ngay" />
           </CTAButton>
