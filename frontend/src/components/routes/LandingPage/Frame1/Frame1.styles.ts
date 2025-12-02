@@ -248,7 +248,7 @@ export const VideoButton = styled.button<{ active?: boolean }>`
   /* Điện thoại màn hình ngang */
   @media (max-width: 1024px) and (orientation: landscape) {
     font-size: 0.68rem;
-    min-width: 120px;
+    min-width: 90px;
     height: ${props => props.active ? '46px' : '32px'};
     padding: 0.5rem 0.9rem;
   }

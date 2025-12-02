@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Frame1Wrapper, ContentContainer, Column1, Column2, VideoPlayerContainer, VideoButtonContainer, VideoButton, CTAButton, TitleImage, DescImage } from "./Frame1.styles";
 import titleImg from '../../../../img/f1/title.png';
 import descImg from '../../../../img/f1/desc.png';
@@ -64,6 +64,31 @@ export default function Frame1() {
       }
     }, 100);
   };
+
+  // Tự động pause video khi scroll ra khỏi vùng nhìn thấy
+  useEffect(() => {
+    if (!videoRef.current || typeof IntersectionObserver === 'undefined') return;
+
+    const target = videoRef.current;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting && videoRef.current && !videoRef.current.paused) {
+          videoRef.current.pause();
+        }
+      },
+      {
+        threshold: 0.25, // chỉ cần 25% video còn trong viewport
+      }
+    );
+
+    observer.observe(target);
+
+    return () => {
+      observer.unobserve(target);
+      observer.disconnect();
+    };
+  }, [currentVideo.url]);
 
   const handleVideoClick = () => {
     if (videoRef.current) {
