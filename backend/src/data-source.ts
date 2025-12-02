@@ -6,10 +6,9 @@ import { Campaign } from "./entity/Campaign";
 import { ContentConfig } from "./entity/ContentConfig";
 import { Event } from "./entity/Event";
 import { User } from "./entity/User";
-import { InitDb1763663405219 } from "./migrations/1763663405219-init_db";
-import { InitData1763663509101 } from "./migrations/1763663509101-init_data";
-import { AddF1Description1763663600000 } from "./migrations/1763663600000-add_f1_description";
-import { AddTermsAgreedAt1764304202761 } from "./migrations/1764304202761-AddTermsAgreedAt";
+import { InitDatabase1764693369392 } from "./migrations/1764693369392-init-database";
+import { InitData1764693419027 } from "./migrations/1764693419027-init-data";
+import { InitContentConfig1764694038203 } from "./migrations/1764694038203-init-content-config";
 
 // Add new entities here
 export const AppEntites = [
@@ -30,12 +29,11 @@ export const AppDataSource = new DataSource({
   entities: AppEntites,
   subscribers: [],
   migrations: [
-    InitDb1763663405219,
-    InitData1763663509101,
-    AddF1Description1763663600000,
-    AddTermsAgreedAt1764304202761
+    InitDatabase1764693369392,
+    InitData1764693419027,
+    InitContentConfig1764694038203
   ],
   cache: false,
-  synchronize: true,
+  synchronize: false,
   // dropSchema: process.env.NODE_ENV === "development" ? true : false,
 });

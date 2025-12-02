@@ -13,6 +13,8 @@
     "seed": "ts-node seed.ts",
     "prod-seed": "node dist/seed.js",
     "typeorm": "ts-node ./node_modules/typeorm/cli",
+    "typeorm-migration-generate": "ts-node ./node_modules/typeorm/cli migration:generate -d ./src/data-source.ts",
+    "typeorm-migration-create": "ts-node ./node_modules/typeorm/cli migration:create",
     "typeorm-migration-clean": "ts-node ./node_modules/typeorm/cli query \"DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT USAGE ON SCHEMA public to PUBLIC; GRANT CREATE ON SCHEMA public to PUBLIC; COMMENT ON SCHEMA public IS 'standard public schema';\" -d ./dist/src/data-source.js",
     "typeorm-migration": "ts-node ./node_modules/typeorm/cli migration:run -d ./dist/src/data-source.js",
     "deploy-pm2": "pm2 delete tft-set16-api || true && pm2 start \"yarn serve\" --name tft-set16-api && pm2 save",
