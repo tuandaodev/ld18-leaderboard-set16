@@ -34,7 +34,8 @@ export const Frame2Wrapper = styled.section`
   @media (max-width: 1024px) and (orientation: landscape) {
     padding: 32px 24px;
     gap: 16px;
-    height: 550px;
+    height: 470px;
+    background-size: 100% 100%;
   }
 `;
 
@@ -46,6 +47,11 @@ export const FirstRow = styled.div`
   gap: 20px;
   width: 100%;
   max-width: 1600px;
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    gap: 10px;
+  }
 `;
 
 export const TitleImage = styled.img`
@@ -119,7 +125,7 @@ export const SecondRow = styled.div`
 
   /* Điện thoại màn hình ngang */
   @media (max-width: 1024px) and (orientation: landscape) {
-    max-width: 820px;
+    max-width: 675px;
     gap: 10px;
   }
 `;
@@ -250,10 +256,8 @@ export const Col2TextImage = styled.img`
   height: auto;
   object-fit: contain;
   display: block;
-  height: 168px;
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    height: 70px;
   }
 `;
 
@@ -377,6 +381,6 @@ export const Col3Image = styled.img`
 
   /* Điện thoại màn hình ngang */
   @media (max-width: 1024px) and (orientation: landscape) {
-    height: 380px;
+    height: 300px;
   }
 `;

@@ -1,6 +1,5 @@
 import styled from 'styled-components';
 import bg4 from '../../../../img/f4/bg.png';
-import bgMobile from '@images/mobile/f4/bg.png';
 import eventBorder from '../../../../img/f4/event_border.png';
 import tenBg from '../../../../img/f4/ten_bg.png';
 
@@ -30,16 +29,13 @@ export const Frame4Wrapper = styled.section`
   }
 
   @media (max-width: 768px) {
-    background-image: url(${bgMobile});
-    background-size: cover;
-    background-position: top;
     padding: 40px 20px;
-    flex-direction: column;
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    padding: 40px 5px;
-    height: 550px;
+    padding: 32px 4px;
+    height: 440px;
+    background-size: 100% 100%;
   }
 `;
 
@@ -63,7 +59,7 @@ export const Container = styled.div`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    max-width: 900px;
+    max-width: 650px;
     grid-template-columns: 1.1fr 1.9fr;
   }
 `;
@@ -97,7 +93,7 @@ export const Column1 = styled.div`
 
   @media (max-width: 1024px) and (orientation: landscape) {
     margin-right: 0;
-    margin-left: -10px;
+    margin-left: -8px;
   }
 `;
 
@@ -118,9 +114,9 @@ export const ArtImage = styled.img`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    height: 350px;
-    margin-left: -85px;
-    margin-right: -90px;
+    height: 280px;
+    margin-left: -68px;
+    margin-right: -72px;
   }
 `;
 
@@ -152,7 +148,7 @@ export const Column2 = styled.div`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    gap: 10px;
+    gap: 8px;
   }
 `;
 
@@ -176,7 +172,7 @@ export const TitleImage = styled.img`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    height: 50px;
+    height: 40px;
   }
 `;
 
@@ -200,7 +196,7 @@ export const DescImage = styled.img`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    height: 20px;
+    height: 16px;
   }
 `;
 
@@ -226,8 +222,8 @@ export const EventsGrid = styled.div`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    gap: 20px 10px;
-    margin-top: 4px;
+    gap: 16px 8px;
+    margin-top: 3px;
   }
 `;
 
@@ -278,8 +274,8 @@ export const EventBox = styled.div`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    width: 210px;
-    height: 120px;
+    width: 168px;
+    height: 96px;
   }
 `;
 
@@ -332,9 +328,9 @@ export const EventName = styled.div`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    font-size: 12px;
-    padding: 6px 10px;
-    bottom: -14px;
-    min-width: 100px;
+    font-size: 10px;
+    padding: 5px 8px;
+    bottom: -11px;
+    min-width: 80px;
   }
 `;

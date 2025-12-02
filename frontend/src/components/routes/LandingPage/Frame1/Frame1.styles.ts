@@ -29,8 +29,9 @@ export const Frame1Wrapper = styled.section`
 
   /* Điện thoại màn hình ngang */
   @media (max-width: 1024px) and (orientation: landscape) {
-    padding: 1rem 0.5rem;
-    height: 480px;
+    padding: 2rem 0.4rem 0 0.4rem;
+    height: 400px;
+    background-size: 100% 100%;
   }
 `;
 
@@ -56,8 +57,8 @@ export const ContentContainer = styled.div`
 
   /* Điện thoại màn hình ngang */
   @media (max-width: 1024px) and (orientation: landscape) {
-    max-width: 900px;
-    gap: 1.25rem;
+    max-width: 600px;
+    gap: 1rem;
     align-items: center;
   }
 `;
@@ -85,7 +86,7 @@ export const Column1 = styled.div`
 
   /* Điện thoại màn hình ngang */
   @media (max-width: 1024px) and (orientation: landscape) {
-    gap: 0.8rem;
+    gap: 0.64rem;
   }
 `;
 
@@ -100,7 +101,7 @@ export const Column2 = styled.div`
 
   /* Điện thoại màn hình ngang */
   @media (max-width: 1024px) and (orientation: landscape) {
-    gap: 0.8rem;
+    gap: 0.64rem;
   }
 `;
 
@@ -161,13 +162,13 @@ export const VideoPlayerContainer = styled.div`
 
   /* Điện thoại màn hình ngang */
   @media (max-width: 1024px) and (orientation: landscape) {
-    width: 320px;
-    height: 180px;
+    width: 256px;
+    height: 144px;
 
     iframe,
     video {
-      width: 320px;
-      height: 180px;
+      width: 256px;
+      height: 144px;
     }
   }
 `;
@@ -194,8 +195,8 @@ export const VideoButtonContainer = styled.div`
 
   /* Điện thoại màn hình ngang */
   @media (max-width: 1024px) and (orientation: landscape) {
-    height: 48px;
-    gap: 0.5rem;
+    height: 38.4px;
+    gap: 0.4rem;
   }
 `;
 
@@ -247,10 +248,10 @@ export const VideoButton = styled.button<{ active?: boolean }>`
 
   /* Điện thoại màn hình ngang */
   @media (max-width: 1024px) and (orientation: landscape) {
-    font-size: 0.68rem;
-    min-width: 90px;
-    height: ${props => props.active ? '46px' : '32px'};
-    padding: 0.5rem 0.9rem;
+    font-size: 0.544rem;
+    min-width: 72px;
+    height: ${props => props.active ? '36.8px' : '25.6px'};
+    padding: 0.4rem 0.72rem;
   }
 `;
 
@@ -300,7 +301,7 @@ export const CTAButton = styled.button`
   /* Điện thoại màn hình ngang */
   @media (max-width: 1024px) and (orientation: landscape) {
     img {
-      height: 48px;
+      height: 38.4px;
     }
   }
 `;
@@ -317,9 +318,8 @@ export const TitleImage = styled.img`
     height: 170px;
   }
 
-  /* Điện thoại màn hình ngang */
   @media (max-width: 1024px) and (orientation: landscape) {
-    height: 120px;
+    height: 96px;
   }
 `;
 
@@ -337,7 +337,7 @@ export const DescImage = styled.img`
 
   /* Điện thoại màn hình ngang */
   @media (max-width: 1024px) and (orientation: landscape) {
-    height: 110px;
+    height: 88px;
   }
 `;
 

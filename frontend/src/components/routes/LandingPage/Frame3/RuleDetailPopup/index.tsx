@@ -43,7 +43,7 @@ export default function RuleDetailPopup({ isOpen, onClose, f3Rule }: RuleDetailP
       width={modalWidth}
       centered={true}
       title=""
-      destroyOnClose={true}
+      destroyOnHidden={true}
     >
       <RuleDetailContainer>
         <RuleSection>

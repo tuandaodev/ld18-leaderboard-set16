@@ -36,7 +36,9 @@ export const Frame3Wrapper = styled.section`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    height: 600px;
+    height: 480px;
+    padding-top: 16px;
+    background-size: 100% 100%;
   }
 `;
 
@@ -91,6 +93,10 @@ export const ContentContainer = styled.div`
   @media (max-width: 1366px) {
     padding: 10px 15px;
   }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    padding: 8px 12px;
+  }
 `;
 
 export const ContentWrapper = styled.div`
@@ -122,6 +128,7 @@ export const ContentWrapper = styled.div`
 
   @media (max-width: 1024px) and (orientation: landscape) {
     margin-left: 0px;
+    max-width: 840px;
   }
 `;
 
@@ -147,8 +154,8 @@ export const TitleImage = styled.img`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    height: 100px;
-    margin: 0 0 30px 40px;
+    height: 80px;
+    margin: 0 0 24px 32px;
   }
 `;
 
@@ -176,6 +183,13 @@ export const RankingsLayout = styled.div`
     gap: 10px;
     padding: 0 10px;
   }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    max-width: 650px;
+    gap: 8px;
+    padding: 0 8px;
+    margin: 0 0 0 25px;
+  }
 `;
 
 export const TopThreeContainer = styled.div`
@@ -187,7 +201,7 @@ export const TopThreeContainer = styled.div`
   align-items: center;
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    gap: 10px;
+    gap: 8px;
   }
 `;
 
@@ -206,6 +220,10 @@ export const PhanThuongTextImage = styled.img`
 
   @media (max-width: 1366px) {
     height: 42px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    height: 33.6px;
   }
 `;
 
@@ -229,7 +247,7 @@ export const Top1Image = styled.img`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    height: 80px;
+    height: 64px;
   }
 
   &:hover {
@@ -258,7 +276,7 @@ export const Top2Image = styled.img`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    height: 65px;
+    height: 52px;
   }
 
   &:hover {
@@ -291,8 +309,8 @@ export const Top3Image = styled.img`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    height: 60px;
-    margin-top: 5px;
+    height: 48px;
+    margin-top: 4px;
   }
 
   &:hover {
@@ -321,7 +339,7 @@ export const RulesButtonImage = styled.img`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    max-height: 30px;
+    max-height: 24px;
   }
 
   &:hover {
@@ -453,6 +471,11 @@ export const RankingTableContainer = styled.div`
     padding: 10px 10px;
     max-width: 500px;
   }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    padding: 8px 8px;
+    max-width: 400px;
+  }
 `;
 
 export const TableTitleImage = styled.img`
@@ -480,8 +503,8 @@ export const TableTitleImage = styled.img`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    height: 60px;
-    top: -30px;
+    height: 48px;
+    top: -24px;
   }
 `;
 
@@ -525,6 +548,14 @@ export const TableHeader = styled.div`
     margin-top: 22px;
     grid-template-columns: 55px 1fr 100px;
   }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    font-size: 11.2px;
+    padding: 4.8px 8px;
+    gap: 8px;
+    margin-top: 17.6px;
+    grid-template-columns: 44px 1fr 80px;
+  }
 `;
 
 export const TableContent = styled.div`
@@ -548,8 +579,8 @@ export const TableContent = styled.div`
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    max-height: 250px;
-    min-height: 200px;
+    max-height: 200px;
+    min-height: 160px;
   }
   
   &::-webkit-scrollbar {
@@ -603,6 +634,13 @@ export const TableRow = styled.div<{ $isEven?: boolean }>`
     grid-template-columns: 55px 1fr 100px;
   }
 
+  @media (max-width: 1024px) and (orientation: landscape) {
+    font-size: 0.72rem;
+    padding: 6.4px 8px;
+    gap: 8px;
+    grid-template-columns: 44px 1fr 80px;
+  }
+
   &:hover {
     background: rgba(255, 215, 0, 0.1);
   }
@@ -627,6 +665,10 @@ export const TableCell = styled.div`
 
   @media (max-width: 1366px) {
     min-height: 28px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    min-height: 22.4px;
   }
 `;
 
@@ -828,6 +870,11 @@ export const MainArtImage = styled.img`
     max-height: 65vh;
     max-width: 30vw;
   }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    max-height: 300px;
+    max-width: 24vw;
+  }
 `;
 
 export const CTAButton = styled.img`
@@ -852,6 +899,11 @@ export const CTAButton = styled.img`
   @media (max-width: 1366px) {
     margin-top: 15px;
     max-height: 45px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    margin-top: 12px;
+    max-height: 36px;
   }
 
   &:hover {

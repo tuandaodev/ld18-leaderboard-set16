@@ -2,10 +2,7 @@ import styled from 'styled-components';
 import { Modal } from 'antd';
 import bgSmall from '../../../images/popup/bg_small.png';
 import bgLarge from '../../../images/popup/bg_large.png';
-import bgMobile from '../../../images/mobile/popup/bg.png';
-import bgMobileLarge from '../../../images/mobile/popup/bg_large.png';
 import closeIcon from '../../../images/popup/close.png';
-import closeMobileIcon from '../../../images/mobile/popup/close.png';
 
 interface StyledModalProps {
   $size?: 'small' | 'large';
@@ -48,7 +45,6 @@ export const StyledModal = styled(Modal)<StyledModalProps>`
     }
 
     @media (max-width: 768px) {
-      background-image: url(${props => props.$size === 'large' ? bgMobileLarge : bgMobile});
       background-size: 100% 100%;
       padding: 2rem 1.5rem 2rem 3rem;
       min-height: auto;
@@ -166,8 +162,7 @@ export const StyledModal = styled(Modal)<StyledModalProps>`
 
       @media (max-width: 768px) {
         &::before {
-          background-image: url(${closeMobileIcon});
-        }
+        } 
       }
     }
   }

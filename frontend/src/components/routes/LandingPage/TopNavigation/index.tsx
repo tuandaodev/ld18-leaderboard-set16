@@ -1,15 +1,10 @@
- import { ENDPOINTS } from "@components/api/endpoints";
-import useAxiosSWR from "@components/api/useAxiosSWR";
-import { useEffect, useState } from "react";
+ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import homeIcon from "../../../../images/header/home.png";
-import logoImage from "../../../../images/header/logo.png";
 import btnHover from "../../../../img/header/btn_Hover.png";
 import btnNormal from "../../../../img/header/btn_normal.png";
 import riotGamesLogo from "../../../../img/header/Riot Games.png";
 import tftLogo from "../../../../img/header/TFT.png";
 import { getAccessToken, getLoginInfos, useAuth } from "../../../../store/useAuth";
-import { authModal } from "../../../../store/useAuthModal";
 import {
   LogoSection,
   NavActions,
@@ -26,23 +21,23 @@ export default function TopNavigation() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const isLoggedIn = data.isAuthenticated;
-  const username = data.username;
+  // const isLoggedIn = data.isAuthenticated;
+  // const username = data.username;
 
   // Fetch unread notification count when user is logged in
-  const { data: unreadCountResponse } = useAxiosSWR<{ success: boolean; data: { count: number } }>(
-    isLoggedIn ? ENDPOINTS.getUnreadNotificationCount : '',
-    {
-      forSWR: {
-        revalidateOnMount: isLoggedIn,
-        shouldRetryOnError: false,
-        revalidateOnFocus: true,
-        refreshInterval: 30000, // Refresh every 30 seconds
-      }
-    }
-  );
+  // const { data: unreadCountResponse } = useAxiosSWR<{ success: boolean; data: { count: number } }>(
+  //   isLoggedIn ? ENDPOINTS.getUnreadNotificationCount : '',
+  //   {
+  //     forSWR: {
+  //       revalidateOnMount: isLoggedIn,
+  //       shouldRetryOnError: false,
+  //       revalidateOnFocus: true,
+  //       refreshInterval: 30000, // Refresh every 30 seconds
+  //     }
+  //   }
+  // );
 
-  const unreadCount = unreadCountResponse?.data?.count || 0;
+  // const unreadCount = unreadCountResponse?.data?.count || 0;
 
   // Check for stored token and restore login state on mount
   useEffect(() => {
@@ -58,14 +53,14 @@ export default function TopNavigation() {
     }
   }, [saveLogin]);
 
-  const handleLogin = () => {
-    authModal.openLogin();
-  };
+  // const handleLogin = () => {
+  //   authModal.openLogin();
+  // };
 
-  const handleLogout = () => {
-    saveLogout();
-    navigate("/");
-  };
+  // const handleLogout = () => {
+  //   saveLogout();
+  //   navigate("/");
+  // };
 
   const navItems = [
     { label: "MỞ KHOÁ 100 HUYỀN THOẠI", href: "#information", id: "information" },

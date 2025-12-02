@@ -71,7 +71,7 @@ export const NavContainer = styled.div`
 
   /* Điện thoại màn hình ngang */
   @media (max-width: 1024px) and (orientation: landscape) {
-    padding: 0.5rem 5px;
+    padding: 0.5rem 15px;
     gap: 0.5rem;
     margin: 0 auto;
     max-width: unset;
