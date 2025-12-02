@@ -15,6 +15,8 @@ export const Frame4Wrapper = styled.section`
   align-items: center;
   justify-content: center;
   padding: 80px 40px;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 
   @media (max-width: 1920px) {
     padding: 60px 30px;
@@ -36,6 +38,8 @@ export const Frame4Wrapper = styled.section`
     padding: 32px 4px;
     height: 440px;
     background-size: 100% 100%;
+    scroll-snap-align: none;
+    scroll-snap-stop: normal;
   }
 `;
 

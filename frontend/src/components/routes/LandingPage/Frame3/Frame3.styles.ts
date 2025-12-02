@@ -1,8 +1,3 @@
-import tabBg from '@images/f3/tab.png';
-import tabHoverBg from '@images/f3/tab_hover.png';
-import top1Bg from '@images/f3/top1_bg.png';
-import top2Bg from '@images/f3/top2_bg.png';
-import top3Bg from '@images/f3/top3_bg.png';
 import styled from 'styled-components';
 import bg3 from '../../../../img/f3/bg.png';
 import tableBg from '../../../../img/f3/table_bg.png';
@@ -22,6 +17,8 @@ export const Frame3Wrapper = styled.section`
   align-items: center;
   justify-content: center;
   padding-top: 50px;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 
   @media (max-width: 1920px) {
     padding-top: 30px;
@@ -39,6 +36,8 @@ export const Frame3Wrapper = styled.section`
     height: 480px;
     padding-top: 16px;
     background-size: 100% 100%;
+    scroll-snap-align: none;
+    scroll-snap-stop: normal;
   }
 `;
 
@@ -46,32 +45,6 @@ export const TabContainer = styled.div`
   display: flex;
   gap: 20px;
   z-index: 10;
-`;
-
-export const TabButton = styled.button<{ $active: boolean }>`
-  padding: 15px 40px;
-  font-size: 18px;
-  font-weight: 700;
-  color: ${props => props.$active ?  '#000':'#f5efbf'};
-  background-image: url(${props => props.$active ? tabBg : tabHoverBg});
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  min-width: 350px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  &:hover {
-    background-image: url(${tabBg});
-    color: #000;
-  }
 `;
 
 export const ContentContainer = styled.div`
@@ -346,31 +319,6 @@ export const RulesButtonImage = styled.img`
     transform: scale(1.05);
     filter: brightness(1.1);
   }
-`;
-
-export const TopCard = styled.div<{ $position: number }>`
-  background-image: url(${props => {
-    // TOP 1 uses top1_bg, TOP 2 uses top2_bg, TOP 3 uses top3_bg
-    if (props.$position === 1) return top1Bg;
-    if (props.$position === 2) return top2Bg;
-    return top3Bg;
-  }});
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-  padding: ${props => props.$position !== 1 ? '30px 20px' : '30px 20px 100px 42px'};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: end;
-  width: ${props => props.$position !== 1 ? '245px' : '270px'};
-  height: ${props => props.$position !== 1 ? '680px' : '750px'};
-  min-height: ${props => props.$position === 1 ? '350px' : 'auto'};
-  flex: 1;
-  color: #fff;
-  transition: filter 0.3s ease;
-  margin: ${props => props.$position === 1 ? '-59px 0 -10px -25px' : '0'};
-  // padding-left: ${props => props.$position === 1 ? '42px' : '0'};
 `;
 
 export const TopCardLeft = styled.div`
@@ -674,33 +622,6 @@ export const TableCell = styled.div`
 
 export const MobileOnly = styled.div`
   display: none;
-`;
-
-export const MobileRankingButton = styled.button`
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 700;
-  color: #000;
-  background-image: url(${tabBg});
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  min-width: 250px;
-  height: 36px;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-
-  &:hover {
-    filter: brightness(1.05);
-  }
 `;
 
 // Participants styles

@@ -6,6 +6,11 @@ export const LandingPageContainer = styled.div`
   height: 100vh;
   overflow-y: auto;
   scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    scroll-snap-type: none;
+  }
 `;
 
 export const PortraitOverlay = styled.div`

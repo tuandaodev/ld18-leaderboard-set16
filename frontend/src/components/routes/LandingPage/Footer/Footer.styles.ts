@@ -5,6 +5,7 @@ export const FooterWrapper = styled.footer`
   background-color: rgb(0, 0, 0);
   padding: 2rem 0;
   border-top: 2px solid #333;
+  scroll-snap-align: start;
 
   @media (max-width: 768px) {
     padding: 1.5rem 0 4.5rem 0;
@@ -12,6 +13,7 @@ export const FooterWrapper = styled.footer`
 
   @media (max-width: 1024px) and (orientation: landscape) {
     padding: 1rem 0 1rem 0;
+    scroll-snap-align: none;
   }
 `;
 

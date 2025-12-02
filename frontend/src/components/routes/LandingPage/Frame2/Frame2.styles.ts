@@ -19,6 +19,8 @@ export const Frame2Wrapper = styled.section`
   box-sizing: border-box;
   gap: 40px;
   overflow: hidden;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 
   @media (max-width: 1600px) {
     padding: 60px 80px;
@@ -36,6 +38,8 @@ export const Frame2Wrapper = styled.section`
     gap: 16px;
     height: 470px;
     background-size: 100% 100%;
+    scroll-snap-align: none;
+    scroll-snap-stop: normal;
   }
 `;
 

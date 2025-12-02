@@ -18,6 +18,8 @@ export const Frame1Wrapper = styled.section`
   align-items: center;
   justify-content: center;
   padding: 4rem 2rem;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 
   @media (max-width: 1600px) {
     padding: 3rem 1.5rem;
@@ -32,6 +34,8 @@ export const Frame1Wrapper = styled.section`
     padding: 2rem 0.4rem 0 0.4rem;
     height: 400px;
     background-size: 100% 100%;
+    scroll-snap-align: none;
+    scroll-snap-stop: normal;
   }
 `;
 
