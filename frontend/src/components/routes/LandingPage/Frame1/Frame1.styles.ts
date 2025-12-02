@@ -1,9 +1,8 @@
-import bg1 from '../../../../img/f1/bg.png';
-import videoBorder from '../../../../img/f1/video_border.png';
-import btnActive from '../../../../img/f1/btn_active.png';
-import btn from '../../../../img/f1/btn.png';
-import ctaImg from '../../../../img/f1/cta.png';
 import styled from 'styled-components';
+import bg1 from '../../../../img/f1/bg.png';
+import btn from '../../../../img/f1/btn.png';
+import btnActive from '../../../../img/f1/btn_active.png';
+import videoBorder from '../../../../img/f1/video_border.png';
 
 export const Frame1Wrapper = styled.section`
   width: 100%;
@@ -27,6 +26,12 @@ export const Frame1Wrapper = styled.section`
   @media (max-width: 1366px) {
     padding: 2.5rem 1rem;
   }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    padding: 1rem 0.5rem;
+    height: 480px;
+  }
 `;
 
 export const ContentContainer = styled.div`
@@ -47,6 +52,13 @@ export const ContentContainer = styled.div`
   @media (max-width: 1366px) {
     max-width: 1200px;
     gap: 2.5rem;
+  }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    max-width: 900px;
+    gap: 1.25rem;
+    align-items: center;
   }
 `;
 
@@ -70,6 +82,11 @@ export const Column1 = styled.div`
   @media (max-width: 1366px) {
     gap: 1.25rem;
   }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    gap: 0.8rem;
+  }
 `;
 
 export const Column2 = styled.div`
@@ -80,6 +97,11 @@ export const Column2 = styled.div`
   gap: 2rem;
   flex: 1;
   max-width: 50%;
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    gap: 0.8rem;
+  }
 `;
 
 export const VideoPlayerContainer = styled.div`
@@ -136,6 +158,18 @@ export const VideoPlayerContainer = styled.div`
       height: 335px;
     }
   }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    width: 320px;
+    height: 180px;
+
+    iframe,
+    video {
+      width: 320px;
+      height: 180px;
+    }
+  }
 `;
 
 export const VideoButtonContainer = styled.div`
@@ -156,6 +190,12 @@ export const VideoButtonContainer = styled.div`
   @media (max-width: 1366px) {
     height: 60px;
     gap: 0.7rem;
+  }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    height: 48px;
+    gap: 0.5rem;
   }
 `;
 
@@ -204,6 +244,14 @@ export const VideoButton = styled.button<{ active?: boolean }>`
     height: ${props => props.active ? '60px' : '38px'};
     padding: 0.6rem 1.2rem;
   }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    font-size: 0.68rem;
+    min-width: 120px;
+    height: ${props => props.active ? '46px' : '32px'};
+    padding: 0.5rem 0.9rem;
+  }
 `;
 
 export const CTAButton = styled.button`
@@ -248,6 +296,13 @@ export const CTAButton = styled.button`
       height: 65px;
     }
   }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    img {
+      height: 48px;
+    }
+  }
 `;
 
 export const TitleImage = styled.img`
@@ -261,6 +316,11 @@ export const TitleImage = styled.img`
   @media (max-width: 1366px) {
     height: 170px;
   }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    height: 120px;
+  }
 `;
 
 export const DescImage = styled.img`
@@ -273,6 +333,11 @@ export const DescImage = styled.img`
 
   @media (max-width: 1366px) {
     height: 220px;
+  }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    height: 110px;
   }
 `;
 

@@ -188,16 +188,20 @@ export const RuleTitle = styled.h3`
   letter-spacing: 1px;
   
   @media (max-width: 1920px) {
-    font-size: 1.4rem;
+    font-size: 45px;
   }
 
   @media (max-width: 1366px) {
-    font-size: 1.2rem;
+    font-size: 35px;
     letter-spacing: 0.8px;
   }
 
   @media (max-width: 768px) {
-    font-size: 1.1rem;
+    font-size: 25px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    font-size: 20px;
   }
 `;
 
@@ -209,16 +213,20 @@ export const RuleContent = styled.p`
   line-height: 1.5;
   
   @media (max-width: 1920px) {
-    font-size: 1.05rem;
+    font-size: 21px;
   }
 
   @media (max-width: 1366px) {
-    font-size: 1rem;
+    font-size: 18px;
     line-height: 1.5;
   }
 
   @media (max-width: 768px) {
-    font-size: 0.9rem;
+    font-size: 15px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    font-size: 12px;
   }
 `;
 

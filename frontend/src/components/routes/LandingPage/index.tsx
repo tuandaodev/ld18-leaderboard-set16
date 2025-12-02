@@ -1,6 +1,7 @@
 import { ENDPOINTS } from "@components/api/endpoints";
 import useAxiosSWR from "@components/api/useAxiosSWR";
 import { useMemo } from "react";
+import { useMediaQuery } from "react-responsive";
 import "../../../styles/landing.css";
 import Footer from "./Footer";
 import Frame1 from "./Frame1";
@@ -12,6 +13,9 @@ import {
   LandingPageContainer,
   FloatTopupWrapper,
   FloatTopupButton,
+  PortraitOverlay,
+  PortraitTitle,
+  PortraitDescription,
 } from "./LandingPage.styles";
 import TopNavigation from "./TopNavigation";
 
@@ -62,6 +66,8 @@ function getContentImage(
 }
 
 export default function LandingPage() {
+  const isPortrait = useMediaQuery({ query: "(orientation: portrait)" });
+
   // Fetch content configs
   const { data: contentConfigsResponse } = useAxiosSWR<ContentConfigsResponse>(
     ENDPOINTS.findAllContentConfigsForPublic
@@ -81,19 +87,31 @@ export default function LandingPage() {
 
   return (
     <LandingPageContainer>
-      <TopNavigation />
-      <Frame1 />
-      <Frame2 />
-      <Frame3 f3Rule={contentValues.f3Rule} />
-      <Frame4 />
-      <Footer />
-      <FloatTopupWrapper>
-        <FloatTopupButton
-          src={btnNap}
-          alt="Nạp Xu ĐTCL - Ưu đãi đến 17%"
-          onClick={handleOpenNapXu}
-        />
-      </FloatTopupWrapper>
+      {isPortrait ? (
+        <PortraitOverlay>
+          <PortraitTitle>Vui lòng xoay ngang màn hình</PortraitTitle>
+          <PortraitDescription>
+            Trải nghiệm trang sự kiện tốt nhất ở chế độ màn hình ngang. Hãy
+            xoay thiết bị của bạn sang ngang để tiếp tục.
+          </PortraitDescription>
+        </PortraitOverlay>
+      ) : (
+        <>
+          <TopNavigation />
+          <Frame1 />
+          <Frame2 />
+          <Frame3 f3Rule={contentValues.f3Rule} />
+          <Frame4 />
+          <Footer />
+          <FloatTopupWrapper>
+            <FloatTopupButton
+              src={btnNap}
+              alt="Nạp Xu ĐTCL - Ưu đãi đến 17%"
+              onClick={handleOpenNapXu}
+            />
+          </FloatTopupWrapper>
+        </>
+      )}
     </LandingPageContainer>
   );
 }

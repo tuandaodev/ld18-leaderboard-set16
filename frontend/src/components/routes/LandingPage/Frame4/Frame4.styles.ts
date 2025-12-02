@@ -36,6 +36,11 @@ export const Frame4Wrapper = styled.section`
     padding: 40px 20px;
     flex-direction: column;
   }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    padding: 40px 5px;
+    height: 550px;
+  }
 `;
 
 export const Container = styled.div`
@@ -55,6 +60,11 @@ export const Container = styled.div`
 
   @media (max-width: 1366px) {
     max-width: 1200px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    max-width: 900px;
+    grid-template-columns: 1.1fr 1.9fr;
   }
 `;
 
@@ -81,9 +91,13 @@ export const Column1 = styled.div`
   }
 
   @media (max-width: 768px) {
-    order: 2;
     margin-right: 0;
     margin-left: 0;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    margin-right: 0;
+    margin-left: -10px;
   }
 `;
 
@@ -101,6 +115,11 @@ export const ArtImage = styled.img`
 
   @media (max-width: 1366px) {
     height: 550px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    height: 350px;
+    margin-left: -100px;
   }
 `;
 
@@ -127,9 +146,12 @@ export const Column2 = styled.div`
   }
 
   @media (max-width: 768px) {
-    order: 1;
     gap: 20px;
     max-width: 100%;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    gap: 10px;
   }
 `;
 
@@ -151,6 +173,10 @@ export const TitleImage = styled.img`
   @media (max-width: 1366px) {
     height: 78px;
   }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    height: 50px;
+  }
 `;
 
 export const DescImage = styled.img`
@@ -170,6 +196,10 @@ export const DescImage = styled.img`
 
   @media (max-width: 1366px) {
     height: 32px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    height: 20px;
   }
 `;
 
@@ -192,6 +222,11 @@ export const EventsGrid = styled.div`
   @media (max-width: 1366px) {
     gap: 20px;
     margin-top: 6px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    gap: 20px 10px;
+    margin-top: 4px;
   }
 `;
 
@@ -239,6 +274,11 @@ export const EventBox = styled.div`
     width: 100%;
     aspect-ratio: 16 / 10;
     padding: 4px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    width: 210px;
+    height: 120px;
   }
 `;
 
@@ -288,5 +328,12 @@ export const EventName = styled.div`
     padding: 6px 10px;
     bottom: -16px;
     min-width: 115px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    font-size: 12px;
+    padding: 6px 10px;
+    bottom: -14px;
+    min-width: 100px;
   }
 `;

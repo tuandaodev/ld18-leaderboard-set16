@@ -34,6 +34,10 @@ export const Frame3Wrapper = styled.section`
   @media (max-width: 1366px) {
     padding-top: 20px;
   }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    height: 600px;
+  }
 `;
 
 export const TabContainer = styled.div`
@@ -115,6 +119,10 @@ export const ContentWrapper = styled.div`
     max-width: 1050px;
     margin-left: 20px;
   }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    margin-left: 0px;
+  }
 `;
 
 export const TitleImage = styled.img`
@@ -136,6 +144,11 @@ export const TitleImage = styled.img`
   @media (max-width: 1366px) {
     height: 165px;
     margin: 0 0 40px 50px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    height: 100px;
+    margin: 0 0 30px 40px;
   }
 `;
 
@@ -172,6 +185,10 @@ export const TopThreeContainer = styled.div`
   flex: 0 0 auto;
   width: fit-content;
   align-items: center;
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    gap: 10px;
+  }
 `;
 
 export const PhanThuongTextImage = styled.img`
@@ -288,6 +305,10 @@ export const RulesButtonImage = styled.img`
 
   @media (max-width: 1366px) {
     max-height: 58px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    max-height: 38px;
   }
 
   &:hover {
@@ -443,6 +464,11 @@ export const TableTitleImage = styled.img`
   @media (max-width: 1366px) {
     height: 78px;
     top: -45px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    height: 60px;
+    top: -30px;
   }
 `;
 

@@ -27,6 +27,7 @@
     "react-highlight-words": "^0.20.0",
     "react-i18next": "^15.0.2",
     "react-quill": "^2.0.0",
+    "react-responsive": "^10.0.1",
     "react-router-dom": "^6.20.0",
     "styled-components": "^6.1.1",
     "swr": "^2.2.4",

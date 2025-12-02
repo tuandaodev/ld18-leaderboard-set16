@@ -29,6 +29,13 @@ export const Frame2Wrapper = styled.section`
     padding: 50px 60px;
     gap: 25px;
   }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    padding: 32px 24px;
+    gap: 16px;
+    height: 550px;
+  }
 `;
 
 export const FirstRow = styled.div`
@@ -52,6 +59,11 @@ export const TitleImage = styled.img`
   @media (max-width: 1366px) {
     height: 130px;
   }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    height: 60px;
+  }
 `;
 
 export const TitleDescImage = styled.img`
@@ -64,6 +76,11 @@ export const TitleDescImage = styled.img`
 
   @media (max-width: 1366px) {
     height: 28px;
+  }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    height: 20px;
   }
 `;
 
@@ -92,12 +109,18 @@ export const SecondRow = styled.div`
   }
 
   @media (max-width: 968px) {
-    flex-direction: column;
+    max-width: 700px;
     gap: 20px;
   }
 
   @media (max-width: 768px) {
     gap: 15px;
+  }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    max-width: 820px;
+    gap: 10px;
   }
 `;
 
@@ -114,11 +137,11 @@ export const Column1 = styled.div`
   }
 
   @media (max-width: 968px) {
-    width: 100%;
+    gap: 15px;
   }
 
   @media (max-width: 768px) {
-    gap: 15px;
+    gap: 10px;
   }
 `;
 
@@ -132,6 +155,11 @@ export const Col1Image = styled.img`
 
   @media (max-width: 1366px) {
     height: 420px;
+  }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    height: 210px;
   }
 `;
 
@@ -179,6 +207,16 @@ export const Col1Button = styled.button`
       height: 75px;
     }
   }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    margin-top: -36px;
+    margin-left: 22px;
+
+    img {
+      height: 33px;
+    }
+  }
 `;
 
 export const Column2 = styled.div`
@@ -194,11 +232,16 @@ export const Column2 = styled.div`
   }
 
   @media (max-width: 968px) {
-    width: 100%;
+    gap: 15px;
   }
 
   @media (max-width: 768px) {
-    gap: 15px;
+    gap: 10px;
+  }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    gap: 10px;
   }
 `;
 
@@ -207,6 +250,11 @@ export const Col2TextImage = styled.img`
   height: auto;
   object-fit: contain;
   display: block;
+  height: 168px;
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    height: 70px;
+  }
 `;
 
 export const VideoPlayerContainer = styled.div`
@@ -250,6 +298,12 @@ export const VideoPlayerContainer = styled.div`
     width: 440px;
     height: 255px;
   }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    width: 260px;
+    height: 150px;
+  }
 `;
 
 export const ThongTinButton = styled.button`
@@ -267,6 +321,13 @@ export const ThongTinButton = styled.button`
     width: auto;
     height: auto;
     max-width: 100%;
+  }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    img {
+      height: 30px;
+    }
   }
 
   &:hover {
@@ -295,6 +356,11 @@ export const Column3 = styled.div`
     width: 100%;
     margin-top: 0;
   }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    margin-top: -40px;
+  }
 `;
 
 export const Col3Image = styled.img`
@@ -307,5 +373,10 @@ export const Col3Image = styled.img`
 
   @media (max-width: 1366px) {
     height: 530px;
+  }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    height: 380px;
   }
 `;

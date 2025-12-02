@@ -8,6 +8,41 @@ export const LandingPageContainer = styled.div`
   scroll-behavior: smooth;
 `;
 
+export const PortraitOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at top, #1a2640, #050814 60%, #020308);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  color: #ffffff;
+  z-index: 2000;
+`;
+
+export const PortraitTitle = styled.div`
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+
+  @media (min-width: 768px) {
+    font-size: 28px;
+  }
+`;
+
+export const PortraitDescription = styled.div`
+  font-size: 16px;
+  line-height: 1.5;
+  max-width: 480px;
+  opacity: 0.9;
+
+  @media (min-width: 768px) {
+    font-size: 18px;
+  }
+`;
+
 export const FloatTopupWrapper = styled.div`
   position: fixed;
   right: 0px;
@@ -47,6 +82,13 @@ export const FloatTopupWrapper = styled.div`
     width: 300px;
     height: 187px;
   }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    bottom: 8px;
+    right: -24px;
+    width: 240px;
+    height: 150px;
+  }
 `;
 
 export const FloatTopupButton = styled.img`
@@ -81,5 +123,11 @@ export const FloatTopupButton = styled.img`
   &:hover {
     transform: scale(1.05);
     filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.8));
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    width: 200px;
+    height: 95px;
+    margin-left: -26px;
   }
 `;

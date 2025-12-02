@@ -68,6 +68,12 @@ export const NavContainer = styled.div`
     gap: 0.6rem;
     padding: 0.2rem 0.5rem;
   }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    padding: 0.2rem 1.2rem;
+    gap: 1.2rem;
+  }
 `;
 
 export const LogoSection = styled.div`
@@ -92,26 +98,32 @@ export const LogoSection = styled.div`
   @media (max-width: 1600px) {
     gap: 0.8rem;
     .logo-image {
-      height: 30px;
+      height: 30px !important;
     }
   }
 
   @media (max-width: 1366px) {
     gap: 0.7rem;
     .logo-image {
-      height: 28px;
+      height: 28px !important;
     }
   }
 
   @media (max-width: 968px) {
     .logo-image {
-      height: 40px;
+      height: 40px !important;
     }
   }
 
   @media (max-width: 768px) {
     .logo-image {
-      height: 35px;
+      height: 35px !important;
+    }
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    .logo-image {
+      height: 30px !important;
     }
   }
 `;
@@ -153,6 +165,11 @@ export const NavMenu = styled.div`
 
   @media (max-width: 768px) {
     display: none;
+  }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    gap: 1.2rem;
   }
 `;
 
@@ -244,6 +261,12 @@ export const NavItem = styled.a<{ $isActive?: boolean }>`
   @media (max-width: 968px) {
     letter-spacing: 0.5px;
   }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    font-size: 0.8rem;
+    padding: 0.15rem 0.7rem;
+  }
 `;
 
 export const NavActions = styled.div`
@@ -322,6 +345,14 @@ export const StyledActionButton = styled.button<{ $normalImage: string; $hoverIm
     padding: 0.5rem 1.5rem;
     min-width: 160px;
   }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    font-size: 14px;
+    padding: 0.45rem 1.3rem;
+    min-width: 150px;
+    letter-spacing: 1px;
+  }
 `;
 
 export const UserSection = styled.div`
@@ -337,6 +368,12 @@ export const UserSection = styled.div`
   @media (max-width: 1366px) {
     font-size: 1rem;
     gap: 12px;
+  }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    font-size: 0.9rem;
+    gap: 10px;
   }
 `;
 
@@ -355,6 +392,12 @@ export const LogoutIcon = styled.img`
   @media (max-width: 1366px) {
     width: 26px;
     height: 26px;
+  }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    width: 22px;
+    height: 22px;
   }
 `;
 
@@ -376,6 +419,12 @@ export const UsernameText = styled.span`
   @media (max-width: 1366px) {
     font-size: 1.1rem;
     margin-right: 10px;
+  }
+
+  /* Điện thoại màn hình ngang */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    font-size: 0.95rem;
+    margin-right: 8px;
   }
 `;
 

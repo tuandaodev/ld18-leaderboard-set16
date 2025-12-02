@@ -9,6 +9,10 @@ export const FooterWrapper = styled.footer`
   @media (max-width: 768px) {
     padding: 1.5rem 0 4.5rem 0;
   }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    padding: 1rem 0 1rem 0;
+  }
 `;
 
 export const FooterContainer = styled.div`
@@ -71,6 +75,10 @@ export const Logo = styled.img`
   @media (max-width: 768px) {
     max-height: 80px;
   }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    max-height: 30px;
+  }
 `;
 
 export const CopyrightContainer = styled.div`
@@ -104,8 +112,7 @@ export const LinksContainer = styled.div`
   gap: 1rem;
 
   @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.5rem;
   }
 `;
 
