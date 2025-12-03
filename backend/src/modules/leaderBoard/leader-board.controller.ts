@@ -143,7 +143,7 @@ export const getLeaderBoardList = asyncHandler(
     const users: RiotAccountDto[] = (userData?.users ?? [])
       .filter((user: RiotAccountDto) => (user.totalPoints ?? 0) > 0)
       .sort((a: RiotAccountDto, b: RiotAccountDto) => (b.totalPoints ?? 0) - (a.totalPoints ?? 0))
-      .slice(0, 16);
+      .slice(0, 100);
     res.status(200).json({
       success: true,
       data: users
