@@ -31,7 +31,10 @@ export const getLeaderBoardList = asyncHandler(
       userData = { users: [] };
     }
 
-    const users: RiotAccountDto[] = (userData?.users ?? []).filter((user: RiotAccountDto) => (user.totalPoints ?? 0) > 0);
+    const users: RiotAccountDto[] = (userData?.users ?? [])
+      .filter((user: RiotAccountDto) => (user.totalPoints ?? 0) > 0)
+      .sort((a: RiotAccountDto, b: RiotAccountDto) => (b.totalPoints ?? 0) - (a.totalPoints ?? 0))
+      .slice(0, 16);
     res.status(200).json({
       success: true,
       data: users
@@ -384,6 +387,12 @@ export const uploadCSV = [
 
 export const exportLeaderBoardCSV = asyncHandler(
   async (req: Request, res: Response) => {
+
+    const { apiKey } = req.body;
+    if (apiKey !== process.env.API_KEY) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
     const userFilePath = path.resolve(__dirname, "../../data/user-leaderboard.json");
 
     let userData: any[] = [];
