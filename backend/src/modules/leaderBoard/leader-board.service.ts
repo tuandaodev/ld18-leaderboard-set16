@@ -117,7 +117,7 @@ export const getCSVForUsers = async (filePath: string) => {
 };
 
 export const extractGameNameAndTagLine = (input: string): AccountDto => {
-  const [gameName, tagLine] = input.split('-');
+  const [gameName, tagLine] = input.split(/[-#]/);
   return new AccountDto(gameName, tagLine);
 }
 
@@ -126,7 +126,7 @@ export const convertToCsvTeamDto = (records: any[]): CsvTeamDto[] => {
     const teamNumber = record.TeamNumber;
     const teamName = record.TeamName;
     const users = [record.User1, record.User2]
-      .filter(user => user?.includes('-')) // Ensure it matches the gameName-TagLine format
+      .filter(user => user?.includes('-') || user?.includes('#')) // Ensure it matches the gameName-TagLine format
       .map(user => extractGameNameAndTagLine(user));
 
     return new CsvTeamDto(teamNumber, teamName, users);
