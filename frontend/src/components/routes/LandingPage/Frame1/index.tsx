@@ -40,9 +40,45 @@ const videoConfigs: VideoConfig[] = [
 
 export default function Frame1() {
   const [activeVideo, setActiveVideo] = useState<VideoType>('tong-quan');
+  const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const hasUserInteracted = useRef(false);
 
   const currentVideo = videoConfigs.find(v => v.id === activeVideo) || videoConfigs[0];
+
+  // Auto-play video on page load (muted)
+  useEffect(() => {
+    if (videoRef.current && currentVideo.url) {
+      videoRef.current.muted = true;
+      videoRef.current.load();
+      videoRef.current.play().catch(() => {
+        // Autoplay was prevented, user will need to click
+      });
+    }
+  }, []);
+
+  // Unmute video on user interaction
+  useEffect(() => {
+    const handleUserInteraction = () => {
+      if (!hasUserInteracted.current && videoRef.current) {
+        hasUserInteracted.current = true;
+        setIsMuted(false);
+        videoRef.current.muted = false;
+      }
+    };
+
+    // Listen for various user interactions
+    const events = ['click', 'touchstart', 'keydown', 'scroll'];
+    events.forEach(event => {
+      window.addEventListener(event, handleUserInteraction, { once: true });
+    });
+
+    return () => {
+      events.forEach(event => {
+        window.removeEventListener(event, handleUserInteraction);
+      });
+    };
+  }, []);
 
   const handleVideoChange = (videoId: VideoType) => {
     const video = videoConfigs.find(v => v.id === videoId);
@@ -58,6 +94,7 @@ export default function Frame1() {
     setTimeout(() => {
       if (videoRef.current) {
         videoRef.current.load();
+        videoRef.current.muted = isMuted;
         videoRef.current.play().catch(() => {
           // Autoplay was prevented, user will need to click
         });
@@ -65,16 +102,27 @@ export default function Frame1() {
     }, 100);
   };
 
-  // Tự động pause video khi scroll ra khỏi vùng nhìn thấy
+  // Auto-play when scrolling into view, pause when scrolling out
   useEffect(() => {
-    if (!videoRef.current || typeof IntersectionObserver === 'undefined') return;
+    if (!videoRef.current || typeof IntersectionObserver === 'undefined' || !currentVideo.url) return;
 
     const target = videoRef.current;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting && videoRef.current && !videoRef.current.paused) {
-          videoRef.current.pause();
+        if (videoRef.current) {
+          if (entry.isIntersecting) {
+            // Auto-play when scrolling into view
+            videoRef.current.muted = isMuted;
+            videoRef.current.play().catch(() => {
+              // Autoplay was prevented, user will need to click
+            });
+          } else {
+            // Pause when scrolling out of view
+            if (!videoRef.current.paused) {
+              videoRef.current.pause();
+            }
+          }
         }
       },
       {
@@ -88,10 +136,17 @@ export default function Frame1() {
       observer.unobserve(target);
       observer.disconnect();
     };
-  }, [currentVideo.url]);
+  }, [currentVideo.url, isMuted]);
 
   const handleVideoClick = () => {
     if (videoRef.current) {
+      // Unmute on click if still muted
+      if (isMuted) {
+        setIsMuted(false);
+        videoRef.current.muted = false;
+        hasUserInteracted.current = true;
+      }
+      
       if (videoRef.current.paused) {
         videoRef.current.play();
       } else {
@@ -112,6 +167,7 @@ export default function Frame1() {
                 playsInline
                 preload="none"
                 poster={currentVideo.thumbnail}
+                muted={isMuted}
                 onClick={handleVideoClick}
                 style={{ cursor: 'pointer' }}
               >
