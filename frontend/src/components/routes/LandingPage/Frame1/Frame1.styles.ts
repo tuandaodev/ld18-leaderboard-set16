@@ -183,7 +183,7 @@ export const VideoButtonContainer = styled.div`
   gap: 1rem;
   width: 100%;
   justify-content: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   height: 75px;
 

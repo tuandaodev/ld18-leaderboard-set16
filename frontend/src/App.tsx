@@ -225,10 +225,11 @@ function App() {
                 path="/cp/campaigns"
                 element={<AuthElement mainRoute={Campaign} />}
               />
-              {/* <Route
+              <Route
                 path="/cp/events"
                 element={<AuthElement mainRoute={Events} />}
               />
+              {/* 
               <Route
                 path="/cp/events/add"
                 element={<AuthElement mainRoute={EventForm} />}

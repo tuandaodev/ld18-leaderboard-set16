@@ -101,7 +101,7 @@ export default function Frame2() {
             </video>
           </VideoPlayerContainer>
           <ThongTinButton onClick={() => {
-            window.open('https://dtcl.vnggames.com/vi-vn/news/game-updates/lore-and-legends-overview/', '_blank');
+            window.open('https://www.youtube.com/watch?v=VQlYsYejQQM', '_blank');
           }}>
             <img src={btnThongTinImg} alt="Thông tin cơ chế Mở Khoá" />
           </ThongTinButton>
