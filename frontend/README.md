@@ -2,10 +2,10 @@
 
 ```
 # Endpoint backend dev
-VITE_DEV_DOMAIN=http://localhost:8096
+VITE_DEV_DOMAIN=http://localhost:8098
 
 # Endpoint backend production
-VITE_PRO_DOMAIN=https://khdh.vnggames.com/api
+VITE_PRO_DOMAIN=https://set16.vnggames.com/api
 
 # Random string for encryption
 VITE_ENCRYPTION_KEY="ljsdkf9328z0f8908f0fj2j2jf2jjzzzjkzjksjdlvm0svfasdvsa87r29fh2f92fijdksojvj2jf02jv2oi"
@@ -29,7 +29,7 @@ Hướng dẫn deploy:
 ```
 # API route
 location /api/ {
-    proxy_pass http://127.0.0.1:8096/;
+    proxy_pass http://127.0.0.1:8098/;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

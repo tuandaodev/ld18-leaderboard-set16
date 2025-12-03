@@ -1,13 +1,13 @@
 1. Chuẩn bị file `.env`
 2. Cập nhật thông tin
 - Section: # SQL Database
-- Section: # SMTP Mail Cfg
 - FRONTEND_URL
 - BACKEND_URL
+- RIOT_TOKEN - Token developer.riotgames.com để tính bảng xếp hạng
 
 ```
 # Server
-PORT=8096
+PORT=8098
 TZ="Asia/Ho_Chi_Minh"
 NODE_ENV="production"
 
@@ -23,18 +23,17 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=4(Hjy*s^r@rAFN^9
-DB_NAME=kyhiepdonghanh
-DB_TEST_NAME=kyhiepdonghanh_test
+DB_NAME=tft_set16
+DB_TEST_NAME=tft_set16_test
 
-# SMTP Mail Cfg
-MAIL_ENDPOINT=smtp.gmail.com
-MAIL_PORT=465
-MAIL_SENDER=sample@gmail.com
-MAIL_USERNAME=sample@gmail.com
-MAIL_PASSWORD=passwordsample
+FRONTEND_URL="https://set16.freelancerhcm.com"
+BACKEND_URL="https://set16.freelancerhcm.com/api"
 
-FRONTEND_URL="https://khdh.freelancerhcm.com"
-BACKEND_URL="https://khdh.freelancerhcm.com/api"
+# API Key
+API_KEY=XJcPVnEIbStjVlhYyodq2atgmhjey1tr9BXOKvAsmYGuzNmy0JSjfH639xnJinFyJFIgSRA3uFPJ0d80PCTf7UqmGCEAzZxw8AiMWBwOwewv9jNFon9Puwuu9uOROaVW
+
+# Riot API
+RIOT_TOKEN=RGAPI-10e6d4d3-5a7c-4f4d-a415-39562f2aa39a
 ```
 3. Chạy migration database
 - yarn
@@ -46,13 +45,13 @@ BACKEND_URL="https://khdh.freelancerhcm.com/api"
 - pm2 startup
 
 5. Chạy backend bằng pm2
-- pm2 delete khdhapi (Không cần chạy nếu như lần đầu cài đặt app)
+- pm2 delete tft-set16-api (Không cần chạy nếu như lần đầu cài đặt app)
 - yarn
 - yarn build
-- pm2 start "yarn serve" --name khdhapi
+- pm2 start "yarn serve" --name tft-set16-api
 - pm2 save
 
 6. Cài đặt pm2-watchdog để health check nếu chưa cài
 - pm2 install ma-zal/pm2-watchdog   (Bỏ qua nếu đã cài)
 - pm2 set pm2-watchdog:checking_interval 10     (Bỏ qua nếu đã cài)
-- pm2 set pm2-watchdog:url-hlkapi http://localhost:8096/health
+- pm2 set pm2-watchdog:url-tft-set16-api http://localhost:8098/health

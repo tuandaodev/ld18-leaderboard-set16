@@ -8,6 +8,6 @@ leaderBoardRouter.get("/list", getLeaderBoardList);
 leaderBoardRouter.get("/init-user", initUsersLeaderBoard as any);
 leaderBoardRouter.post("/export-leaderboard", exportLeaderBoardCSV as any);
 
-leaderBoardRouter.get("/test", testController);
+// leaderBoardRouter.get("/test", testController);
 
 leaderBoardRouter.post('/upload-data', uploadCSV as any);
