@@ -6,17 +6,12 @@ import { adminRoutes } from "./modules/admin/admin.routes";
 import { logRouter } from "./modules/adminLog/log.routes";
 import { authRouter } from "./modules/auth/auth.routes";
 import { campaignRoutes } from "./modules/campaign/campaign.routes";
-import { communityEventRouter } from "./modules/community-event/community-event.routes";
 import { contentRoutes } from "./modules/content/content.routes";
 import { eventRouter } from "./modules/event/event.routes";
 import { cleanUpUploadFolder } from "./modules/images/images.controller";
 import { imageRouter } from "./modules/images/images.routes";
-import { leaderRouter } from "./modules/leader/leader.routes";
 import { processInitUsersLeaderBoard } from "./modules/leaderBoard/leader-board.controller";
 import { leaderBoardRouter } from "./modules/leaderBoard/leader-board.routes";
-import { locationRoutes } from "./modules/location/location.routes";
-import { notificationRouter } from "./modules/notification/notification.routes";
-import { partnerGamingCenterRouter } from "./modules/partnerGamingCenter/partnerGamingCenter.routes";
 
 const cors = require("cors");
 const cron = require('node-cron');

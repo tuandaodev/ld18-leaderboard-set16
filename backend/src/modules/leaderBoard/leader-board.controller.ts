@@ -1,33 +1,142 @@
 import { Request, Response } from "express";
 import fs from 'fs';
+import crypto from 'crypto';
 import multer from "multer";
 import path from "path";
+import rateLimit from "express-rate-limit";
 import { Like } from "typeorm";
 import { ContentConfig } from "../../entity/ContentConfig";
 import { asyncHandler } from "../../middleware/async";
 import { AccountDto, CsvTeamDto, LeaderBoardDto, MatchInfo, RiotAccountDto } from "./leader-board.dto";
 import { convertToAccountDto, convertToCsvTeamDto, getCSVForTeams, getCSVForUsers, getMatchDetail, getMatches, getRiotAccountById } from "./leader-board.service";
 
+const { xss } = require('express-xss-sanitizer');
+
+// Secure multer configuration for CSV uploads
+const csvUploadOptions: multer.Options = {
+  dest: 'uploads/',
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10 MB max
+    files: 1,
+  },
+  fileFilter: (req, file, cb) => {
+    // Validate MIME type and extension
+    const allowedMimes = ['text/csv', 'application/csv', 'text/plain', 'application/vnd.ms-excel'];
+    const allowedExtensions = ['.csv'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    
+    if ((allowedMimes.includes(file.mimetype) || file.mimetype === '') && allowedExtensions.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only CSV files are allowed'));
+    }
+  }
+};
+
 // Configure multer for file upload
-const upload = multer({ dest: 'uploads/' }).fields([
+const upload = multer(csvUploadOptions).fields([
   { name: 'usersFile', maxCount: 1 },
   // { name: 'teamsFile', maxCount: 1 },
 ]);
 
+// Rate limiters for sensitive endpoints
+const initLeaderBoardRateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 5, // 5 requests per minute
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many requests, please try again later'
+});
+
+const uploadCSVRateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // 10 requests per minute
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many upload requests, please try again later'
+});
+
+const exportCSVRateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20, // 20 requests per minute
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many export requests, please try again later'
+});
+
+// Helper function to validate API key from headers
+const validateApiKey = (req: Request): boolean => {
+  const apiKey = req.headers['x-api-key'] as string || 
+                 (req.query.apiKey as string) || 
+                 (req.body?.apiKey as string) || 
+                 "0";
+  return apiKey === process.env.API_KEY;
+};
+
+// Helper function to sanitize and validate date string
+const sanitizeDateString = (dateString: string | undefined): string | null => {
+  if (!dateString) return null;
+  
+  // Strict validation: only YYYY-MM-DD format
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(dateString)) {
+    return null;
+  }
+  
+  // Additional validation: ensure it's a valid date
+  const date = new Date(dateString);
+  if (isNaN(date.getTime()) || !date.toISOString().startsWith(dateString)) {
+    return null;
+  }
+  
+  return dateString;
+};
+
+// Helper function to ensure path stays within data directory
+const validateDataFilePath = (filePath: string, baseDir: string): string | null => {
+  const resolvedPath = path.resolve(filePath);
+  const resolvedBase = path.resolve(baseDir);
+  
+  if (!resolvedPath.startsWith(resolvedBase)) {
+    return null;
+  }
+  
+  return resolvedPath;
+};
+
 export const getLeaderBoardList = asyncHandler(
   async (req: Request, res: Response) => {
-    // get string yyyy-mm-dd from request
-    const dateString = req.query.date as string;
-    let userFilePath = path.resolve(__dirname, "../../data/user-leaderboard.json");
+    // Get and sanitize date string from request
+    const dateString = sanitizeDateString(req.query.date as string);
+    const dataDir = path.resolve(__dirname, "../../data");
+    
+    let userFilePath = path.resolve(dataDir, "user-leaderboard.json");
+    
     if (dateString) {
-      userFilePath = path.resolve(__dirname, `../../data/user-leaderboard-${dateString}.json`);
+      // Construct path safely
+      const fileName = `user-leaderboard-${dateString}.json`;
+      const potentialPath = path.join(dataDir, fileName);
+      
+      // Validate path stays within data directory (prevent path traversal)
+      const validatedPath = validateDataFilePath(potentialPath, dataDir);
+      if (validatedPath) {
+        userFilePath = validatedPath;
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid date parameter'
+        });
+      }
     }
 
     let userData;
     try {
-      const jsonString = fs.readFileSync(userFilePath, 'utf-8');
+      // Use async file operations
+      const jsonString = await fs.promises.readFile(userFilePath, 'utf-8');
       userData = JSON.parse(jsonString);
-    } catch (error) {
+    } catch (error: any) {
+      // Don't expose internal error details
+      console.error('Error reading leaderboard file:', error.message);
       userData = { users: [] };
     }
 
@@ -57,7 +166,14 @@ export const processInitUsersLeaderBoard = async () => {
   })
 
   const configFilePath = path.resolve(__dirname, '../../data/config.json');
-  const configData = JSON.parse(fs.readFileSync(configFilePath, 'utf-8'));
+  let configData;
+  try {
+    const configString = await fs.promises.readFile(configFilePath, 'utf-8');
+    configData = JSON.parse(configString);
+  } catch (error: any) {
+    console.error('Error reading config file:', error.message);
+    throw new Error('Unable to read configuration file');
+  }
 
   // Resolve the relative path to an absolute path
   const filePath = path.resolve(__dirname, '../../', configData.userFilePath); // Đường dẫn tới file CSV
@@ -75,10 +191,11 @@ export const processInitUsersLeaderBoard = async () => {
   let jsonData: RiotAccountDto[] = [];
   const cachedPath = path.resolve(__dirname, "../../data/user-riot-accounts.json");
   try {
-    const jsonString = fs.readFileSync(cachedPath, 'utf-8');
+    const jsonString = await fs.promises.readFile(cachedPath, 'utf-8');
     jsonData = JSON.parse(jsonString);
     console.log('loaded cached accounts', jsonData.length);
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Error reading cached accounts:', error.message);
     jsonData = [];
   }
 
@@ -93,7 +210,12 @@ export const processInitUsersLeaderBoard = async () => {
       dataAccounts.push(accRes);
     }
   };
-  fs.writeFileSync(cachedPath, JSON.stringify(dataAccounts), 'utf8');
+  try {
+    await fs.promises.writeFile(cachedPath, JSON.stringify(dataAccounts), 'utf8');
+  } catch (error: any) {
+    console.error('Error writing cached accounts:', error.message);
+    throw new Error('Unable to save cached accounts');
+  }
 
   const count = 100;
   let flatMatchIds: string[] = [];    
@@ -124,10 +246,12 @@ export const processInitUsersLeaderBoard = async () => {
   let jsonMatchData: MatchInfo[] = [];
   const cachedMatchPath = path.resolve(__dirname, "../../data/riot-matches.json");
   try {
-    const jsonString = fs.readFileSync(cachedMatchPath, 'utf-8');
+    const jsonString = await fs.promises.readFile(cachedMatchPath, 'utf-8');
     jsonMatchData = JSON.parse(jsonString);
     console.log('loaded cached matches', jsonMatchData.length);
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Error reading cached matches:', error.message);
+    jsonMatchData = [];
   }
 
   let matches: MatchInfo[] = [];    
@@ -178,7 +302,12 @@ export const processInitUsersLeaderBoard = async () => {
     }
   }
   console.log(`completed ${idx}/${flatMatchIds.length} matches`);
-  fs.writeFileSync(cachedMatchPath, JSON.stringify(matches), 'utf8');
+  try {
+    await fs.promises.writeFile(cachedMatchPath, JSON.stringify(matches), 'utf8');
+  } catch (error: any) {
+    console.error('Error writing cached matches:', error.message);
+    throw new Error('Unable to save cached matches');
+  }
 
   for (const acc of dataAccounts.filter(e => e != null)) {
     if (acc?.puuid == null) continue;
@@ -199,21 +328,25 @@ export const processInitUsersLeaderBoard = async () => {
     createdDate: new Date().toISOString()
   };
   
-  const outputPath = path.resolve(__dirname, "../../data/user-leaderboard.json")
-  fs.writeFile(outputPath, JSON.stringify(result), 'utf8', function(err: any) {
-    if (err) throw err;
+  const outputPath = path.resolve(__dirname, "../../data/user-leaderboard.json");
+  try {
+    await fs.promises.writeFile(outputPath, JSON.stringify(result), 'utf8');
     console.log('write user json complete');
-    }
-  );
+  } catch (error: any) {
+    console.error('Error writing user leaderboard:', error.message);
+    throw new Error('Unable to save user leaderboard');
+  }
 
   // backup user-leaderboard.json by date string yyyy-mm-dd
   const dateString = new Date().toISOString().split('T')[0];
   const outputBackupPath = path.resolve(__dirname, `../../data/user-leaderboard-${dateString}.json`);
-  fs.writeFile(outputBackupPath, JSON.stringify(result), 'utf8', function(err: any) {
-    if (err) throw err;
+  try {
+    await fs.promises.writeFile(outputBackupPath, JSON.stringify(result), 'utf8');
     console.log('write user json backup complete');
-    }
-  );
+  } catch (error: any) {
+    console.error('Error writing user leaderboard backup:', error.message);
+    // Don't throw here, backup failure is not critical
+  }
 
   return {
     users: result.users,
@@ -221,26 +354,36 @@ export const processInitUsersLeaderBoard = async () => {
   }
 }
 
-export const initUsersLeaderBoard = asyncHandler(
-  async (req: Request, res: Response) => {
+export const initUsersLeaderBoard = [
+  initLeaderBoardRateLimiter,
+  asyncHandler(
+    async (req: Request, res: Response) => {
+      if (!validateApiKey(req)) {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
+      }
 
-    const apiKey = (req.query.apiKey as string) || "0";
-    if (apiKey !== process.env.API_KEY) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
+      try {
+        const result = await processInitUsersLeaderBoard();
+        res.status(200).json({
+          success: true,
+          ...result,
+        });
+      } catch (error: any) {
+        console.error('Error initializing leaderboard:', error.message);
+        res.status(500).json({
+          success: false,
+          message: 'Unable to initialize leaderboard'
+        });
+      }
     }
-
-    const result = await processInitUsersLeaderBoard();
-
-    res.status(200).json({
-      success: true,
-      ...result,
-    });
-  }
-);
+  )
+];
 
 export const testCron = async () => {
   const configFilePath = path.resolve(__dirname, '../../data/config.json');
-    const configData = JSON.parse(fs.readFileSync(configFilePath, 'utf-8'));
+  try {
+    const configString = await fs.promises.readFile(configFilePath, 'utf-8');
+    const configData = JSON.parse(configString);
 
     // Resolve the relative path to an absolute path
     const filePath = path.resolve(__dirname, '../../', configData.teamFilePath); // Đường dẫn tới file CSV
@@ -250,50 +393,56 @@ export const testCron = async () => {
     const accounts = teams.flatMap(x => x.users);
 
     return accounts;
+  } catch (error: any) {
+    console.error('Error in testCron:', error.message);
+    throw new Error('Unable to process test cron');
+  }
 }
 
 export const testController = asyncHandler(
   async (req: Request, res: Response) => {
+    // Only allow in development/test environments
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(403).json({ success: false, message: 'Test endpoint not available in production' });
+    }
 
-    // const startDate: any = process.env.RIOT_START_DATE;
-    // const unixStartTimestamp = new Date(startDate).getTime() / 1000;
+    try {
+      const configFilePath = path.resolve(__dirname, '../../data/config.json');
+      const configString = await fs.promises.readFile(configFilePath, 'utf-8');
+      const configData = JSON.parse(configString);
 
-    // const endDate: any = process.env.RIOT_END_DATE;
-    // const unixEndTimestamp = Date.UTC(
-    //   new Date(endDate).getUTCFullYear(),
-    //   new Date(endDate).getUTCMonth(),
-    //   new Date(endDate).getUTCDate(),
-    //   23, 59, 59
-    // ) / 1000;
+      // Resolve the relative path to an absolute path
+      const filePath = path.resolve(__dirname, '../../', configData.teamFilePath); // Đường dẫn tới file CSV
+      const records = await getCSVForTeams(filePath);
 
-    const configFilePath = path.resolve(__dirname, '../../data/config.json');
-    const configData = JSON.parse(fs.readFileSync(configFilePath, 'utf-8'));
+      const teams: CsvTeamDto[] = convertToCsvTeamDto(records);
+      const accounts = teams.flatMap(x => x.users);
 
-    // Resolve the relative path to an absolute path
-    const filePath = path.resolve(__dirname, '../../', configData.teamFilePath); // Đường dẫn tới file CSV
-    const records = await getCSVForTeams(filePath);
-
-    const teams: CsvTeamDto[] = convertToCsvTeamDto(records);
-    const accounts = teams.flatMap(x => x.users);
-
-    res.status(200).json({
-      success: true,
-      accounts: accounts
-      // start: unixStartTimestamp,
-      // end: unixEndTimestamp,
-    });
+      res.status(200).json({
+        success: true,
+        accounts: accounts
+      });
+    } catch (error: any) {
+      console.error('Error in testController:', error.message);
+      res.status(500).json({
+        success: false,
+        message: 'Unable to process test request'
+      });
+    }
   }
 );
 
 // New POST endpoint to upload a CSV file with startDate and endDate
 export const uploadCSV = [
+  uploadCSVRateLimiter,
+  xss(),
   upload,
   asyncHandler(async (req: Request, res: Response) => {
-    const { apiKey, startDate, endDate } = req.body;
-    if (apiKey !== process.env.API_KEY) {
+    if (!validateApiKey(req)) {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
+    const { startDate, endDate } = req.body;
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     const usersFile = files['usersFile'] ? files['usersFile'][0] : null;
 
@@ -313,116 +462,175 @@ export const uploadCSV = [
       });
     }
 
+    // Validate date range
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (start > end) {
+      return res.status(400).json({
+        success: false,
+        message: 'startDate must be before endDate',
+      });
+    }
+
     // Define the destination path in the data folder
     const dataFolderPath = path.resolve(__dirname, "../../data/uploads");
     const clonedFilePaths: string[] = [];
 
-    // Ensure the data folder exists
-    if (!fs.existsSync(dataFolderPath)) {
-      fs.mkdirSync(dataFolderPath);
-    }
+    try {
+      // Ensure the data folder exists
+      await fs.promises.mkdir(dataFolderPath, { recursive: true });
 
-    // Copy the uploaded files to the data folder
-    const filesToClone = [usersFile];
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-'); // Generate a timestamp string
+      // Copy the uploaded files to the data folder with secure random names
+      const filesToClone = [usersFile];
+      
+      for (const file of filesToClone) {
+        // Use cryptographically secure random name instead of predictable timestamp
+        const randomId = crypto.randomBytes(16).toString('hex');
+        const fileType = 'user';
+        const ext = path.extname(file.originalname);
+        const formattedFilename = `${fileType}_${randomId}${ext}`;
+        const clonedFilePath = path.join(dataFolderPath, formattedFilename);
 
-    for (const file of filesToClone) {
-      // Determine the file type and format the filename accordingly
-      const fileType = 'user';
-      const formattedFilename = `${fileType}_${timestamp}${path.extname(file.originalname)}`;
-      const clonedFilePath = path.join(dataFolderPath, formattedFilename);
+        // Validate the cloned path stays within data folder
+        const validatedPath = validateDataFilePath(clonedFilePath, dataFolderPath);
+        if (!validatedPath) {
+          throw new Error('Invalid file path');
+        }
 
-      // Copy the file to the data folder with the new formatted filename
-      fs.copyFileSync(file.path, clonedFilePath);
-      clonedFilePaths.push(clonedFilePath);
+        // Copy the file to the data folder with the new formatted filename
+        await fs.promises.copyFile(file.path, validatedPath);
+        clonedFilePaths.push(validatedPath);
 
-      // Clean up the original uploaded file
-      fs.unlink(file.path, (err) => {
-        if (err) {
-          console.error('Error deleting the uploaded file:', err);
+        // Clean up the original uploaded file
+        try {
+          await fs.promises.unlink(file.path);
+        } catch (err: any) {
+          console.error('Error deleting the uploaded file:', err.message);
+        }
+      }
+
+      // Process the cloned CSV files with validation
+      const userAccounts: AccountDto[] = [];
+      let userFilePath: string | null = null;
+
+      for (const clonedFilePath of clonedFilePaths) {
+        if (clonedFilePath.includes('user')) {
+          const records = await getCSVForUsers(clonedFilePath);
+          
+          // Validate CSV content
+          if (records.length > 10000) {
+            return res.status(400).json({
+              success: false,
+              message: 'CSV file too large. Maximum 10000 rows allowed.',
+            });
+          }
+          
+          // Validate each record structure
+          for (const record of records) {
+            if (!Array.isArray(record) || !record[0] || typeof record[0] !== 'string') {
+              return res.status(400).json({
+                success: false,
+                message: 'Invalid CSV format. Each row must contain a valid game name.',
+              });
+            }
+          }
+          
+          userAccounts.push(...convertToAccountDto(records));
+          userFilePath = clonedFilePath;
+        }
+      }
+
+      // Convert absolute paths to relative paths
+      const basePath = path.resolve(__dirname, '../../');
+      const relativeUserFilePath = userFilePath ? path.relative(basePath, userFilePath) : null;
+
+      // Create a JSON object with the required data
+      const configData = {
+        startDate,
+        endDate,
+        userFilePath: relativeUserFilePath,
+      };
+
+      // Define the path for the config file
+      const configFilePath = path.resolve(__dirname, '../../data/config.json');
+
+      // Write the JSON object to the config file
+      await fs.promises.writeFile(configFilePath, JSON.stringify(configData, null, 2), 'utf-8');
+
+      res.status(200).json({
+        success: true,
+        message: 'File uploaded',
+        data: {
+          config: configData,
+          totalUsers: userAccounts.length,
+          demo3users: userAccounts.slice(0, 5),
         }
       });
-    }
-
-    // Process the cloned CSV files
-    const userAccounts: AccountDto[] = [];
-    let userFilePath: string | null = null;
-
-    for (const clonedFilePath of clonedFilePaths) {
-      if (clonedFilePath.includes('user')) {
-        const records = await getCSVForUsers(clonedFilePath);
-        userAccounts.push(...convertToAccountDto(records));
-        userFilePath = clonedFilePath;
+    } catch (error: any) {
+      // Clean up uploaded files on error
+      for (const filePath of clonedFilePaths) {
+        try {
+          await fs.promises.unlink(filePath);
+        } catch (err: any) {
+          console.error('Error cleaning up file:', err.message);
+        }
       }
+      
+      console.error('Error uploading CSV:', error.message);
+      res.status(500).json({
+        success: false,
+        message: 'Unable to process file upload'
+      });
     }
-
-    // Convert absolute paths to relative paths
-    const basePath = path.resolve(__dirname, '../../');
-    const relativeUserFilePath = userFilePath ? path.relative(basePath, userFilePath) : null;
-
-    // Create a JSON object with the required data
-    const configData = {
-      startDate,
-      endDate,
-      userFilePath: relativeUserFilePath,
-    };
-
-    // Define the path for the config file
-    const configFilePath = path.resolve(__dirname, '../../data/config.json');
-
-    // Write the JSON object to the config file
-    fs.writeFileSync(configFilePath, JSON.stringify(configData, null, 2), 'utf-8');
-
-    res.status(200).json({
-      success: true,
-      message: 'File uploaded',
-      data: {
-        config: configData,
-        totalUsers: userAccounts.length,
-        demo3users: userAccounts.slice(0, 5),
-      }
-    });
   })
 ];
 
-export const exportLeaderBoardCSV = asyncHandler(
-  async (req: Request, res: Response) => {
-
-    const { apiKey } = req.body;
-    if (apiKey !== process.env.API_KEY) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' });
-    }
-
-    const userFilePath = path.resolve(__dirname, "../../data/user-leaderboard.json");
-
-    let userData: any[] = [];
-    try {
-      userData = JSON.parse(fs.readFileSync(userFilePath, 'utf-8'));
-    } catch {}
-
-    // Helper to convert array of objects to CSV
-    function toCSV(data: any[], sectionName: string): string {
-      if (!Array.isArray(data) || data.length === 0) return '';
-      const keys = Object.keys(data[0]);
-      let csv = `\n# ${sectionName}\n`;
-      csv += keys.join(',') + '\n';
-      for (const row of data) {
-        csv += keys.map(k => JSON.stringify(row[k] ?? '')).join(',') + '\n';
+export const exportLeaderBoardCSV = [
+  exportCSVRateLimiter,
+  asyncHandler(
+    async (req: Request, res: Response) => {
+      if (!validateApiKey(req)) {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
       }
-      return csv;
+
+      const userFilePath = path.resolve(__dirname, "../../data/user-leaderboard.json");
+
+      let userData: any = null;
+      try {
+        const jsonString = await fs.promises.readFile(userFilePath, 'utf-8');
+        userData = JSON.parse(jsonString);
+      } catch (error: any) {
+        console.error('Error reading leaderboard file:', error.message);
+        return res.status(500).json({
+          success: false,
+          message: 'Unable to read leaderboard data'
+        });
+      }
+
+      // Helper to convert array of objects to CSV
+      function toCSV(data: any[], sectionName: string): string {
+        if (!Array.isArray(data) || data.length === 0) return '';
+        const keys = Object.keys(data[0]);
+        let csv = `\n# ${sectionName}\n`;
+        csv += keys.join(',') + '\n';
+        for (const row of data) {
+          csv += keys.map(k => JSON.stringify(row[k] ?? '')).join(',') + '\n';
+        }
+        return csv;
+      }
+
+      // If the JSON has a 'users' or 'teams' property, use that
+      let userRows = Array.isArray(userData) ? userData : (userData as any).users || [];
+
+      let csv = '';
+      csv += toCSV(userRows, 'Users');
+
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename="leaderboard.csv"');
+      res.send(csv);
     }
-
-    // If the JSON has a 'users' or 'teams' property, use that
-    let userRows = Array.isArray(userData) ? userData : (userData as any).users || [];
-
-    let csv = '';
-    csv += toCSV(userRows, 'Users');
-
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename="leaderboard.csv"');
-    res.send(csv);
-  }
-);
+  )
+];
 
 function isValidDate(dateString: string): boolean {
   // Regular expression to match YYYY-MM-DD format

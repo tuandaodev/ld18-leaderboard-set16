@@ -4,8 +4,9 @@ import { exportLeaderBoardCSV, getLeaderBoardList, initUsersLeaderBoard, testCon
 export const leaderBoardRouter = Router();
 
 leaderBoardRouter.get("/list", getLeaderBoardList);
-leaderBoardRouter.get("/init-user", initUsersLeaderBoard);
-leaderBoardRouter.post("/export-leaderboard", exportLeaderBoardCSV);
+// initUsersLeaderBoard and exportLeaderBoardCSV are now arrays of middleware
+leaderBoardRouter.get("/init-user", initUsersLeaderBoard as any);
+leaderBoardRouter.post("/export-leaderboard", exportLeaderBoardCSV as any);
 
 leaderBoardRouter.get("/test", testController);
 
