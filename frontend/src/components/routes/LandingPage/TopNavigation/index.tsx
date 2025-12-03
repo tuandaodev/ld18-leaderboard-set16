@@ -207,7 +207,7 @@ export default function TopNavigation() {
               $normalImage={btnNormal} 
               $hoverImage={btnHover}
               onClick={() => {
-                window.open('https://dtcl.vnggames.com/vi-vn/', '_blank');
+                window.open('https://tftmobile-vng.go.link/set16', '_blank');
               }}
             >
               VÀO CHƠI NGAY!

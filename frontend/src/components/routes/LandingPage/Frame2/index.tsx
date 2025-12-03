@@ -78,7 +78,7 @@ export default function Frame2() {
         <Column1>
           <Col1Image src={col1Img} alt="Column 1" />
           <Col1Button onClick={() => {
-            window.open('https://dtcl.vnggames.com/vi-vn/', '_blank');
+            window.open('https://tftmobile-vng.go.link/set16', '_blank');
           }}>
             <img src={btnCtaImg} alt="Vào Nhận Ngay" />
           </Col1Button>

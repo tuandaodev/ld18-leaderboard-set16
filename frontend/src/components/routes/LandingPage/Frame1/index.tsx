@@ -203,7 +203,7 @@ export default function Frame1() {
           </VideoButtonContainer>
           
           <CTAButton onClick={() => {
-            window.open('https://dtcl.vnggames.com/vi-vn/', '_blank');
+            window.open('https://tftmobile-vng.go.link/set16', '_blank');
           }}>
             <img src={ctaImg} alt="Vào Game Ngay" />
           </CTAButton>
