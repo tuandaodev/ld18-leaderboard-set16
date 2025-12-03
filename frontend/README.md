@@ -24,7 +24,7 @@ Hướng dẫn deploy:
 - RUN: yarn
 - RUN: yarn build (lúc này source code sẽ được build ra thư mục /dist)
 - Upload toàn bộ thư mục `dist` vào thư mục `public_html`
-- Dùng nginx để config cho thư mục admin
+- Download video zip: https://set16.freelancerhcm.com/tft_set_16_videos.zip, upload các files và videos vào thư mục `/public_html/video`. Ví dụ: `/public_html/video/f1_1.mp4`.
 
 ```
 # API route

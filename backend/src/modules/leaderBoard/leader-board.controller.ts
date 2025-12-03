@@ -67,7 +67,6 @@ const exportCSVRateLimiter = rateLimit({
 // Helper function to validate API key from headers
 const validateApiKey = (req: Request): boolean => {
   const apiKey = req.headers['x-api-key'] as string || 
-                 (req.query.apiKey as string) || 
                  (req.body?.apiKey as string) || 
                  "0";
   return apiKey === process.env.API_KEY;
