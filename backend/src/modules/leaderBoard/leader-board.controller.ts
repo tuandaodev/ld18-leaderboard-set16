@@ -308,6 +308,43 @@ export const processInitUsersLeaderBoard = async () => {
     throw new Error('Unable to save cached matches');
   }
 
+  // Generate CSV file for debugging
+  try {
+    const csvRows: string[] = [];
+    // CSV header
+    csvRows.push('gameName,tagName,matchId,gameMode,placement,timeEliminated,totalPoints');
+    
+    // Add data rows
+    for (const match of matches) {
+      for (const participant of match.participants) {
+        const row = [
+          participant.riotIdGameName ?? '',
+          participant.riotIdTagline ?? '',
+          match.matchId ?? '',
+          match.gameMode ?? '',
+          participant.placement?.toString() ?? '',
+          participant.timeEliminated?.toString() ?? '',
+          participant.totalPoints?.toString() ?? '0'
+        ];
+        // Escape commas and quotes in CSV values
+        csvRows.push(row.map(val => {
+          if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+            return `"${val.replace(/"/g, '""')}"`;
+          }
+          return val;
+        }).join(','));
+      }
+    }
+    
+    const csvContent = csvRows.join('\n');
+    const debugCsvPath = path.resolve(__dirname, '../../data/debug-leaderboard-data.csv');
+    await fs.promises.writeFile(debugCsvPath, csvContent, 'utf8');
+    console.log(`Debug CSV file saved to: ${debugCsvPath}`);
+  } catch (error: any) {
+    console.error('Error writing debug CSV file:', error.message);
+    // Don't throw here, CSV generation failure is not critical
+  }
+
   for (const acc of dataAccounts.filter(e => e != null)) {
     if (acc?.puuid == null) continue;
     let totalPoints = 0;
