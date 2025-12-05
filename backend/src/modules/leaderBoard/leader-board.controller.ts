@@ -314,9 +314,17 @@ export const processInitUsersLeaderBoard = async () => {
     // CSV header
     csvRows.push('gameName,tagName,matchId,gameMode,placement,timeEliminated,totalPoints');
     
-    // Add data rows
+    // Add data rows (only for accounts in the input list)
+    const allowedAccounts = new Set(
+      dataAccounts
+        .filter(acc => acc?.gameName && acc?.tagLine)
+        .map(acc => `${acc.gameName!.toLowerCase()}#${acc.tagLine!.toLowerCase()}`)
+    );
+
     for (const match of matches) {
       for (const participant of match.participants) {
+        const participantKey = `${participant.riotIdGameName?.toLowerCase() ?? ''}#${participant.riotIdTagline?.toLowerCase() ?? ''}`;
+        if (!allowedAccounts.has(participantKey)) continue;
         const row = [
           participant.riotIdGameName ?? '',
           participant.riotIdTagline ?? '',
