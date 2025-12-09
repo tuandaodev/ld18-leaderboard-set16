@@ -209,7 +209,7 @@ function App() {
         )}
       >
         <Suspense fallback={<PageLoader />}>
-          <Router>
+          <Router basename="/vi-vn/set16">
             <Routes>
               // --- Landing Page ---
               <Route path="/" element={<LandingPage />} />
