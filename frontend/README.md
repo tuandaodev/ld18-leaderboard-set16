@@ -1,6 +1,9 @@
 # Frontend (Landing Page + Admin CMS Page)
 
 ```
+# Base path
+VITE_BASE_PATH=/vi-vn/set16/
+
 # Endpoint backend dev
 VITE_DEV_DOMAIN=http://localhost:8098
 
@@ -37,7 +40,25 @@ location /api/ {
 }
 
 # Frontend route
-location / {
-    try_files $uri $uri/ /index.html;
+location /vi-vn/set16 {
+    return 301 /vi-vn/set16/;
+}
+
+location /vi-vn/set16/ {
+    alias /home/set16freelancerhcmcom/set16.freelancerhcm.com/ld18-leaderboard-set16/frontend/dist/;
+    index index.html;
+    try_files $uri /vi-vn/set16/index.html;
+
+    # Enable gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types text/css text/javascript application/javascript application/json image/svg+xml;
+    
+    # Cache static assets
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|mp4|webm)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
 }
 ```
