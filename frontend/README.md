@@ -31,7 +31,7 @@ Hướng dẫn deploy:
 
 ```
 # API route
-location /api/ {
+location /vi-vn/set16/api/ {
     proxy_pass http://127.0.0.1:8098/;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
