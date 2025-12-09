@@ -76,17 +76,20 @@ function App() {
   }, []);
   // [authentication redirects]
   useEffect(() => {
+    const basePath = import.meta.env.VITE_BASE_PATH?.replace(/\/$/, '') || "/vi-vn/set16";
+    
     // allow to go to Landing Page and Community Leader Registration (auth checked in component)
-    if (location.pathname === "/" 
-      || location.pathname === "/landing" 
-      // || location.pathname === "/register-community-leader" 
-      // || location.pathname === "/register-event"
-      // || location.pathname === "/register-partner-gaming-center"
-      // || location.pathname === "/manage-partner-gaming-center"
-      // || location.pathname === "/list-partner-gaming-centers"
-      // || location.pathname === "/notification"
-      // || location.pathname === "/events"
-      // || location.pathname.startsWith("/events/")
+    if (location.pathname === basePath + "/" 
+      || location.pathname === basePath + "/landing" 
+      || location.pathname === basePath
+      // || location.pathname === basePath + "/register-community-leader" 
+      // || location.pathname === basePath + "/register-event"
+      // || location.pathname === basePath + "/register-partner-gaming-center"
+      // || location.pathname === basePath + "/manage-partner-gaming-center"
+      // || location.pathname === basePath + "/list-partner-gaming-centers"
+      // || location.pathname === basePath + "/notification"
+      // || location.pathname === basePath + "/events"
+      // || location.pathname.startsWith(basePath + "/events/")
     ) return;
 
     // is there is a critical key missing
@@ -96,15 +99,15 @@ function App() {
         ...user,
         isAuthenticated: false,
       });
-      if (location.pathname !== "/cp") location.pathname = "/cp";
+      if (location.pathname !== basePath + "/cp") location.pathname = basePath + "/cp";
       return;
     }
 
     // token is invalid
     const acToken = isInvalidToProceed;
     // if access token is invalid and try to access other paths
-    if (acToken.length <= 0 && location.pathname !== "/cp") {
-      location.pathname = "/cp";
+    if (acToken.length <= 0 && location.pathname !== basePath + "/cp") {
+      location.pathname = basePath + "/cp";
       return;
     }
 
@@ -118,8 +121,8 @@ function App() {
       };
 
       saveLogin(updateInfos);
-      if (updateInfos.role === 1 && location.pathname !== "/cp/cms") {
-        location.pathname = "/cp/cms";
+      if (updateInfos.role === 1 && location.pathname !== basePath + "/cp/cms") {
+        location.pathname = basePath + "/cp/cms";
         return;
       }
     }
@@ -209,7 +212,7 @@ function App() {
         )}
       >
         <Suspense fallback={<PageLoader />}>
-          <Router basename="/vi-vn/set16">
+          <Router basename={import.meta.env.VITE_BASE_PATH?.replace(/\/$/, '') || "/vi-vn/set16"}>
             <Routes>
               // --- Landing Page ---
               <Route path="/" element={<LandingPage />} />
