@@ -232,7 +232,6 @@ function App() {
                 path="/cp/events"
                 element={<AuthElement mainRoute={Events} />}
               />
-              {/* 
               <Route
                 path="/cp/events/add"
                 element={<AuthElement mainRoute={EventForm} />}
@@ -240,7 +239,7 @@ function App() {
               <Route
                 path="/cp/events/edit/:id"
                 element={<AuthElement mainRoute={EventForm} />}
-              /> */}
+              />
               <Route
                 path="/cp/cms"
                 element={<AuthElement mainRoute={CMS} />}
