@@ -217,11 +217,16 @@ export const processInitUsersLeaderBoard = async () => {
   for (const acc of accounts) {
     let accRes = jsonAccountData.find(e => e.gameName == acc.gameName)
     if (accRes == null) {
+      const startTime = Date.now();
       accRes = await getRiotAccountById(acc.gameName, acc.tagLine);
+      const elapsedTime = Date.now() - startTime;
       if (IS_DEBUG_PROCESS) {
         console.log('get riot account', acc.gameName, acc.tagLine, new Date().toLocaleTimeString());
       }
-      await delay(900);
+      // Only delay if the request took less than 900ms to avoid rate limiting
+      if (elapsedTime < 900) {
+        await delay(900);
+      }
     }
     if (accRes != null) {
       dataAccounts.push(accRes);
@@ -240,11 +245,16 @@ export const processInitUsersLeaderBoard = async () => {
     let start = 0;
     let totalMatches = 0;
     while (true) {
+      const startTime = Date.now();
       const accRes = await getMatches(acc.puuid, start, count, configData.startDate, configData.endDate);
+      const elapsedTime = Date.now() - startTime;
       if (IS_DEBUG_PROCESS) {
         console.log('get matches', acc.gameName, accRes.length, new Date().toLocaleTimeString());
       }
-      await delay(900);
+      // Only delay if the request took less than 1 second to avoid rate limiting
+      if (elapsedTime < 900) {
+        await delay(900);
+      }
       if (accRes == null) {
         break;
       }
@@ -282,11 +292,16 @@ export const processInitUsersLeaderBoard = async () => {
   for (const matchId of flatMatchIds) {
     let matchRes = jsonMatchData.find(e => e.matchId == matchId)
     if (matchRes == null) {
+      const startTime = Date.now();
       const rawRes = await getMatchDetail(matchId);
+      const elapsedTime = Date.now() - startTime;
       if (IS_DEBUG_PROCESS) {
         console.log('get match detail', matchId, new Date().toLocaleTimeString());
       }
-      await delay(900);
+      // Only delay if the request took less than 900ms to avoid rate limiting
+      if (elapsedTime < 900) {
+        await delay(900);
+      }
       const isStandardGame = rawRes?.info?.tft_game_type == 'standard';
       if (rawRes != null && rawRes?.info?.endOfGameResult == 'GameComplete') {
         matchRes = {
