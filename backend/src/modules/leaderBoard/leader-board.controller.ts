@@ -218,6 +218,9 @@ export const processInitUsersLeaderBoard = async () => {
     let accRes = jsonAccountData.find(e => e.gameName == acc.gameName)
     if (accRes == null) {
       accRes = await getRiotAccountById(acc.gameName, acc.tagLine);
+      if (IS_DEBUG_PROCESS) {
+        console.log('get riot account', acc.gameName, acc.tagLine, new Date().toLocaleTimeString());
+      }
       await delay(900);
     }
     if (accRes != null) {
@@ -231,19 +234,27 @@ export const processInitUsersLeaderBoard = async () => {
   await persistCachedAccounts(cachedUserPath, dataAccounts);
 
   const count = 100;
-  let flatMatchIds: string[] = [];    
+  let flatMatchIds: string[] = [];
   for (const acc of dataAccounts.filter(e => e != null)) {
     if (acc?.puuid == null) continue;
     let start = 0;
+    let totalMatches = 0;
     while (true) {
       const accRes = await getMatches(acc.puuid, start, count, configData.startDate, configData.endDate);
+      if (IS_DEBUG_PROCESS) {
+        console.log('get matches', acc.gameName, accRes.length, new Date().toLocaleTimeString());
+      }
       await delay(900);
       if (accRes == null) {
         break;
       }
       if (accRes != null) {
+        totalMatches += accRes.length;
         flatMatchIds.push(...accRes);
         if (accRes.length < count) {
+          if (IS_DEBUG_PROCESS) {
+            console.log('get account matches', acc.gameName, totalMatches, new Date().toLocaleTimeString());
+          }
           break;
         }
       }
