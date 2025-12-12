@@ -292,10 +292,10 @@ export const processInitUsersLeaderBoard = async () => {
             }
           })
         }
-        matchRes.participants = matchRes.participants.filter(x => x.totalPoints != null && x.totalPoints > 0);
       }
     }
     if (matchRes != null) {
+      matchRes.participants = matchRes?.participants?.filter(x => x.totalPoints != null && x.totalPoints > 0) ?? [];
       matches.push(matchRes);
     }
     idx++;
