@@ -3,16 +3,19 @@ import "dotenv/config";
 import { DataSource } from "typeorm";
 import { AdminLog } from "./entity/AdminLog";
 import { Campaign } from "./entity/Campaign";
+import { CachedMatch } from "./entity/CachedMatch";
+import { CachedRiotAccount } from "./entity/CachedRiotAccount";
 import { ContentConfig } from "./entity/ContentConfig";
 import { Event } from "./entity/Event";
 import { User } from "./entity/User";
 import { InitDatabase1764693369392 } from "./migrations/1764693369392-init-database";
 import { InitData1764693419027 } from "./migrations/1764693419027-init-data";
 import { InitContentConfig1764694038203 } from "./migrations/1764694038203-init-content-config";
+import { AddCacheEntities1765556367767 } from "./migrations/1765556367767-add-cache-entities";
 
 // Add new entities here
 export const AppEntites = [
-  AdminLog, User, ContentConfig, Campaign, Event
+  AdminLog, User, ContentConfig, Campaign, Event, CachedRiotAccount, CachedMatch
 ]
 
 export const AppDataSource = new DataSource({
@@ -31,9 +34,10 @@ export const AppDataSource = new DataSource({
   migrations: [
     InitDatabase1764693369392,
     InitData1764693419027,
-    InitContentConfig1764694038203
+    InitContentConfig1764694038203,
+    AddCacheEntities1765556367767
   ],
   cache: false,
-  synchronize: false,
+  synchronize: true,
   // dropSchema: process.env.NODE_ENV === "development" ? true : false,
 });

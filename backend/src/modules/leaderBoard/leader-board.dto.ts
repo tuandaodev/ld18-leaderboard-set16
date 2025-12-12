@@ -55,6 +55,7 @@ export interface MatchInfo {
   matchId: string;
   endOfGameResult:    string;
   gameMode:           string;
+  gameCreation:       number;
   participants:       MinParticipant[];
 }
 

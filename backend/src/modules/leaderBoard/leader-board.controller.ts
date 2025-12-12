@@ -4,7 +4,11 @@ import crypto from 'crypto';
 import multer from "multer";
 import path from "path";
 import rateLimit from "express-rate-limit";
+import { In } from "typeorm";
 import { asyncHandler } from "../../middleware/async";
+import { AppDataSource } from "../../data-source";
+import { CachedMatch } from "../../entity/CachedMatch";
+import { CachedRiotAccount } from "../../entity/CachedRiotAccount";
 import { AccountDto, CsvTeamDto, LeaderBoardDto, MatchInfo, RiotAccountDto } from "./leader-board.dto";
 import { convertToAccountDto, convertToCsvTeamDto, getCSVForTeams, getCSVForUsers, getMatchDetail, getMatches, getRiotAccountById } from "./leader-board.service";
 
@@ -152,20 +156,127 @@ export const delay = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const persistCachedAccounts = async (cachedUserPath: string, dataAccounts: RiotAccountDto[]) => {
+const persistCachedAccounts = async (dataAccounts: RiotAccountDto[]) => {
   try {
-    await fs.promises.writeFile(cachedUserPath, JSON.stringify(dataAccounts), 'utf8');
+    if (dataAccounts.length === 0) return;
+    
+    const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
+    
+    // Filter valid accounts
+    const validAccounts = dataAccounts.filter(acc => acc && acc.gameName && acc.tagLine);
+    if (validAccounts.length === 0) return;
+    
+    // Get all existing accounts in one query using OR conditions
+    const queryBuilder = accountRepository.createQueryBuilder('account');
+    const conditions = validAccounts.map((acc, index) => 
+      `(account.gameName = :gameName${index} AND account.tagLine = :tagLine${index})`
+    ).join(' OR ');
+    
+    const parameters: any = {};
+    validAccounts.forEach((acc, index) => {
+      parameters[`gameName${index}`] = acc.gameName;
+      parameters[`tagLine${index}`] = acc.tagLine;
+    });
+    
+    const existingAccounts = conditions ? await queryBuilder
+      .where(conditions, parameters)
+      .getMany() : [];
+    
+    // Create a map for faster lookup
+    const existingMap = new Map<string, CachedRiotAccount>();
+    for (const existing of existingAccounts) {
+      const key = `${existing.gameName.toLowerCase()}-${existing.tagLine.toLowerCase()}`;
+      existingMap.set(key, existing);
+    }
+    
+    // Prepare accounts for batch save
+    const accountsToSave: CachedRiotAccount[] = [];
+    for (const account of validAccounts) {
+      const key = `${account.gameName.toLowerCase()}-${account.tagLine.toLowerCase()}`;
+      const existing = existingMap.get(key);
+      
+      if (existing) {
+        // Update existing account
+        existing.puuid = account.puuid;
+        existing.totalPoints = account.totalPoints;
+        existing.data = account;
+        accountsToSave.push(existing);
+      } else {
+        // Create new account
+        const newAccount = accountRepository.create({
+          puuid: account.puuid,
+          gameName: account.gameName,
+          tagLine: account.tagLine,
+          totalPoints: account.totalPoints,
+          data: account
+        });
+        accountsToSave.push(newAccount);
+      }
+    }
+    
+    // Batch save all accounts
+    if (accountsToSave.length > 0) {
+      await accountRepository.save(accountsToSave);
+    }
   } catch (error: any) {
-    console.error('Error writing cached accounts:', error.message);
+    console.error('Error saving cached accounts to database:', error.message);
     throw new Error('Unable to save cached accounts');
   }
 };
 
-const persistCachedMatches = async (cachedMatchPath: string, matches: MatchInfo[]) => {
+const persistCachedMatches = async (matches: MatchInfo[]) => {
   try {
-    await fs.promises.writeFile(cachedMatchPath, JSON.stringify(matches), 'utf8');
+    if (matches.length === 0) return;
+    
+    const matchRepository = AppDataSource.getRepository(CachedMatch);
+    
+    // Filter valid matches
+    const validMatches = matches.filter(m => m && m.matchId);
+    if (validMatches.length === 0) return;
+    
+    // Get all existing matches in one query
+    const matchIds = validMatches.map(m => m.matchId);
+    const existingMatches = await matchRepository.find({
+      where: { matchId: In(matchIds) }
+    });
+    
+    // Create a map for faster lookup
+    const existingMap = new Map<string, CachedMatch>();
+    for (const existing of existingMatches) {
+      existingMap.set(existing.matchId, existing);
+    }
+    
+    // Prepare matches for batch save
+    const matchesToSave: CachedMatch[] = [];
+    for (const match of validMatches) {
+      const existing = existingMap.get(match.matchId);
+      
+      if (existing) {
+        // Update existing match
+        existing.endOfGameResult = match.endOfGameResult;
+        existing.gameMode = match.gameMode;
+        existing.gameCreation = match.gameCreation;
+        existing.participants = match.participants;
+        matchesToSave.push(existing);
+      } else {
+        // Create new match
+        const newMatch = matchRepository.create({
+          matchId: match.matchId,
+          endOfGameResult: match.endOfGameResult,
+          gameMode: match.gameMode,
+          gameCreation: match.gameCreation,
+          participants: match.participants
+        });
+        matchesToSave.push(newMatch);
+      }
+    }
+    
+    // Batch save all matches
+    if (matchesToSave.length > 0) {
+      await matchRepository.save(matchesToSave);
+    }
   } catch (error: any) {
-    console.error('Error writing cached matches:', error.message);
+    console.error('Error saving cached matches to database:', error.message);
     throw new Error('Unable to save cached matches');
   }
 };
@@ -200,22 +311,36 @@ export const processInitUsersLeaderBoard = async () => {
   
   const accounts: AccountDto[] = convertToAccountDto(records);
 
-  // cache
-  let jsonAccountData: RiotAccountDto[] = [];
-  const cachedUserPath = path.resolve(__dirname, "../../data/user-riot-accounts.json");
+  // Load cached accounts from database
+  const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
+  let cachedAccounts: CachedRiotAccount[] = [];
   try {
-    const jsonString = await fs.promises.readFile(cachedUserPath, 'utf-8');
-    jsonAccountData = JSON.parse(jsonString);
-    console.log('loaded cached accounts', jsonAccountData.length);
+    cachedAccounts = await accountRepository.find();
+    console.log('loaded cached accounts from database', cachedAccounts.length);
   } catch (error: any) {
-    console.error('Error reading cached accounts:', error.message);
-    jsonAccountData = [];
+    console.error('Error reading cached accounts from database:', error.message);
+    cachedAccounts = [];
+  }
+
+  // Create a map for faster lookup
+  const cachedAccountMap = new Map<string, RiotAccountDto>();
+  for (const cached of cachedAccounts) {
+    const key = `${cached.gameName.toLowerCase()}-${cached.tagLine.toLowerCase()}`;
+    cachedAccountMap.set(key, cached.data || {
+      puuid: cached.puuid,
+      gameName: cached.gameName,
+      tagLine: cached.tagLine,
+      totalPoints: cached.totalPoints
+    });
   }
 
   let dataAccounts: RiotAccountDto[] = [];
+  let batchAccounts: RiotAccountDto[] = [];
   let processed = 0;
   for (const acc of accounts) {
-    let accRes = jsonAccountData.find(e => e.gameName == acc.gameName)
+    const cacheKey = `${acc.gameName.toLowerCase()}-${acc.tagLine.toLowerCase()}`;
+    let accRes = cachedAccountMap.get(cacheKey);
+    
     if (accRes == null) {
       const startTime = Date.now();
       accRes = await getRiotAccountById(acc.gameName, acc.tagLine);
@@ -230,13 +355,15 @@ export const processInitUsersLeaderBoard = async () => {
     }
     if (accRes != null) {
       dataAccounts.push(accRes);
+      batchAccounts.push(accRes);
     }
     processed++;
     if (processed % BATCH_SIZE === 0) {
-      await persistCachedAccounts(cachedUserPath, dataAccounts);
+      await persistCachedAccounts(batchAccounts);
+      batchAccounts = [];
     }
   };
-  await persistCachedAccounts(cachedUserPath, dataAccounts);
+  await persistCachedAccounts(batchAccounts);
 
   const count = 100;
   let flatMatchIds: string[] = [];
@@ -275,22 +402,52 @@ export const processInitUsersLeaderBoard = async () => {
   flatMatchIds = flatMatchIds.filter((value, index, array) => array.indexOf(value) === index);
   console.log('matchIds', flatMatchIds.length);
 
-  // cache
-  let jsonMatchData: MatchInfo[] = [];
-  const cachedMatchPath = path.resolve(__dirname, "../../data/riot-matches.json");
-  try {
-    const jsonString = await fs.promises.readFile(cachedMatchPath, 'utf-8');
-    jsonMatchData = JSON.parse(jsonString);
-    console.log('loaded cached matches', jsonMatchData.length);
-  } catch (error: any) {
-    console.error('Error reading cached matches:', error.message);
-    jsonMatchData = [];
+  // Load cached matches from database in chunks to handle thousands of matches
+  const matchRepository = AppDataSource.getRepository(CachedMatch);
+  const cachedMatchMap = new Map<string, MatchInfo>();
+  const DB_QUERY_CHUNK_SIZE = 100; // Query database in chunks to avoid query size limits
+  
+  if (flatMatchIds.length > 0) {
+    try {
+      // Query cached matches in chunks
+      for (let i = 0; i < flatMatchIds.length; i += DB_QUERY_CHUNK_SIZE) {
+        const chunk = flatMatchIds.slice(i, i + DB_QUERY_CHUNK_SIZE);
+        const cachedMatches = await matchRepository.find({
+          where: { matchId: In(chunk) }
+        });
+        
+        // Add to map
+        for (const cached of cachedMatches) {
+          cachedMatchMap.set(cached.matchId, {
+            matchId: cached.matchId,
+            endOfGameResult: cached.endOfGameResult,
+            gameMode: cached.gameMode,
+            gameCreation: cached.gameCreation,
+            participants: cached.participants || []
+          });
+        }
+      }
+      console.log('loaded cached matches from database', cachedMatchMap.size, 'out of', flatMatchIds.length);
+    } catch (error: any) {
+      console.error('Error reading cached matches from database:', error.message);
+    }
   }
 
-  let matches: MatchInfo[] = [];    
+  // Initialize points map for incremental point calculation
+  const pointsMap = new Map<string, number>();
+  for (const acc of dataAccounts.filter(e => e != null)) {
+    if (acc?.puuid != null) {
+      const key = `${acc.gameName?.toLowerCase()}-${acc.tagLine?.toLowerCase()}`;
+      pointsMap.set(key, 0);
+    }
+  }
+
+  // Process matches in batches and persist incrementally to avoid memory issues
+  let batchMatches: MatchInfo[] = [];
   let idx = 0;
+  
   for (const matchId of flatMatchIds) {
-    let matchRes = jsonMatchData.find(e => e.matchId == matchId)
+    let matchRes = cachedMatchMap.get(matchId);
     if (matchRes == null) {
       const startTime = Date.now();
       const rawRes = await getMatchDetail(matchId);
@@ -307,6 +464,7 @@ export const processInitUsersLeaderBoard = async () => {
         matchRes = {
           matchId: rawRes.metadata.match_id,
           endOfGameResult:    rawRes.info.endOfGameResult,
+          gameCreation:       rawRes.info.gameCreation,
           gameMode:           rawRes.info.tft_game_type,
           participants:       rawRes.info.participants.map(x => {
             let totalPoints = 0;
@@ -338,74 +496,36 @@ export const processInitUsersLeaderBoard = async () => {
     }
     if (matchRes != null) {
       matchRes.participants = matchRes?.participants?.filter(x => x.totalPoints != null && x.totalPoints > 0) ?? [];
-      matches.push(matchRes);
+      batchMatches.push(matchRes);
+      
+      // Calculate points incrementally to avoid storing all matches in memory
+      for (const participant of matchRes.participants) {
+        const key = `${participant.riotIdGameName?.toLowerCase()}-${participant.riotIdTagline?.toLowerCase()}`;
+        const currentPoints = pointsMap.get(key) || 0;
+        pointsMap.set(key, currentPoints + (participant.totalPoints || 0));
+      }
     }
     idx++;
+    
+    // Persist matches in batches to avoid memory issues and improve performance
     if (idx % BATCH_SIZE == 0) {
       console.log(`processed ${idx}/${flatMatchIds.length} matches at ${new Date().toLocaleTimeString()}`);
-      await persistCachedMatches(cachedMatchPath, matches);
+      await persistCachedMatches(batchMatches);
+      batchMatches = []; // Clear batch to free memory
     }
   }
   console.log(`completed ${idx}/${flatMatchIds.length} matches`);
-  await persistCachedMatches(cachedMatchPath, matches);
+  // Persist remaining matches
+  if (batchMatches.length > 0) {
+    await persistCachedMatches(batchMatches);
+  }
 
-  // Generate CSV file for debugging
-  // try {
-  //   const csvRows: string[] = [];
-  //   // CSV header
-  //   csvRows.push('gameName,tagName,matchId,gameMode,placement,timeEliminated,lastRound,totalPoints');
-    
-  //   // Add data rows (only for accounts in the input list)
-  //   const allowedAccounts = new Set(
-  //     dataAccounts
-  //       .filter(acc => acc?.gameName && acc?.tagLine)
-  //       .map(acc => `${acc.gameName!.toLowerCase()}#${acc.tagLine!.toLowerCase()}`)
-  //   );
-
-  //   for (const match of matches) {
-  //     for (const participant of match.participants) {
-  //       const participantKey = `${participant.riotIdGameName?.toLowerCase() ?? ''}#${participant.riotIdTagline?.toLowerCase() ?? ''}`;
-  //       if (!allowedAccounts.has(participantKey)) continue;
-  //       const row = [
-  //         participant.riotIdGameName ?? '',
-  //         participant.riotIdTagline ?? '',
-  //         match.matchId ?? '',
-  //         match.gameMode ?? '',
-  //         participant.placement?.toString() ?? '',
-  //         participant.timeEliminated?.toString() ?? '',
-  //         participant.lastRound?.toString() ?? '0',
-  //         participant.totalPoints?.toString() ?? '0'
-  //       ];
-  //       // Escape commas and quotes in CSV values
-  //       csvRows.push(row.map(val => {
-  //         if (val.includes(',') || val.includes('"') || val.includes('\n')) {
-  //           return `"${val.replace(/"/g, '""')}"`;
-  //         }
-  //         return val;
-  //       }).join(','));
-  //     }
-  //   }
-    
-  //   const csvContent = csvRows.join('\n');
-  //   const debugCsvPath = path.resolve(__dirname, '../../data/debug-leaderboard-data.csv');
-  //   await fs.promises.writeFile(debugCsvPath, csvContent, 'utf8');
-  //   console.log(`Debug CSV file saved to: ${debugCsvPath}`);
-  // } catch (error: any) {
-  //   console.error('Error writing debug CSV file:', error.message);
-  //   // Don't throw here, CSV generation failure is not critical
-  // }
-
+  // Apply calculated points to accounts
   for (const acc of dataAccounts.filter(e => e != null)) {
-    if (acc?.puuid == null) continue;
-    let totalPoints = 0;
-    for (const match of matches) {
-      for (const participant of match.participants) {
-        if (participant.riotIdGameName?.toLowerCase() == acc.gameName?.toLowerCase() && participant.riotIdTagline?.toLowerCase() == acc.tagLine?.toLowerCase()) {
-          totalPoints += participant.totalPoints ?? 0;
-        }
-      }
+    if (acc?.puuid != null) {
+      const key = `${acc.gameName?.toLowerCase()}-${acc.tagLine?.toLowerCase()}`;
+      acc.totalPoints = pointsMap.get(key) || 0;
     }
-    acc.totalPoints = totalPoints;
   }
 
   let result: LeaderBoardDto = {
