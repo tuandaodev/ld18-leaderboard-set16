@@ -224,6 +224,63 @@ const persistCachedAccounts = async (dataAccounts: RiotAccountDto[]) => {
   }
 };
 
+const updateCachedAccountsTotalPoints = async (dataAccounts: RiotAccountDto[]) => {
+  try {
+    if (dataAccounts.length === 0) return;
+    
+    const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
+    
+    // Filter valid accounts with totalPoints
+    const accountsToUpdate = dataAccounts.filter(acc => 
+      acc && acc.gameName && acc.tagLine && acc.totalPoints !== undefined
+    );
+    if (accountsToUpdate.length === 0) return;
+    
+    // Get all existing accounts in one query using OR conditions
+    const queryBuilder = accountRepository.createQueryBuilder('account');
+    const conditions = accountsToUpdate.map((acc, index) => 
+      `(account.gameName = :gameName${index} AND account.tagLine = :tagLine${index})`
+    ).join(' OR ');
+    
+    const parameters: any = {};
+    accountsToUpdate.forEach((acc, index) => {
+      parameters[`gameName${index}`] = acc.gameName;
+      parameters[`tagLine${index}`] = acc.tagLine;
+    });
+    
+    const existingAccounts = conditions ? await queryBuilder
+      .where(conditions, parameters)
+      .getMany() : [];
+    
+    // Create a map for faster lookup
+    const pointsMap = new Map<string, number>();
+    accountsToUpdate.forEach(acc => {
+      const key = `${acc.gameName.toLowerCase()}-${acc.tagLine.toLowerCase()}`;
+      pointsMap.set(key, acc.totalPoints || 0);
+    });
+    
+    // Update totalPoints for existing accounts
+    const accountsToSave: CachedRiotAccount[] = [];
+    for (const existing of existingAccounts) {
+      const key = `${existing.gameName.toLowerCase()}-${existing.tagLine.toLowerCase()}`;
+      const totalPoints = pointsMap.get(key);
+      if (totalPoints !== undefined && existing.totalPoints !== totalPoints) {
+        existing.totalPoints = totalPoints;
+        accountsToSave.push(existing);
+      }
+    }
+    
+    // Batch save updated accounts
+    if (accountsToSave.length > 0) {
+      await accountRepository.save(accountsToSave);
+      console.log(`Updated totalPoints for ${accountsToSave.length} accounts`);
+    }
+  } catch (error: any) {
+    console.error('Error updating cached accounts totalPoints:', error.message);
+    throw new Error('Unable to update cached accounts totalPoints');
+  }
+};
+
 const persistCachedMatches = async (matches: MatchInfo[]) => {
   try {
     if (matches.length === 0) return;
@@ -281,7 +338,7 @@ const persistCachedMatches = async (matches: MatchInfo[]) => {
   }
 };
 
-export const BATCH_SIZE = 50;
+export const BATCH_SIZE = 20;
 export const IS_DEBUG_PROCESS = true;
 export const processInitUsersLeaderBoard = async () => {
 
@@ -527,6 +584,9 @@ export const processInitUsersLeaderBoard = async () => {
       acc.totalPoints = pointsMap.get(key) || 0;
     }
   }
+
+  // Update totalPoints in database
+  await updateCachedAccountsTotalPoints(dataAccounts);
 
   let result: LeaderBoardDto = {
     users: dataAccounts,
