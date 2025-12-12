@@ -260,14 +260,15 @@ export const processInitUsersLeaderBoard = async () => {
     if (matchRes == null) {
       const rawRes = await getMatchDetail(matchId);
       await delay(1000);
-      if (rawRes != null && rawRes?.info?.endOfGameResult == 'GameComplete' && rawRes?.info?.tft_game_type == 'standard') {
+      const isStandardGame = rawRes?.info?.tft_game_type == 'standard';
+      if (rawRes != null && rawRes?.info?.endOfGameResult == 'GameComplete') {
         matchRes = {
           matchId: rawRes.metadata.match_id,
           endOfGameResult:    rawRes.info.endOfGameResult,
           gameMode:           rawRes.info.tft_game_type,
           participants:       rawRes.info.participants.map(x => {
             let totalPoints = 0;
-            if (x.time_eliminated > 1200 && x.last_round > 30) {
+            if (x.time_eliminated > 1200 && x.last_round > 30 && isStandardGame) {
               if (x.placement == 1) {
                 totalPoints = 10;
               }
@@ -285,12 +286,13 @@ export const processInitUsersLeaderBoard = async () => {
               riotIdGameName:                 x.riotIdGameName,
               riotIdTagline:                  x.riotIdTagline,
               placement:                      x.placement,
-              timeEliminated:              x.time_eliminated,
+              timeEliminated:                 x.time_eliminated,
               totalPoints:                    totalPoints,
               lastRound:                      x.last_round,
             }
           })
         }
+        matchRes.participants = matchRes.participants.filter(x => x.totalPoints != null && x.totalPoints > 0);
       }
     }
     if (matchRes != null) {
