@@ -708,7 +708,7 @@ export const uploadCSV = [
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
-    const { startDate, endDate } = req.body;
+    const { startDate, endDate, clearCache } = req.body;
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     const usersFile = files['usersFile'] ? files['usersFile'][0] : null;
 
@@ -736,6 +736,25 @@ export const uploadCSV = [
         success: false,
         message: 'startDate must be before endDate',
       });
+    }
+
+    // Clear cache tables if clearCache is true
+    if (clearCache === true || clearCache === 'true') {
+      try {
+        const matchRepository = AppDataSource.getRepository(CachedMatch);
+        const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
+        
+        await matchRepository.clear();
+        await accountRepository.clear();
+        
+        console.log('Cache tables cleared: CachedMatch and CachedRiotAccount');
+      } catch (error: any) {
+        console.error('Error clearing cache tables:', error.message);
+        return res.status(500).json({
+          success: false,
+          message: 'Unable to clear cache tables'
+        });
+      }
     }
 
     // Define the destination path in the data folder
