@@ -4,8 +4,6 @@ import crypto from 'crypto';
 import multer from "multer";
 import path from "path";
 import rateLimit from "express-rate-limit";
-import { Like } from "typeorm";
-import { ContentConfig } from "../../entity/ContentConfig";
 import { asyncHandler } from "../../middleware/async";
 import { AccountDto, CsvTeamDto, LeaderBoardDto, MatchInfo, RiotAccountDto } from "./leader-board.dto";
 import { convertToAccountDto, convertToCsvTeamDto, getCSVForTeams, getCSVForUsers, getMatchDetail, getMatches, getRiotAccountById } from "./leader-board.service";
@@ -154,15 +152,31 @@ export const delay = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+const persistCachedAccounts = async (cachedUserPath: string, dataAccounts: RiotAccountDto[]) => {
+  try {
+    await fs.promises.writeFile(cachedUserPath, JSON.stringify(dataAccounts), 'utf8');
+  } catch (error: any) {
+    console.error('Error writing cached accounts:', error.message);
+    throw new Error('Unable to save cached accounts');
+  }
+};
+
+const persistCachedMatches = async (cachedMatchPath: string, matches: MatchInfo[]) => {
+  try {
+    await fs.promises.writeFile(cachedMatchPath, JSON.stringify(matches), 'utf8');
+  } catch (error: any) {
+    console.error('Error writing cached matches:', error.message);
+    throw new Error('Unable to save cached matches');
+  }
+};
+
+export const BATCH_SIZE = 50;
+export const IS_DEBUG_PROCESS = true;
 export const processInitUsersLeaderBoard = async () => {
 
   console.log("Start processInitUsersLeaderBoard");
 
   const start = Date.now();
-
-  const configs = await ContentConfig.findBy({
-    contentId: Like("config_%")
-  })
 
   const configFilePath = path.resolve(__dirname, '../../data/config.json');
   let configData;
@@ -187,34 +201,34 @@ export const processInitUsersLeaderBoard = async () => {
   const accounts: AccountDto[] = convertToAccountDto(records);
 
   // cache
-  let jsonData: RiotAccountDto[] = [];
-  const cachedPath = path.resolve(__dirname, "../../data/user-riot-accounts.json");
+  let jsonAccountData: RiotAccountDto[] = [];
+  const cachedUserPath = path.resolve(__dirname, "../../data/user-riot-accounts.json");
   try {
-    const jsonString = await fs.promises.readFile(cachedPath, 'utf-8');
-    jsonData = JSON.parse(jsonString);
-    console.log('loaded cached accounts', jsonData.length);
+    const jsonString = await fs.promises.readFile(cachedUserPath, 'utf-8');
+    jsonAccountData = JSON.parse(jsonString);
+    console.log('loaded cached accounts', jsonAccountData.length);
   } catch (error: any) {
     console.error('Error reading cached accounts:', error.message);
-    jsonData = [];
+    jsonAccountData = [];
   }
 
   let dataAccounts: RiotAccountDto[] = [];
+  let processed = 0;
   for (const acc of accounts) {
-    let accRes = jsonData.find(e => e.gameName == acc.gameName)
+    let accRes = jsonAccountData.find(e => e.gameName == acc.gameName)
     if (accRes == null) {
       accRes = await getRiotAccountById(acc.gameName, acc.tagLine);
-      await delay(1000);
+      await delay(900);
     }
     if (accRes != null) {
       dataAccounts.push(accRes);
     }
+    processed++;
+    if (processed % BATCH_SIZE === 0) {
+      await persistCachedAccounts(cachedUserPath, dataAccounts);
+    }
   };
-  try {
-    await fs.promises.writeFile(cachedPath, JSON.stringify(dataAccounts), 'utf8');
-  } catch (error: any) {
-    console.error('Error writing cached accounts:', error.message);
-    throw new Error('Unable to save cached accounts');
-  }
+  await persistCachedAccounts(cachedUserPath, dataAccounts);
 
   const count = 100;
   let flatMatchIds: string[] = [];    
@@ -223,8 +237,7 @@ export const processInitUsersLeaderBoard = async () => {
     let start = 0;
     while (true) {
       const accRes = await getMatches(acc.puuid, start, count, configData.startDate, configData.endDate);
-      await delay(1000);
-
+      await delay(900);
       if (accRes == null) {
         break;
       }
@@ -259,7 +272,10 @@ export const processInitUsersLeaderBoard = async () => {
     let matchRes = jsonMatchData.find(e => e.matchId == matchId)
     if (matchRes == null) {
       const rawRes = await getMatchDetail(matchId);
-      await delay(1000);
+      if (IS_DEBUG_PROCESS) {
+        console.log('get match detail', matchId, new Date().toLocaleTimeString());
+      }
+      await delay(900);
       const isStandardGame = rawRes?.info?.tft_game_type == 'standard';
       if (rawRes != null && rawRes?.info?.endOfGameResult == 'GameComplete') {
         matchRes = {
@@ -299,63 +315,59 @@ export const processInitUsersLeaderBoard = async () => {
       matches.push(matchRes);
     }
     idx++;
-    if (idx % 100 == 0) {
-      console.log(`processed ${idx}/${flatMatchIds.length} matches`);
+    if (idx % BATCH_SIZE == 0) {
+      console.log(`processed ${idx}/${flatMatchIds.length} matches at ${new Date().toLocaleTimeString()}`);
+      await persistCachedMatches(cachedMatchPath, matches);
     }
   }
   console.log(`completed ${idx}/${flatMatchIds.length} matches`);
-  try {
-    await fs.promises.writeFile(cachedMatchPath, JSON.stringify(matches), 'utf8');
-  } catch (error: any) {
-    console.error('Error writing cached matches:', error.message);
-    throw new Error('Unable to save cached matches');
-  }
+  await persistCachedMatches(cachedMatchPath, matches);
 
   // Generate CSV file for debugging
-  try {
-    const csvRows: string[] = [];
-    // CSV header
-    csvRows.push('gameName,tagName,matchId,gameMode,placement,timeEliminated,lastRound,totalPoints');
+  // try {
+  //   const csvRows: string[] = [];
+  //   // CSV header
+  //   csvRows.push('gameName,tagName,matchId,gameMode,placement,timeEliminated,lastRound,totalPoints');
     
-    // Add data rows (only for accounts in the input list)
-    const allowedAccounts = new Set(
-      dataAccounts
-        .filter(acc => acc?.gameName && acc?.tagLine)
-        .map(acc => `${acc.gameName!.toLowerCase()}#${acc.tagLine!.toLowerCase()}`)
-    );
+  //   // Add data rows (only for accounts in the input list)
+  //   const allowedAccounts = new Set(
+  //     dataAccounts
+  //       .filter(acc => acc?.gameName && acc?.tagLine)
+  //       .map(acc => `${acc.gameName!.toLowerCase()}#${acc.tagLine!.toLowerCase()}`)
+  //   );
 
-    for (const match of matches) {
-      for (const participant of match.participants) {
-        const participantKey = `${participant.riotIdGameName?.toLowerCase() ?? ''}#${participant.riotIdTagline?.toLowerCase() ?? ''}`;
-        if (!allowedAccounts.has(participantKey)) continue;
-        const row = [
-          participant.riotIdGameName ?? '',
-          participant.riotIdTagline ?? '',
-          match.matchId ?? '',
-          match.gameMode ?? '',
-          participant.placement?.toString() ?? '',
-          participant.timeEliminated?.toString() ?? '',
-          participant.lastRound?.toString() ?? '0',
-          participant.totalPoints?.toString() ?? '0'
-        ];
-        // Escape commas and quotes in CSV values
-        csvRows.push(row.map(val => {
-          if (val.includes(',') || val.includes('"') || val.includes('\n')) {
-            return `"${val.replace(/"/g, '""')}"`;
-          }
-          return val;
-        }).join(','));
-      }
-    }
+  //   for (const match of matches) {
+  //     for (const participant of match.participants) {
+  //       const participantKey = `${participant.riotIdGameName?.toLowerCase() ?? ''}#${participant.riotIdTagline?.toLowerCase() ?? ''}`;
+  //       if (!allowedAccounts.has(participantKey)) continue;
+  //       const row = [
+  //         participant.riotIdGameName ?? '',
+  //         participant.riotIdTagline ?? '',
+  //         match.matchId ?? '',
+  //         match.gameMode ?? '',
+  //         participant.placement?.toString() ?? '',
+  //         participant.timeEliminated?.toString() ?? '',
+  //         participant.lastRound?.toString() ?? '0',
+  //         participant.totalPoints?.toString() ?? '0'
+  //       ];
+  //       // Escape commas and quotes in CSV values
+  //       csvRows.push(row.map(val => {
+  //         if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+  //           return `"${val.replace(/"/g, '""')}"`;
+  //         }
+  //         return val;
+  //       }).join(','));
+  //     }
+  //   }
     
-    const csvContent = csvRows.join('\n');
-    const debugCsvPath = path.resolve(__dirname, '../../data/debug-leaderboard-data.csv');
-    await fs.promises.writeFile(debugCsvPath, csvContent, 'utf8');
-    console.log(`Debug CSV file saved to: ${debugCsvPath}`);
-  } catch (error: any) {
-    console.error('Error writing debug CSV file:', error.message);
-    // Don't throw here, CSV generation failure is not critical
-  }
+  //   const csvContent = csvRows.join('\n');
+  //   const debugCsvPath = path.resolve(__dirname, '../../data/debug-leaderboard-data.csv');
+  //   await fs.promises.writeFile(debugCsvPath, csvContent, 'utf8');
+  //   console.log(`Debug CSV file saved to: ${debugCsvPath}`);
+  // } catch (error: any) {
+  //   console.error('Error writing debug CSV file:', error.message);
+  //   // Don't throw here, CSV generation failure is not critical
+  // }
 
   for (const acc of dataAccounts.filter(e => e != null)) {
     if (acc?.puuid == null) continue;

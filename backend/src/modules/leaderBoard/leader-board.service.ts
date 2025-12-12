@@ -10,6 +10,9 @@ export const getRiotAccountByIdURL = (gameName: string, gameTag: string): string
 };
 
 export const getRiotAccountById = async (gameName: string, gameTag: string): Promise<any> => {
+  if (gameName == null || gameTag == null) {
+    return null;
+  }
   const url = getRiotAccountByIdURL(gameName, gameTag);
   try {
     const response = await axios.get(url);
