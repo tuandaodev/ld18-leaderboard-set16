@@ -64,6 +64,7 @@ export interface MinParticipant {
   placement:                        number;
   timeEliminated:               number;
   totalPoints?:                    number;
+  lastRound?:                       number;
 }
 
 // export class LeaderBoardTeamsDto {

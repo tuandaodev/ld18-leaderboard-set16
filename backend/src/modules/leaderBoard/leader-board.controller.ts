@@ -267,7 +267,7 @@ export const processInitUsersLeaderBoard = async () => {
           gameMode:           rawRes.info.tft_game_type,
           participants:       rawRes.info.participants.map(x => {
             let totalPoints = 0;
-            if (x.time_eliminated > 1200) {
+            if (x.time_eliminated > 1200 && x.last_round > 30) {
               if (x.placement == 1) {
                 totalPoints = 10;
               }
@@ -287,6 +287,7 @@ export const processInitUsersLeaderBoard = async () => {
               placement:                      x.placement,
               timeEliminated:              x.time_eliminated,
               totalPoints:                    totalPoints,
+              lastRound:                      x.last_round,
             }
           })
         }
@@ -312,7 +313,7 @@ export const processInitUsersLeaderBoard = async () => {
   try {
     const csvRows: string[] = [];
     // CSV header
-    csvRows.push('gameName,tagName,matchId,gameMode,placement,timeEliminated,totalPoints');
+    csvRows.push('gameName,tagName,matchId,gameMode,placement,timeEliminated,lastRound,totalPoints');
     
     // Add data rows (only for accounts in the input list)
     const allowedAccounts = new Set(
@@ -332,6 +333,7 @@ export const processInitUsersLeaderBoard = async () => {
           match.gameMode ?? '',
           participant.placement?.toString() ?? '',
           participant.timeEliminated?.toString() ?? '',
+          participant.lastRound?.toString() ?? '0',
           participant.totalPoints?.toString() ?? '0'
         ];
         // Escape commas and quotes in CSV values
