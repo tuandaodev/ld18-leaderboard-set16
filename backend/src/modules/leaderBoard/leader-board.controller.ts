@@ -118,6 +118,7 @@ export const getLeaderBoardList = asyncHandler(
         .createQueryBuilder('account')
         .where('account.totalPoints > :minPoints', { minPoints: 0 })
         .orderBy('account.totalPoints', 'DESC')
+        .addOrderBy('account.csvOrder', 'ASC')
         .limit(100)
         .getMany();
 
@@ -1175,6 +1176,7 @@ export const exportLeaderBoardCSV = [
           .createQueryBuilder('account')
           .where('account.totalPoints > :minPoints', { minPoints: 0 })
           .orderBy('account.totalPoints', 'DESC')
+          .addOrderBy('account.csvOrder', 'ASC')
           .getMany();
 
         // Helper to convert array of objects to CSV
