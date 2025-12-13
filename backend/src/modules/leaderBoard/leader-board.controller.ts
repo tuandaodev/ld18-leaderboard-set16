@@ -567,9 +567,9 @@ const processAccountMatches = async (
   // Use getMatchesDetails which handles rate limiting automatically
   const startTime = Date.now();
   const matchDetails = await getMatchesDetails(matchesToProcess);
-  const elapsedTime = Date.now() - startTime;
+  const elapsedTime = (Date.now() - startTime) / 1000;
   if (IS_DEBUG_PROCESS) {
-    console.log(`get matches details took ${elapsedTime}ms`, new Date().toLocaleTimeString());
+    console.log(`get ${matchesToProcess.length} matches details took ${elapsedTime}s | ${new Date().toLocaleTimeString()}`);
   }
   
   // Transform results and update cache

@@ -188,10 +188,69 @@ const consumeRateLimit = async (key: string = 'riot-api'): Promise<void> => {
 };
 
 /**
+ * Fetch a single match detail with retry logic
+ */
+const fetchSingleMatchDetail = async (
+  matchId: string,
+  maxRetries: number,
+  retryDelay: number
+): Promise<RiotMatchDto | null> => {
+  let retries = 0;
+  
+  while (retries <= maxRetries) {
+    try {
+      // Consume rate limit before making request (if limiters are initialized)
+      // On first request, limiters might not be initialized yet
+      if (methodRateLimiter || appRateLimiters.size > 0) {
+        await consumeRateLimit('riot-api');
+      }
+      
+      const url = getMatchDetailURL(matchId);
+      const response = await axios.get(url);
+      
+      // Update rate limiters based on response headers
+      updateRateLimitersFromHeaders(response.headers);
+      
+      return response.data;
+    } catch (error: any) {
+      // Handle 429 Too Many Requests
+      if (error.response?.status === 429) {
+        // Update rate limiters from error response headers if available
+        if (error.response?.headers) {
+          updateRateLimitersFromHeaders(error.response.headers);
+        }
+        
+        const retryAfter = error.response?.headers['retry-after'];
+        const waitTime = retryAfter 
+          ? parseInt(retryAfter) * 1000 
+          : retryDelay * Math.pow(2, retries); // Exponential backoff
+        
+        console.warn(`Rate limited for match ${matchId}. Waiting ${waitTime}ms before retry ${retries + 1}/${maxRetries}`);
+        
+        if (retries < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          retries++;
+        } else {
+          console.error(`Max retries reached for match ${matchId}`);
+          return null;
+        }
+      } else {
+        // Other errors - log and return null
+        console.error(`Error calling API to get match detail: ${matchId}`, error.message);
+        return null;
+      }
+    }
+  }
+  
+  return null;
+};
+
+/**
  * Get multiple match details with rate limit handling using rate-limiter-flexible
+ * Processes matches in parallel for better performance
  * @param matchIds Array of match IDs to fetch
  * @param options Optional configuration
- * @returns Array of match details (null for failed requests)
+ * @returns Array of match details (null for failed requests) in the same order as input
  */
 export const getMatchesDetails = async (
   matchIds: string[],
@@ -203,62 +262,13 @@ export const getMatchesDetails = async (
   const maxRetries = options?.maxRetries ?? 3;
   const retryDelay = options?.retryDelay ?? 1000;
   
-  const results: (RiotMatchDto | null)[] = [];
+  // Process all matches in parallel
+  const promises = matchIds.map(matchId => 
+    fetchSingleMatchDetail(matchId, maxRetries, retryDelay)
+  );
   
-  for (let i = 0; i < matchIds.length; i++) {
-    const matchId = matchIds[i];
-    let retries = 0;
-    let success = false;
-    
-    while (retries <= maxRetries && !success) {
-      try {
-        // Consume rate limit before making request (if limiters are initialized)
-        // On first request, limiters might not be initialized yet
-        if (methodRateLimiter || appRateLimiters.size > 0) {
-          await consumeRateLimit('riot-api');
-        }
-        
-        const url = getMatchDetailURL(matchId);
-        const response = await axios.get(url);
-        
-        // Update rate limiters based on response headers
-        updateRateLimitersFromHeaders(response.headers);
-        
-        // Store the result
-        results.push(response.data);
-        success = true;
-      } catch (error: any) {
-        // Handle 429 Too Many Requests
-        if (error.response?.status === 429) {
-          // Update rate limiters from error response headers if available
-          if (error.response?.headers) {
-            updateRateLimitersFromHeaders(error.response.headers);
-          }
-          
-          const retryAfter = error.response?.headers['retry-after'];
-          const waitTime = retryAfter 
-            ? parseInt(retryAfter) * 1000 
-            : retryDelay * Math.pow(2, retries); // Exponential backoff
-          
-          console.warn(`Rate limited for match ${matchId}. Waiting ${waitTime}ms before retry ${retries + 1}/${maxRetries}`);
-          
-          if (retries < maxRetries) {
-            await new Promise(resolve => setTimeout(resolve, waitTime));
-            retries++;
-          } else {
-            console.error(`Max retries reached for match ${matchId}`);
-            results.push(null);
-            success = true; // Exit loop even though it failed
-          }
-        } else {
-          // Other errors - log and move on
-          console.error(`Error calling API to get match detail: ${matchId}`, error.message);
-          results.push(null);
-          success = true; // Exit loop
-        }
-      }
-    }
-  }
+  // Wait for all promises to resolve, maintaining order
+  const results = await Promise.all(promises);
   
   return results;
 };
