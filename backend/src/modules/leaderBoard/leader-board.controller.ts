@@ -545,6 +545,14 @@ export const processUsersController = asyncHandler(
     for (const account of restAccounts) {
       const accRes = await getOrFetchRiotAccount(account);
       if (accRes != null && accRes.puuid != null) {
+        // check if account already exists in CachedRiotAccount
+        const existingAccount = await AppDataSource.getRepository(CachedRiotAccount).findOne({
+          where: { puuid: accRes.puuid }
+        });
+        if (existingAccount != null) {
+          console.log(`Account ${accRes.gameName}-${accRes.tagLine} already exists in CachedRiotAccount, skipping...`);
+          continue;
+        }
         account.gameName = accRes.gameName;
         account.tagLine = accRes.tagLine;
         account.puuid = accRes.puuid;
