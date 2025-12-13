@@ -272,7 +272,7 @@ const updateCachedAccountsTotalPoints = async (dataAccounts: RiotAccountDto[]) =
   }
 };
 
-const persistCachedMatches = async (matches: MatchInfo[]) => {
+const persistCachedMatches = async (matches: MatchInfo[], ignoreExistingMatches: boolean = false) => {
   try {
     if (matches.length === 0) return;
     
@@ -305,7 +305,9 @@ const persistCachedMatches = async (matches: MatchInfo[]) => {
         existing.gameMode = match.gameMode;
         existing.gameCreation = match.gameCreation;
         existing.participants = match.participants;
-        matchesToSave.push(existing);
+        if (!ignoreExistingMatches) {
+          matchesToSave.push(existing);
+        }
       } else {
         // Create new match
         const newMatch = matchRepository.create({
@@ -1214,3 +1216,87 @@ function isValidDate(dateString: string): boolean {
 
   return date.toISOString().startsWith(dateString);
 }
+
+export const saveMatchesController = asyncHandler(
+  async (req: Request, res: Response) => {
+    try {
+      const { matches } = req.body;
+
+      // Validate input
+      if (!matches) {
+        return res.status(400).json({
+          success: false,
+          message: 'Matches data is required'
+        });
+      }
+
+      // Ensure matches is an array
+      const matchesArray = Array.isArray(matches) ? matches : [matches];
+
+      if (matchesArray.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'At least one match is required'
+        });
+      }
+
+      // Validate and transform match data
+      const validMatches: MatchInfo[] = [];
+      const errors: string[] = [];
+
+      for (let i = 0; i < matchesArray.length; i++) {
+        const match = matchesArray[i];
+
+        // Validate required fields
+        if (!match.matchId) {
+          errors.push(`Match at index ${i}: matchId is required`);
+          continue;
+        }
+
+        // Create MatchInfo object
+        const matchInfo: MatchInfo = {
+          matchId: String(match.matchId),
+          endOfGameResult: match.endOfGameResult || null,
+          gameMode: match.gameMode || null,
+          gameCreation: match.gameCreation || null,
+          participants: Array.isArray(match.participants) ? match.participants : []
+        };
+
+        if (match.participants.length === 0) {
+          errors.push(`Match at index ${i}: participants is required`);
+          continue;
+        }
+
+        validMatches.push(matchInfo);
+      }
+
+      if (validMatches.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'No valid matches to save',
+          errors
+        });
+      }
+
+      // Save matches using the existing persistCachedMatches function
+      await persistCachedMatches(validMatches, true);
+
+      res.status(200).json({
+        success: true,
+        message: `Successfully saved ${validMatches.length} match(es)`,
+        data: {
+          saved: validMatches.length,
+          total: matchesArray.length,
+          errors: errors.length > 0 ? errors : undefined
+        }
+      });
+    } catch (error: any) {
+      console.error('Error saving matches:', error.message);
+      res.status(500).json({
+        success: false,
+        message: 'Unable to save matches',
+        error: error.message
+      });
+    }
+  }
+);

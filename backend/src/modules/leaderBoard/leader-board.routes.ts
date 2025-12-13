@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { exportLeaderBoardCSV, getLeaderBoardList, getProcessStatusController, processMatchesController, processUsersController, uploadLeaderboardConfigController } from "./leader-board.controller";
+import { exportLeaderBoardCSV, getLeaderBoardList, getProcessStatusController, processMatchesController, processUsersController, saveMatchesController, uploadLeaderboardConfigController } from "./leader-board.controller";
 
 export const leaderBoardRouter = Router();
 
@@ -17,3 +17,5 @@ leaderBoardRouter.post("/export-leaderboard", exportLeaderBoardCSV as any);
 // leaderBoardRouter.get("/test", testController);
 
 leaderBoardRouter.post('/upload-data', uploadLeaderboardConfigController as any);
+
+leaderBoardRouter.post('/init-cached-matches', saveMatchesController);
