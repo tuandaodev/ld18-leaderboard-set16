@@ -1103,41 +1103,53 @@ export const exportLeaderBoardCSV = [
         return res.status(401).json({ success: false, message: 'Unauthorized' });
       }
 
-      const userFilePath = path.resolve(__dirname, "../../data/user-leaderboard.json");
-
-      let userData: any = null;
       try {
-        const jsonString = await fs.promises.readFile(userFilePath, 'utf-8');
-        userData = JSON.parse(jsonString);
+        const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
+        
+        // Query accounts from database with totalPoints > 0, sorted by totalPoints descending
+        const cachedAccounts = await accountRepository
+          .createQueryBuilder('account')
+          .where('account.totalPoints > :minPoints', { minPoints: 0 })
+          .orderBy('account.totalPoints', 'DESC')
+          .getMany();
+
+        // Helper to convert array of objects to CSV
+        function toCSV(data: any[], sectionName: string): string {
+          if (!Array.isArray(data) || data.length === 0) return '';
+          const keys = Object.keys(data[0]);
+          let csv = `\n# ${sectionName}\n`;
+          csv += keys.join(',') + '\n';
+          for (const row of data) {
+            csv += keys.map(k => JSON.stringify(row[k] ?? '')).join(',') + '\n';
+          }
+          return csv;
+        }
+
+        // Map CachedRiotAccount entities to CSV rows
+        const userRows = cachedAccounts.map(account => ({
+          gameName: account.gameName,
+          tagLine: account.tagLine,
+          totalPoints: account.totalPoints ?? 0,
+          totalMatches: account.totalMatches ?? 0,
+          puuid: account.puuid ?? '',
+          refreshedAt: account.refreshedAt ? account.refreshedAt.toISOString() : '',
+          refreshedDate: account.refreshedDate ?? '',
+          isCompleted: account.isCompleted ?? false,
+        }));
+
+        let csv = '';
+        csv += toCSV(userRows, 'Users');
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="leaderboard.csv"');
+        res.send(csv);
       } catch (error: any) {
-        console.error('Error reading leaderboard file:', error.message);
+        console.error('Error exporting leaderboard from database:', error.message);
         return res.status(500).json({
           success: false,
-          message: 'Unable to read leaderboard data'
+          message: 'Unable to export leaderboard data'
         });
       }
-
-      // Helper to convert array of objects to CSV
-      function toCSV(data: any[], sectionName: string): string {
-        if (!Array.isArray(data) || data.length === 0) return '';
-        const keys = Object.keys(data[0]);
-        let csv = `\n# ${sectionName}\n`;
-        csv += keys.join(',') + '\n';
-        for (const row of data) {
-          csv += keys.map(k => JSON.stringify(row[k] ?? '')).join(',') + '\n';
-        }
-        return csv;
-      }
-
-      // If the JSON has a 'users' or 'teams' property, use that
-      let userRows = Array.isArray(userData) ? userData : (userData as any).users || [];
-
-      let csv = '';
-      csv += toCSV(userRows, 'Users');
-
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', 'attachment; filename="leaderboard.csv"');
-      res.send(csv);
     }
   )
 ];
