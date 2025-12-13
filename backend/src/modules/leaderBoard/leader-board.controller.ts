@@ -1,6 +1,6 @@
 import { UTCDate } from "@date-fns/utc";
 import crypto from 'crypto';
-import { format } from "date-fns";
+import { differenceInDays, format, startOfDay } from "date-fns";
 import { Request, Response } from "express";
 import rateLimit from "express-rate-limit";
 import fs from 'fs';
@@ -651,6 +651,26 @@ export const processUserList = async (): Promise<RiotAccountDto[]> => {
   return dataAccounts;
 }
 
+export const checkCronDate = async () => {
+  // Load configuration
+  const configData = await loadConfigData();
+
+  if (configData?.isStopJob) {
+    console.log("Config data is stop job, skipping checkCronDate");
+    return false;
+  }
+
+  const processDate = new Date();
+  const currentDate = startOfDay(processDate);
+  const endOfCampaignDate = startOfDay(new Date(configData.endDate));
+  // if today is a day after end date, do not execute function
+  const days = differenceInDays(currentDate, endOfCampaignDate);
+  if (days >= 2) {
+      return false;
+  }
+  return false;
+}
+
 // Main function - processes accounts one by one
 export const processMatchesForLeaderboard = async (limitAccounts: number = 5, isRefreshingTodayMatches: boolean = false) => {
   console.log("Start processMatchesForLeaderboard");
@@ -660,6 +680,19 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
   if (configData?.isStopJob) {
     console.log("Config data is stop job, skipping processMatchesForLeaderboard");
     return;
+  }
+
+  let startDateString: string = configData.startDate;
+  let endDateString: string = configData.endDate;
+  if (isRefreshingTodayMatches) {
+    startDateString = format(new Date(), 'yyyy-MM-dd');
+    endDateString = format(new Date(), 'yyyy-MM-dd');
+
+    // if today is greater than endDate, set endDate to configData.endDate
+    if (new Date() > new Date(configData.endDate)) {
+      startDateString = configData.endDate;
+      endDateString = configData.endDate;
+    }
   }
 
   // Load 5 accounts from CachedRiotAccount where refreshedDate is null or not today
@@ -673,13 +706,6 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
     if (acc.puuid == null) {
       console.log(`Skipping account ${acc.gameName}-${acc.tagLine} (no puuid)`);
       continue;
-    }
-
-    let startDateString: string = configData.startDate;
-    let endDateString: string = configData.endDate;
-    if (isRefreshingTodayMatches) {
-      startDateString = format(new Date(), 'yyyy-MM-dd');
-      endDateString = format(new Date(), 'yyyy-MM-dd');
     }
 
     const matchIds = await getAccountMatches(acc.puuid, acc.gameName, startDateString, endDateString);
@@ -730,6 +756,49 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
     demo5Accounts: accounts.slice(0, 5),
   };
 }
+
+export const getProcessStatusController = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!validateApiKey(req)) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const configData = await loadConfigData();
+    const totalAccounts = await AppDataSource.getRepository(CachedRiotAccount).count();
+    const totalProcessedAccounts = await AppDataSource.getRepository(CachedRiotAccount).count({
+      where: { puuid: Not(IsNull()) }
+    });
+
+    const totalMatches = await AppDataSource.getRepository(CachedMatch).count();
+    
+    // get last 50 accounts has refreshedDate is NULL or not today
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const last50Accounts = await AppDataSource.getRepository(CachedRiotAccount)
+      .createQueryBuilder('account')
+      .where('account.refreshedDate IS NULL OR account.refreshedDate <> :today', { today })
+      .orderBy('account.refreshedAt', 'ASC')
+      .limit(50)
+      .getMany();
+
+    // get last 10 accounts has refreshedDate is today
+    const last10Accounts = await AppDataSource.getRepository(CachedRiotAccount)
+      .createQueryBuilder('account')
+      .where('account.refreshedDate = :today', { today })
+      .orderBy('account.refreshedAt', 'DESC')
+      .limit(10)
+      .getMany();
+
+    res.status(200).json({
+      success: true,
+      configData: configData,
+      totalAccounts: totalAccounts,
+      totalProcessedAccounts: totalProcessedAccounts,
+      totalMatches: totalMatches,
+      unprocessed50Accounts: last50Accounts,
+      processed10Accounts: last10Accounts,
+    });
+  }
+);
 
 export const processMatchesController = [
   initLeaderBoardRateLimiter,

@@ -11,7 +11,7 @@ import { eventRouter } from "./modules/event/event.routes";
 import { cleanUpUploadFolder } from "./modules/images/images.controller";
 import { imageRouter } from "./modules/images/images.routes";
 import { leaderBoardRouter } from "./modules/leaderBoard/leader-board.routes";
-import { processMatchesForLeaderboard } from "./modules/leaderBoard/leader-board.controller";
+import { checkCronDate, processMatchesForLeaderboard } from "./modules/leaderBoard/leader-board.controller";
 
 const cors = require("cors");
 const cron = require('node-cron');
@@ -311,6 +311,12 @@ const procesRefreshingMatches = async () => {
   if (isRefreshingMatches) {
     return;
   }
+
+  if (!checkCronDate()) {
+    console.log("Cron date is not valid, skipping procesRefreshingMatches");
+    return;
+  }
+
   isRefreshingMatches = true;
   try {
     await processMatchesForLeaderboard(20, true);
@@ -330,6 +336,12 @@ const procesCalculatingMatches = async () => {
   if (isCalculatingMatches) {
     return;
   }
+
+  if (!checkCronDate()) {
+    console.log("Cron date is not valid, skipping procesCalculatingMatches");
+    return;
+  }
+
   isCalculatingMatches = true;
   try {
     await processMatchesForLeaderboard(20);
@@ -341,9 +353,5 @@ const procesCalculatingMatches = async () => {
 }
 // Schedule to run every 5 minutes from 00:00 to 11:59
 cron.schedule('*/5 0-11 * * *', procesCalculatingMatches);
-
-
-
-
 
 export default app;
