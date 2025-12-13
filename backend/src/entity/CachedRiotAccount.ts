@@ -9,7 +9,7 @@ export class CachedRiotAccount extends Base {
     type: "varchar",
     nullable: true,
   })
-  puuid: string;
+  puuid?: string | null;
 
   @Column({
     name: "game_name",
@@ -24,6 +24,12 @@ export class CachedRiotAccount extends Base {
     nullable: false,
   })
   tagLine: string;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  refreshedAt: Date;
+
+  @Column({ type: 'date', nullable: true })
+  refreshedDate: string;
 
   @Column({
     name: "total_points",
@@ -40,4 +46,5 @@ export class CachedRiotAccount extends Base {
   })
   data: any; // Store the full RiotAccountDto data as JSON
 }
+
 

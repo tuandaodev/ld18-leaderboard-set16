@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import multer from "multer";
 import path from "path";
 import rateLimit from "express-rate-limit";
-import { In } from "typeorm";
+import { In, IsNull, Not } from "typeorm";
 import { asyncHandler } from "../../middleware/async";
 import { AppDataSource } from "../../data-source";
 import { CachedMatch } from "../../entity/CachedMatch";
@@ -197,14 +197,14 @@ const persistCachedAccounts = async (dataAccounts: RiotAccountDto[]) => {
       
       if (existing) {
         // Update existing account
-        existing.puuid = account.puuid;
+        existing.puuid = account.puuid ?? null;
         existing.totalPoints = account.totalPoints;
         existing.data = account;
         accountsToSave.push(existing);
       } else {
         // Create new account
         const newAccount = accountRepository.create({
-          puuid: account.puuid,
+          puuid: account.puuid ?? null,
           gameName: account.gameName,
           tagLine: account.tagLine,
           totalPoints: account.totalPoints,
@@ -425,7 +425,8 @@ const getOrFetchRiotAccount = async (
 const getAccountMatches = async (
   puuid: string,
   gameName: string,
-  configData: any
+  startDate: string,
+  endDate: string
 ): Promise<string[]> => {
   const count = 100;
   const matchIds: string[] = [];
@@ -434,7 +435,7 @@ const getAccountMatches = async (
   
   while (true) {
     const startTime = Date.now();
-    const accRes = await getMatches(puuid, start, count, configData.startDate, configData.endDate);
+    const accRes = await getMatches(puuid, start, count, startDate, endDate);
     const elapsedTime = Date.now() - startTime;
     
     if (IS_DEBUG_PROCESS) {
@@ -631,6 +632,79 @@ const saveLeaderBoardResults = async (
   }
 };
 
+export const initUserList = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!validateApiKey(req)) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    // Load configuration
+    const configData = await loadConfigData();
+    const processedAccounts = await processUserList();
+
+    // Get total count of accounts in CachedRiotAccount
+    const totalAccounts = await AppDataSource.getRepository(CachedRiotAccount).count();
+    const totalProcessedAccounts = await AppDataSource.getRepository(CachedRiotAccount).count({
+      where: { puuid: Not(IsNull()) }
+    });
+    console.log(`Total accounts in CachedRiotAccount: ${totalAccounts}`);
+    console.log(`Total processed accounts in CachedRiotAccount: ${totalProcessedAccounts}`);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        config: configData,
+        totalUsers: totalAccounts,
+        totalProcessedUsers: totalProcessedAccounts,
+        processedUsers: processedAccounts.length,
+        demo5processedUsers: processedAccounts.slice(0, 5),
+      }
+    });
+  }
+);
+
+// Helper function to load accounts from CachedRiotAccount without puuid
+const loadAccountsWithoutPuuid = async (): Promise<AccountDto[]> => {
+  const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
+  
+  try {
+    const cachedAccounts = await accountRepository.find({
+      where: { puuid: IsNull() }
+    });
+    console.log(`Found ${cachedAccounts.length} accounts without puuid`);
+    
+    return cachedAccounts.map(acc => new AccountDto(acc.gameName, acc.tagLine));
+  } catch (error: any) {
+    console.error('Error reading accounts without puuid from database:', error.message);
+    throw new Error('Unable to read accounts from database');
+  }
+};
+
+export const processUserList = async (): Promise<RiotAccountDto[]> => {
+  // Load accounts from CachedRiotAccount that don't have puuid
+  const accounts = await loadAccountsWithoutPuuid();
+  
+  // Load cached accounts map
+  const cachedAccountMap = await loadCachedAccountsMap();
+  
+  // Initialize points map
+  const dataAccounts: RiotAccountDto[] = [];
+  // Process each account one by one
+  for (let i = 0; i < accounts.length; i++) {
+    const acc = accounts[i];
+    console.log(`Processing account ${i + 1}/${accounts.length}: ${acc.gameName}-${acc.tagLine}`);
+    // Get or fetch Riot account
+    const accRes = await getOrFetchRiotAccount(acc, cachedAccountMap);
+    if (accRes == null) {
+      console.log(`Skipping account ${acc.gameName}-${acc.tagLine} (not found)`);
+      continue;
+    }
+    dataAccounts.push(accRes);
+  }
+
+  return dataAccounts;
+}
+
 // Main function - processes accounts one by one
 export const processInitUsersLeaderBoard = async () => {
   console.log("Start processInitUsersLeaderBoard");
@@ -673,8 +747,7 @@ export const processInitUsersLeaderBoard = async () => {
       continue;
     }
     
-    const matchIds = await getAccountMatches(accRes.puuid, accRes.gameName, configData);
-    
+    const matchIds = await getAccountMatches(accRes.puuid, accRes.gameName, configData.startDate, configData.endDate);
     if (matchIds.length === 0) {
       console.log(`No matches found for ${accRes.gameName}-${accRes.tagLine}`);
       continue;
@@ -928,13 +1001,41 @@ export const uploadCSV = [
       // Write the JSON object to the config file
       await fs.promises.writeFile(configFilePath, JSON.stringify(configData, null, 2), 'utf-8');
 
+      // Add userAccounts to CachedRiotAccount table
+      let riotAccountAccounts: RiotAccountDto[] = userAccounts.filter(x => x.gameName && x.tagLine).map(x => {
+        return {
+          gameName: x.gameName,
+          tagLine: x.tagLine,
+          puuid: null,
+          totalPoints: 0,
+        } as RiotAccountDto;
+      });
+
+      // Remove duplicates
+      riotAccountAccounts = riotAccountAccounts.filter((x, index, self) =>
+        index === self.findIndex((t) => t.gameName === x.gameName && t.tagLine === x.tagLine)
+      );
+      
+      // Save in batches of 50
+      const BATCH_SIZE = 50;
+      for (let i = 0; i < riotAccountAccounts.length; i += BATCH_SIZE) {
+        const batch = riotAccountAccounts.slice(i, i + BATCH_SIZE);
+        await persistCachedAccounts(batch);
+      }
+
+      // Count failed accounts
+      const failedAccounts = userAccounts.filter(x => !x.gameName || !x.tagLine);
+      console.log(`Failed accounts: ${failedAccounts.length}`);
+
       res.status(200).json({
         success: true,
         message: 'File uploaded',
         data: {
           config: configData,
           totalUsers: userAccounts.length,
+          totalFailedUsers: failedAccounts.length,
           demo3users: userAccounts.slice(0, 5),
+          failedUsers: failedAccounts,
         }
       });
     } catch (error: any) {

@@ -19,3 +19,4 @@ export class AddCacheEntities1765556367767 implements MigrationInterface {
 
 }
 
+

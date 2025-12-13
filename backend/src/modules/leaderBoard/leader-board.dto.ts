@@ -36,9 +36,9 @@ export class LeaderBoardDto {
 }
 
 export class RiotAccountDto {
-  puuid: string;
   gameName: string;
   tagLine: string;
+  puuid?: string | null;
   totalPoints?: number;
 }
 
