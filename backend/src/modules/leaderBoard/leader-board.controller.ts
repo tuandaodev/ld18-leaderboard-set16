@@ -11,6 +11,7 @@ import { CachedMatch } from "../../entity/CachedMatch";
 import { CachedRiotAccount } from "../../entity/CachedRiotAccount";
 import { AccountDto, CsvTeamDto, LeaderBoardDto, MatchInfo, RiotAccountDto } from "./leader-board.dto";
 import { convertToAccountDto, convertToCsvTeamDto, getCSVForTeams, getCSVForUsers, getMatchDetail, getMatches, getRiotAccountById } from "./leader-board.service";
+import { format, parseISO } from "date-fns";
 
 const { xss } = require('express-xss-sanitizer');
 
@@ -365,6 +366,31 @@ const loadAccountsFromCSV = async (configData: any): Promise<AccountDto[]> => {
   return convertToAccountDto(records);
 };
 
+// Helper function to load 5 accounts from CachedRiotAccount where refreshedDate is null or not today
+const loadAccountsFromCachedRiotAccount = async (limit: number = 5): Promise<CachedRiotAccount[]> => {
+  const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
+  
+  try {
+    // Get today's date in 'yyyy-MM-dd' format
+    const today = format(new Date(), 'yyyy-MM-dd');
+    
+    // Query for accounts where refreshedDate is null or not today
+    const cachedAccounts = await accountRepository
+      .createQueryBuilder('account')
+      .where('account.puuid IS NOT NULL')
+      .andWhere('(account.refreshedDate IS NULL OR account.refreshedDate <> :today)', { today })
+      .limit(limit)
+      .getMany();
+    
+    console.log(`Found ${cachedAccounts.length} accounts from CachedRiotAccount (refreshedDate is null or not today)`);
+    
+    return cachedAccounts;
+  } catch (error: any) {
+    console.error('Error reading accounts from CachedRiotAccount:', error.message);
+    throw new Error('Unable to read accounts from database');
+  }
+};
+
 // Helper function to load cached accounts map from database
 const loadCachedAccountsMap = async (): Promise<Map<string, RiotAccountDto>> => {
   const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
@@ -392,7 +418,7 @@ const loadCachedAccountsMap = async (): Promise<Map<string, RiotAccountDto>> => 
 
 // Helper function to get or fetch Riot account
 const getOrFetchRiotAccount = async (
-  acc: AccountDto,
+  acc: CachedRiotAccount,
   cachedAccountMap: Map<string, RiotAccountDto>
 ): Promise<RiotAccountDto | null> => {
   const cacheKey = `${acc.gameName.toLowerCase()}-${acc.tagLine.toLowerCase()}`;
@@ -664,7 +690,7 @@ export const initUserList = asyncHandler(
 );
 
 // Helper function to load accounts from CachedRiotAccount without puuid
-const loadAccountsWithoutPuuid = async (): Promise<AccountDto[]> => {
+const loadAccountsWithoutPuuid = async (): Promise<CachedRiotAccount[]> => {
   const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
   
   try {
@@ -673,7 +699,7 @@ const loadAccountsWithoutPuuid = async (): Promise<AccountDto[]> => {
     });
     console.log(`Found ${cachedAccounts.length} accounts without puuid`);
     
-    return cachedAccounts.map(acc => new AccountDto(acc.gameName, acc.tagLine));
+    return cachedAccounts;
   } catch (error: any) {
     console.error('Error reading accounts without puuid from database:', error.message);
     throw new Error('Unable to read accounts from database');
@@ -713,11 +739,8 @@ export const processInitUsersLeaderBoard = async () => {
   // Load configuration
   const configData = await loadConfigData();
   
-  // Load accounts from CSV
-  const accounts = await loadAccountsFromCSV(configData);
-  
-  // Load cached accounts map
-  const cachedAccountMap = await loadCachedAccountsMap();
+  // Load 5 accounts from CachedRiotAccount where refreshedDate is null or not today
+  const accounts = await loadAccountsFromCachedRiotAccount();
   
   // Initialize points map
   const pointsMap = new Map<string, number>();
@@ -727,33 +750,23 @@ export const processInitUsersLeaderBoard = async () => {
   for (let i = 0; i < accounts.length; i++) {
     const acc = accounts[i];
     console.log(`Processing account ${i + 1}/${accounts.length}: ${acc.gameName}-${acc.tagLine}`);
-    
-    // Get or fetch Riot account
-    const accRes = await getOrFetchRiotAccount(acc, cachedAccountMap);
-    
-    if (accRes == null) {
-      console.log(`Skipping account ${acc.gameName}-${acc.tagLine} (not found)`);
+
+    if (acc.puuid == null) {
+      console.log(`Skipping account ${acc.gameName}-${acc.tagLine} (no puuid)`);
       continue;
     }
-    
+
     // Initialize points for this account
-    const accountKey = `${accRes.gameName?.toLowerCase()}-${accRes.tagLine?.toLowerCase()}`;
+    const accountKey = `${acc.gameName?.toLowerCase()}-${acc.tagLine?.toLowerCase()}`;
     pointsMap.set(accountKey, 0);
-    dataAccounts.push(accRes);
-    
-    // Get matches for this account
-    if (accRes.puuid == null) {
-      console.log(`Skipping matches for ${accRes.gameName}-${accRes.tagLine} (no puuid)`);
-      continue;
-    }
-    
-    const matchIds = await getAccountMatches(accRes.puuid, accRes.gameName, configData.startDate, configData.endDate);
+
+    const matchIds = await getAccountMatches(acc.puuid, acc.gameName, configData.startDate, configData.endDate);
     if (matchIds.length === 0) {
-      console.log(`No matches found for ${accRes.gameName}-${accRes.tagLine}`);
+      console.log(`No matches found for ${acc.gameName}-${acc.tagLine}`);
       continue;
     }
     
-    console.log(`Found ${matchIds.length} matches for ${accRes.gameName}-${accRes.tagLine}`);
+    console.log(`Found ${matchIds.length} matches for ${acc.gameName}-${acc.tagLine}`);
     
     // Load cached matches for this account's matches
     const cachedMatchMap = await loadCachedMatches(matchIds);
@@ -762,16 +775,16 @@ export const processInitUsersLeaderBoard = async () => {
     await processAccountMatches(matchIds, cachedMatchMap, pointsMap);
     
     // Update account's total points immediately
-    accRes.totalPoints = pointsMap.get(accountKey) || 0;
+    // acc.totalPoints = pointsMap.get(accountKey) || 0;
     
-    // Update account in database
-    await updateCachedAccountsTotalPoints([accRes]);
+    // // Update account in database
+    // await updateCachedAccountsTotalPoints([accRes]);
     
-    console.log(`Completed account ${i + 1}/${accounts.length}: ${accRes.gameName}-${accRes.tagLine} (${accRes.totalPoints} points)`);
+    // console.log(`Completed account ${i + 1}/${accounts.length}: ${accRes.gameName}-${accRes.tagLine} (${accRes.totalPoints} points)`);
   }
   
   // Save final results
-  await saveLeaderBoardResults(dataAccounts, start);
+  // await saveLeaderBoardResults(dataAccounts, start);
   
   return {
     users: dataAccounts,
