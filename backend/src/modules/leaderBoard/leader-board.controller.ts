@@ -6,6 +6,7 @@ import rateLimit from "express-rate-limit";
 import fs from 'fs';
 import multer from "multer";
 import path from "path";
+import { RateLimiterMemory } from "rate-limiter-flexible";
 import { In, IsNull, Not } from "typeorm";
 import { AppDataSource } from "../../data-source";
 import { CachedMatch } from "../../entity/CachedMatch";
@@ -335,6 +336,13 @@ const persistCachedMatches = async (matches: MatchInfo[], ignoreExistingMatches:
 export const BATCH_SIZE = 20;
 export const IS_DEBUG_PROCESS = true;
 
+// Rate limiter for account fetching - conservative limits to avoid API throttling
+// 20 requests per 1 second (allows for parallel processing while respecting rate limits)
+const accountRateLimiter = new RateLimiterMemory({
+  points: 20, // Number of requests
+  duration: 1, // Per 1 second
+});
+
 // Helper function to load config data
 const loadConfigData = async (): Promise<ConfigData> => {
   const configFilePath = path.resolve(__dirname, '../../data/config.json');
@@ -388,19 +396,29 @@ const loadAccountsFromCachedRiotAccount = async (limit: number = 5, isRefreshing
   }
 };
 
-// Helper function to get or fetch Riot account
+// Helper function to get or fetch Riot account with rate limiting
 const getOrFetchRiotAccount = async (
   acc: CachedRiotAccount,
 ): Promise<RiotAccountDto | null> => {
+  try {
+    // Consume rate limit before making request
+    await accountRateLimiter.consume('riot-account-api');
+  } catch (rejRes: any) {
+    // Rate limit exceeded, wait for the reset time
+    const msBeforeNext = rejRes.msBeforeNext || 1000;
+    if (IS_DEBUG_PROCESS) {
+      console.log(`Rate limit exceeded for account ${acc.gameName}-${acc.tagLine}, waiting ${msBeforeNext}ms`);
+    }
+    await new Promise(resolve => setTimeout(resolve, msBeforeNext));
+    // Retry after waiting
+    await accountRateLimiter.consume('riot-account-api');
+  }
+  
   const startTime = Date.now();
   let accRes = await getRiotAccountById(acc.gameName, acc.tagLine);
   const elapsedTime = Date.now() - startTime;
   if (IS_DEBUG_PROCESS) {
-    console.log('get riot account', acc.gameName, acc.tagLine, new Date().toLocaleTimeString());
-  }
-  // Only delay if the request took less than 900ms to avoid rate limiting
-  if (elapsedTime < 900) {
-    await delay(900);
+    console.log('get riot account', acc.gameName, acc.tagLine, new Date().toLocaleTimeString(), `(${elapsedTime}ms)`);
   }
   return accRes || null;
 };
@@ -644,28 +662,69 @@ const loadAccountsWithoutPuuid = async (): Promise<CachedRiotAccount[]> => {
   }
 };
 
+// Helper function to process accounts in parallel batches with concurrency control
+const processAccountsInParallel = async (
+  accounts: CachedRiotAccount[],
+  concurrency: number = 10
+): Promise<RiotAccountDto[]> => {
+  const dataAccounts: RiotAccountDto[] = [];
+  const results: (RiotAccountDto | null)[] = new Array(accounts.length);
+  
+  // Process accounts in batches to control concurrency
+  for (let i = 0; i < accounts.length; i += concurrency) {
+    const batch = accounts.slice(i, i + concurrency);
+    const batchIndex = i;
+    
+    if (IS_DEBUG_PROCESS) {
+      console.log(`Processing batch ${Math.floor(i / concurrency) + 1}/${Math.ceil(accounts.length / concurrency)} (${batch.length} accounts)`);
+    }
+    
+    // Process batch in parallel
+    const batchPromises = batch.map(async (acc, batchOffset) => {
+      const globalIndex = batchIndex + batchOffset;
+      if (IS_DEBUG_PROCESS) {
+        console.log(`Processing account ${globalIndex + 1}/${accounts.length}: ${acc.gameName}-${acc.tagLine}`);
+      }
+      try {
+        const accRes = await getOrFetchRiotAccount(acc);
+        if (accRes == null) {
+          console.log(`Skipping account ${acc.gameName}-${acc.tagLine} (not found)`);
+        }
+        return accRes;
+      } catch (error: any) {
+        console.error(`Error processing account ${acc.gameName}-${acc.tagLine}:`, error.message);
+        return null;
+      }
+    });
+    
+    // Wait for all promises in the batch to complete
+    const batchResults = await Promise.all(batchPromises);
+    
+    // Store results and collect valid accounts
+    batchResults.forEach((result, batchOffset) => {
+      const globalIndex = batchIndex + batchOffset;
+      results[globalIndex] = result;
+      if (result != null) {
+        dataAccounts.push(result);
+      }
+    });
+  }
+  
+  return dataAccounts;
+};
+
 export const processUserList = async (): Promise<RiotAccountDto[]> => {
   // Load accounts from CachedRiotAccount that don't have puuid
   const accounts = await loadAccountsWithoutPuuid();
   
-  // Initialize points map
-  const dataAccounts: RiotAccountDto[] = [];
-  // Process each account one by one
-  for (let i = 0; i < accounts.length; i++) {
-    const acc = accounts[i];
-    if (IS_DEBUG_PROCESS) {
-      console.log(`Processing account ${i + 1}/${accounts.length}: ${acc.gameName}-${acc.tagLine}`);
-    }
-    // Get or fetch Riot account
-    const accRes = await getOrFetchRiotAccount(acc);
-    if (accRes == null) {
-      console.log(`Skipping account ${acc.gameName}-${acc.tagLine} (not found)`);
-      continue;
-    }
-    dataAccounts.push(accRes);
+  if (accounts.length === 0) {
+    return [];
   }
+  
+  // Process accounts in parallel with concurrency control (10 concurrent requests)
+  const dataAccounts = await processAccountsInParallel(accounts, 10);
 
-  // Save accounts in batches of 50
+  // Save accounts in batches of 10
   const batchSize = 10;
   for (let i = 0; i < dataAccounts.length; i += batchSize) {
     const batch = dataAccounts.slice(i, i + batchSize);
