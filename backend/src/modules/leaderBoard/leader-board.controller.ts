@@ -643,7 +643,7 @@ const saveLeaderBoardResults = async (
   }
 };
 
-export const initUserList = asyncHandler(
+export const processUsersController = asyncHandler(
   async (req: Request, res: Response) => {
     if (!validateApiKey(req)) {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
@@ -717,14 +717,14 @@ export const processUserList = async (): Promise<RiotAccountDto[]> => {
 }
 
 // Main function - processes accounts one by one
-export const processInitUsersLeaderBoard = async () => {
-  console.log("Start processInitUsersLeaderBoard");
+export const processMatchesForLeaderboard = async (limit: number = 5) => {
+  console.log("Start processMatchesForLeaderboard");
 
   // Load configuration
   const configData = await loadConfigData();
   
   // Load 5 accounts from CachedRiotAccount where refreshedDate is null or not today
-  const accounts = await loadAccountsFromCachedRiotAccount();
+  const accounts = await loadAccountsFromCachedRiotAccount(limit);
   
   // Process each account one by one
   for (let i = 0; i < accounts.length; i++) {
@@ -774,7 +774,7 @@ export const processInitUsersLeaderBoard = async () => {
   };
 }
 
-export const processUsersLeaderBoard = [
+export const processMatchesController = [
   initLeaderBoardRateLimiter,
   asyncHandler(
     async (req: Request, res: Response) => {
@@ -782,8 +782,10 @@ export const processUsersLeaderBoard = [
         return res.status(401).json({ success: false, message: 'Unauthorized' });
       }
 
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+
       try {
-        const result = await processInitUsersLeaderBoard();
+        const result = await processMatchesForLeaderboard(limit);
         res.status(200).json({
           success: true,
           ...result,
@@ -853,7 +855,7 @@ export const testController = asyncHandler(
 );
 
 // New POST endpoint to upload a CSV file with startDate and endDate
-export const uploadCSV = [
+export const uploadLeaderboardConfigController = [
   uploadCSVRateLimiter,
   xss(),
   upload,
