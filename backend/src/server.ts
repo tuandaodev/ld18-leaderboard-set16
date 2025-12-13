@@ -12,6 +12,9 @@ import { cleanUpUploadFolder } from "./modules/images/images.controller";
 import { imageRouter } from "./modules/images/images.routes";
 import { leaderBoardRouter } from "./modules/leaderBoard/leader-board.routes";
 import { checkCronDate, processMatchesForLeaderboard } from "./modules/leaderBoard/leader-board.controller";
+import { AppDataSource } from "./data-source";
+import { CachedRiotAccount } from "./entity/CachedRiotAccount";
+import { IsNull, Not } from "typeorm";
 
 const cors = require("cors");
 const cron = require('node-cron');
@@ -317,6 +320,18 @@ const procesRefreshingMatches = async () => {
     return;
   }
 
+  // Get count of accounts has puuid and isCompleted is true
+  const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
+  const count = await accountRepository.count({ where: { 
+    puuid: Not(IsNull()),
+    isCompleted: true
+   }
+  });
+  if (count > 0) {
+    console.log("There are accounts has puuid and isCompleted is true, skipping procesRefreshingMatches | count:", count);
+    return;
+  }
+
   isRefreshingMatches = true;
   try {
     await processMatchesForLeaderboard(20, true);
@@ -326,10 +341,8 @@ const procesRefreshingMatches = async () => {
     isRefreshingMatches = false;
   }
 }
-// Schedule to run every 5 minutes from 12:00 to 23:59 (time check handles 23:30 cutoff)
-cron.schedule('*/5 12-23 * * *', procesRefreshingMatches);
-
-
+// Schedule to run every 15 minutes from 12:00 to 23:59 (time check handles 23:30 cutoff)
+cron.schedule('*/10 12-22 * * *', procesRefreshingMatches);
 
 let isCalculatingMatches = false;
 const procesCalculatingMatches = async () => {
@@ -344,7 +357,7 @@ const procesCalculatingMatches = async () => {
 
   isCalculatingMatches = true;
   try {
-    await processMatchesForLeaderboard(20);
+    await processMatchesForLeaderboard(50);
   } catch (error: any) {
     console.error('Error processing matches:', error.message);
   } finally {
@@ -352,6 +365,26 @@ const procesCalculatingMatches = async () => {
   }
 }
 // Schedule to run every 5 minutes from 00:00 to 11:59
-cron.schedule('*/5 0-11 * * *', procesCalculatingMatches);
+cron.schedule('*/5 0-23 * * *', procesCalculatingMatches);
+
+let isResettingCompleted = false;
+const processResettingCompleted = async () => {
+  if (isResettingCompleted) {
+    return;
+  }
+
+  isResettingCompleted = true;
+  try {
+    const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
+    await accountRepository.update({}, { isCompleted: false });
+    console.log('Reset isCompleted to false for all CachedRiotAccount records');
+  } catch (error: any) {
+    console.error('Error resetting isCompleted:', error.message);
+  } finally {
+    isResettingCompleted = false;
+  }
+}
+// Schedule to run at 00:00:00 every day
+cron.schedule('0 0 * * *', processResettingCompleted);
 
 export default app;

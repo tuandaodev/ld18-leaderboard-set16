@@ -46,4 +46,12 @@ export class CachedRiotAccount extends Base {
     default: 0,
   })
   totalMatches?: number;
+
+  @Column({
+    name: "is_completed",
+    type: "boolean",
+    nullable: true,
+    default: false,
+  })
+  isCompleted?: boolean;
 }

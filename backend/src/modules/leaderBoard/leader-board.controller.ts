@@ -372,8 +372,10 @@ const loadAccountsFromCachedRiotAccount = async (limit: number = 5, isRefreshing
     // Only add the refreshedDate condition if not refreshing today's matches
     if (!isRefreshingTodayMatches) {
       queryBuilder.andWhere('(account.refreshedDate IS NULL OR account.refreshedDate <> :today)', { today });
+    } else {
+      queryBuilder.andWhere('account.isCompleted = :isCompleted', { isCompleted: true });
     }
-    
+
     queryBuilder.orderBy('account.refreshedAt', 'ASC');
     
     // Only apply limit if it's not -1
@@ -746,6 +748,7 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
     acc.totalMatches = matchIds.length;
     acc.refreshedAt = new UTCDate();
     acc.refreshedDate = format(new Date(), 'yyyy-MM-dd');
+    acc.isCompleted = true;
     await AppDataSource.getRepository(CachedRiotAccount).save(acc);
 
     console.log(`Completed account ${i + 1}/${accounts.length}: ${acc.gameName}-${acc.tagLine} | (${totalPoints} points, ${matchIds.length} matches)`);
