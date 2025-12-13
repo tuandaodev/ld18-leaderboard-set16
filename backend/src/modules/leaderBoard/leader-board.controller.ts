@@ -160,9 +160,7 @@ export const delay = (ms: number) => {
 const persistCachedAccounts = async (dataAccounts: RiotAccountDto[]) => {
   try {
     if (dataAccounts.length === 0) return;
-    
     const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
-    
     // Filter valid accounts
     const validAccounts = dataAccounts.filter(acc => acc && acc.gameName && acc.tagLine);
     if (validAccounts.length === 0) return;
@@ -198,9 +196,12 @@ const persistCachedAccounts = async (dataAccounts: RiotAccountDto[]) => {
       
       if (existing) {
         // Update existing account
-        existing.puuid = account.puuid ?? null;
-        existing.totalPoints = account.totalPoints;
-        existing.data = account;
+        if (account.puuid !== undefined) {
+          existing.puuid = account.puuid;
+        }
+        if (account.totalPoints !== undefined) {
+          existing.totalPoints = account.totalPoints;
+        }
         accountsToSave.push(existing);
       } else {
         // Create new account
@@ -209,7 +210,6 @@ const persistCachedAccounts = async (dataAccounts: RiotAccountDto[]) => {
           gameName: account.gameName,
           tagLine: account.tagLine,
           totalPoints: account.totalPoints,
-          data: account
         });
         accountsToSave.push(newAccount);
       }
@@ -424,31 +424,17 @@ const loadCachedAccountsMap = async (): Promise<Map<string, RiotAccountDto>> => 
 // Helper function to get or fetch Riot account
 const getOrFetchRiotAccount = async (
   acc: CachedRiotAccount,
-  cachedAccountMap: Map<string, RiotAccountDto>
 ): Promise<RiotAccountDto | null> => {
-  const cacheKey = `${acc.gameName.toLowerCase()}-${acc.tagLine.toLowerCase()}`;
-  let accRes = cachedAccountMap.get(cacheKey) || null;
-  
-  if (accRes == null) {
-    const startTime = Date.now();
-    accRes = await getRiotAccountById(acc.gameName, acc.tagLine);
-    const elapsedTime = Date.now() - startTime;
-    
-    if (IS_DEBUG_PROCESS) {
-      console.log('get riot account', acc.gameName, acc.tagLine, new Date().toLocaleTimeString());
-    }
-    
-    // Only delay if the request took less than 900ms to avoid rate limiting
-    if (elapsedTime < 900) {
-      await delay(900);
-    }
-    
-    // Persist account immediately after fetching
-    if (accRes != null) {
-      await persistCachedAccounts([accRes]);
-    }
+  const startTime = Date.now();
+  let accRes = await getRiotAccountById(acc.gameName, acc.tagLine);
+  const elapsedTime = Date.now() - startTime;
+  if (IS_DEBUG_PROCESS) {
+    console.log('get riot account', acc.gameName, acc.tagLine, new Date().toLocaleTimeString());
   }
-  
+  // Only delay if the request took less than 900ms to avoid rate limiting
+  if (elapsedTime < 900) {
+    await delay(900);
+  }
   return accRes || null;
 };
 
@@ -700,9 +686,6 @@ export const processUserList = async (): Promise<RiotAccountDto[]> => {
   // Load accounts from CachedRiotAccount that don't have puuid
   const accounts = await loadAccountsWithoutPuuid();
   
-  // Load cached accounts map
-  const cachedAccountMap = await loadCachedAccountsMap();
-  
   // Initialize points map
   const dataAccounts: RiotAccountDto[] = [];
   // Process each account one by one
@@ -710,12 +693,20 @@ export const processUserList = async (): Promise<RiotAccountDto[]> => {
     const acc = accounts[i];
     console.log(`Processing account ${i + 1}/${accounts.length}: ${acc.gameName}-${acc.tagLine}`);
     // Get or fetch Riot account
-    const accRes = await getOrFetchRiotAccount(acc, cachedAccountMap);
+    const accRes = await getOrFetchRiotAccount(acc);
     if (accRes == null) {
       console.log(`Skipping account ${acc.gameName}-${acc.tagLine} (not found)`);
       continue;
     }
     dataAccounts.push(accRes);
+  }
+
+  // Save accounts in batches of 50
+  const batchSize = 10;
+  for (let i = 0; i < dataAccounts.length; i += batchSize) {
+    const batch = dataAccounts.slice(i, i + batchSize);
+    await persistCachedAccounts(batch);
+    console.log(`Saved batch ${Math.floor(i / batchSize) + 1} of ${Math.ceil(dataAccounts.length / batchSize)} (${batch.length} accounts)`);
   }
 
   return dataAccounts;
