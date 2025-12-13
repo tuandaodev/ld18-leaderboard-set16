@@ -783,6 +783,12 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
     const matchIds = await getAccountMatches(acc.puuid, acc.gameName, startDateString, endDateString);
     if (matchIds.length === 0) {
       console.log(`No matches found for ${acc.gameName}-${acc.tagLine}`);
+      if (!isRefreshingTodayMatches) {
+        acc.refreshedAt = new UTCDate();
+        acc.refreshedDate = format(new Date(), 'yyyy-MM-dd');
+        acc.isCompleted = true;
+        await AppDataSource.getRepository(CachedRiotAccount).save(acc);
+      }
       continue;
     }
 
