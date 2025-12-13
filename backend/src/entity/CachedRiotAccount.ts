@@ -46,13 +46,4 @@ export class CachedRiotAccount extends Base {
     default: 0,
   })
   totalMatches?: number;
-
-  @Column({
-    name: "data",
-    type: "jsonb",
-    nullable: true,
-  })
-  data: any; // Store the full RiotAccountDto data as JSON
 }
-
-

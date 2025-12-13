@@ -407,7 +407,7 @@ const loadCachedAccountsMap = async (): Promise<Map<string, RiotAccountDto>> => 
     
     for (const cached of cachedAccounts) {
       const key = `${cached.gameName.toLowerCase()}-${cached.tagLine.toLowerCase()}`;
-      cachedAccountMap.set(key, cached.data || {
+      cachedAccountMap.set(key, {
         puuid: cached.puuid,
         gameName: cached.gameName,
         tagLine: cached.tagLine,
