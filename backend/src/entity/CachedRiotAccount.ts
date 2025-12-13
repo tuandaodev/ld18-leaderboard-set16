@@ -40,6 +40,14 @@ export class CachedRiotAccount extends Base {
   totalPoints?: number;
 
   @Column({
+    name: "total_matches",
+    type: "integer",
+    nullable: true,
+    default: 0,
+  })
+  totalMatches?: number;
+
+  @Column({
     name: "data",
     type: "jsonb",
     nullable: true,

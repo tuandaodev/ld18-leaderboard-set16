@@ -603,6 +603,7 @@ const processAccountMatches = async (
     const matchRes = await processMatch(matchId);
     if (matchRes != null) {
       matchesToSave.push(matchRes);
+      cachedMatchMap.set(matchId, matchRes);
     }
   }
   await persistCachedMatches(matchesToSave);
@@ -725,10 +726,6 @@ export const processInitUsersLeaderBoard = async () => {
   // Load 5 accounts from CachedRiotAccount where refreshedDate is null or not today
   const accounts = await loadAccountsFromCachedRiotAccount();
   
-  // Initialize points map
-  const pointsMap = new Map<string, number>();
-  const dataAccounts: RiotAccountDto[] = [];
-  
   // Process each account one by one
   for (let i = 0; i < accounts.length; i++) {
     const acc = accounts[i];
@@ -739,16 +736,12 @@ export const processInitUsersLeaderBoard = async () => {
       continue;
     }
 
-    // Initialize points for this account
-    const accountKey = `${acc.gameName?.toLowerCase()}-${acc.tagLine?.toLowerCase()}`;
-    pointsMap.set(accountKey, 0);
-
     const matchIds = await getAccountMatches(acc.puuid, acc.gameName, configData.startDate, configData.endDate);
     if (matchIds.length === 0) {
       console.log(`No matches found for ${acc.gameName}-${acc.tagLine}`);
       continue;
     }
-    
+
     console.log(`Found ${matchIds.length} matches for ${acc.gameName}-${acc.tagLine}`);
     
     // Load cached matches for this account's matches
@@ -757,17 +750,23 @@ export const processInitUsersLeaderBoard = async () => {
     // Process matches for this account
     await processAccountMatches(matchIds, cachedMatchMap);
     
-    // Update account's total points immediately
-    // acc.totalPoints = pointsMap.get(accountKey) || 0;
+    // Loop through cachedMatchMap and update account's total points
+    let totalPoints = 0;
+    for (const [matchId, matchInfo] of cachedMatchMap.entries()) {
+      // loop through matchInfo.participants and update account's total points
+      for (const participant of matchInfo.participants) {
+        if (participant.riotIdGameName?.toLowerCase() === acc.gameName?.toLowerCase()
+           && participant.riotIdTagline?.toLowerCase() === acc.tagLine?.toLowerCase()) {
+          totalPoints += participant.totalPoints || 0;
+        }
+      }
+    }
+
+    acc.totalPoints = totalPoints;
+    acc.totalMatches = matchIds.length;
     
-    // // Update account in database
-    // await updateCachedAccountsTotalPoints([accRes]);
-    
-    // console.log(`Completed account ${i + 1}/${accounts.length}: ${accRes.gameName}-${accRes.tagLine} (${accRes.totalPoints} points)`);
+    console.log(`Completed account ${i + 1}/${accounts.length}: ${acc.gameName}-${acc.tagLine} | (${totalPoints} points, ${matchIds.length} matches)`);
   }
-  
-  // Save final results
-  // await saveLeaderBoardResults(dataAccounts, start);
   
   return {
     totalAccounts: accounts.length,
