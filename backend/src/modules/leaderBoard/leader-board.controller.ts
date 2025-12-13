@@ -550,7 +550,9 @@ export const processUsersController = asyncHandler(
           where: { puuid: accRes.puuid }
         });
         if (existingAccount != null) {
-          console.log(`Account ${accRes.gameName}-${accRes.tagLine} already exists in CachedRiotAccount, skipping...`);
+          console.log(`Account ${accRes.gameName}-${accRes.tagLine} already exists in CachedRiotAccount, deleting...`);
+          // remove this rest account in db
+          await AppDataSource.getRepository(CachedRiotAccount).delete(account.id);
           continue;
         }
         account.gameName = accRes.gameName;
