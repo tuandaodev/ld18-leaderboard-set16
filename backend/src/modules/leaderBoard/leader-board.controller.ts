@@ -1033,10 +1033,10 @@ export const uploadLeaderboardConfigController = [
         message: 'File uploaded',
         data: {
           config: configData,
-          totalUsers: userAccounts.length,
-          totalFailedUsers: failedAccounts.length,
-          demo3users: userAccounts.slice(0, 5),
-          failedUsers: failedAccounts,
+          totalUsersInCSV: userAccounts.length,
+          totalFailedUsersInCSV: failedAccounts.length,
+          demo3usersInCSV: userAccounts.slice(0, 5),
+          failedUsersInCSV: failedAccounts,
           totalUsersSaved: totalUsersSaved,
           totalUsersSavedWithPuuid: totalUsersSavedWithPuuid,
         }
