@@ -815,12 +815,24 @@ export const getProcessStatusController = asyncHandler(
       .limit(10)
       .getMany();
 
+    // count isCompleted accounts
+    const totalCompletedAccounts = await AppDataSource.getRepository(CachedRiotAccount).count({
+      where: { puuid: Not(IsNull()), isCompleted: true }
+    });
+
+    // count accounts has puuid and isCompleted is false
+    const totalUncompletedAccounts = await AppDataSource.getRepository(CachedRiotAccount).count({
+      where: { puuid: Not(IsNull()), isCompleted: false }
+    });
+
     res.status(200).json({
       success: true,
       configData: configData,
       totalAccounts: totalAccounts,
       totalProcessedAccounts: totalProcessedAccounts,
       totalMatches: totalMatches,
+      totalCompletedAccounts: totalCompletedAccounts,
+      totalUncompletedAccounts: totalUncompletedAccounts,
       unprocessed50Accounts: last50Accounts,
       processed10Accounts: last10Accounts,
     });
