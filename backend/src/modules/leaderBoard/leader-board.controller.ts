@@ -9,7 +9,7 @@ import { asyncHandler } from "../../middleware/async";
 import { AppDataSource } from "../../data-source";
 import { CachedMatch } from "../../entity/CachedMatch";
 import { CachedRiotAccount } from "../../entity/CachedRiotAccount";
-import { AccountDto, CsvTeamDto, LeaderBoardDto, MatchInfo, RiotAccountDto } from "./leader-board.dto";
+import { AccountDto, ConfigData, CsvTeamDto, LeaderBoardDto, MatchInfo, RiotAccountDto } from "./leader-board.dto";
 import { convertToAccountDto, convertToCsvTeamDto, getCSVForTeams, getCSVForUsers, getMatchDetail, getMatches, getRiotAccountById } from "./leader-board.service";
 import { format } from "date-fns";
 import { UTCDate } from "@date-fns/utc";
@@ -344,11 +344,11 @@ export const BATCH_SIZE = 20;
 export const IS_DEBUG_PROCESS = true;
 
 // Helper function to load config data
-const loadConfigData = async () => {
+const loadConfigData = async (): Promise<ConfigData> => {
   const configFilePath = path.resolve(__dirname, '../../data/config.json');
   try {
     const configString = await fs.promises.readFile(configFilePath, 'utf-8');
-    const configData = JSON.parse(configString);
+    const configData = JSON.parse(configString) as ConfigData;
     return configData;
   } catch (error: any) {
     console.error('Error reading config file:', error.message);
@@ -357,7 +357,7 @@ const loadConfigData = async () => {
 };
 
 // Helper function to load accounts from CSV
-const loadAccountsFromCSV = async (configData: any): Promise<AccountDto[]> => {
+const loadAccountsFromCSV = async (configData: ConfigData): Promise<AccountDto[]> => {
   const filePath = path.resolve(__dirname, '../../', configData.userFilePath);
   if (!fs.existsSync(filePath)) {
     console.log('file not found', filePath);
@@ -379,7 +379,8 @@ const loadAccountsFromCachedRiotAccount = async (limit: number = 5): Promise<Cac
     const queryBuilder = accountRepository
       .createQueryBuilder('account')
       .where('account.puuid IS NOT NULL')
-      .andWhere('(account.refreshedDate IS NULL OR account.refreshedDate <> :today)', { today });
+      .andWhere('(account.refreshedDate IS NULL OR account.refreshedDate <> :today)', { today })
+      .orderBy('account.refreshedAt', 'ASC');
     
     // Only apply limit if it's not -1
     if (limit !== -1) {
@@ -689,12 +690,16 @@ export const processUserList = async (): Promise<RiotAccountDto[]> => {
 }
 
 // Main function - processes accounts one by one
-export const processMatchesForLeaderboard = async (limitAccounts: number = 5) => {
+export const processMatchesForLeaderboard = async (limitAccounts: number = 5, isRefreshingTodayMatches: boolean = false) => {
   console.log("Start processMatchesForLeaderboard");
 
   // Load configuration
   const configData = await loadConfigData();
-  
+  if (configData?.isStopJob) {
+    console.log("Config data is stop job, skipping processMatchesForLeaderboard");
+    return;
+  }
+
   // Load 5 accounts from CachedRiotAccount where refreshedDate is null or not today
   const accounts = await loadAccountsFromCachedRiotAccount(limitAccounts);
   
@@ -708,7 +713,14 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5) =>
       continue;
     }
 
-    const matchIds = await getAccountMatches(acc.puuid, acc.gameName, configData.startDate, configData.endDate);
+    let startDateString: string = configData.startDate;
+    let endDateString: string = configData.endDate;
+    if (isRefreshingTodayMatches) {
+      startDateString = format(new Date(), 'yyyy-MM-dd');
+      endDateString = format(new Date(), 'yyyy-MM-dd');
+    }
+
+    const matchIds = await getAccountMatches(acc.puuid, acc.gameName, startDateString, endDateString);
     if (matchIds.length === 0) {
       console.log(`No matches found for ${acc.gameName}-${acc.tagLine}`);
       continue;
@@ -721,6 +733,14 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5) =>
     
     // Process matches for this account
     await processAccountMatches(matchIds, cachedMatchMap);
+
+    if (isRefreshingTodayMatches) {
+      // Skip updating total points and total matches
+      console.log(`Refreshing today matches, skipping updating total points and total matches for ${acc.gameName}-${acc.tagLine}`);
+      acc.refreshedAt = new UTCDate();
+      await AppDataSource.getRepository(CachedRiotAccount).save(acc);
+      continue;
+    }
     
     // Loop through cachedMatchMap and update account's total points
     let totalPoints = 0;
@@ -757,10 +777,11 @@ export const processMatchesController = [
         return res.status(401).json({ success: false, message: 'Unauthorized' });
       }
 
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+      const limit = req.body.limit ? parseInt(req.body.limit as string) : 5;
+      const isRefreshingTodayMatches = req.body.isRefreshingTodayMatches ?? false;
 
       try {
-        const result = await processMatchesForLeaderboard(limit);
+        const result = await processMatchesForLeaderboard(limit, isRefreshingTodayMatches);
         res.status(200).json({
           success: true,
           ...result,
@@ -839,7 +860,7 @@ export const uploadLeaderboardConfigController = [
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
-    const { startDate, endDate, clearCache } = req.body;
+    const { startDate, endDate, clearCache, isStopJob } = req.body;
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     const usersFile = files['usersFile'] ? files['usersFile'][0] : null;
 
@@ -965,7 +986,8 @@ export const uploadLeaderboardConfigController = [
         startDate,
         endDate,
         userFilePath: relativeUserFilePath,
-      };
+        isStopJob: isStopJob,
+      } as ConfigData;
 
       // Define the path for the config file
       const configFilePath = path.resolve(__dirname, '../../data/config.json');

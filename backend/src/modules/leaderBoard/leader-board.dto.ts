@@ -87,3 +87,10 @@ export class LeaderBoardUsersDto {
   createdDate: string;
   createdIn: number;
 }
+
+export interface ConfigData {
+  startDate: string;  // yyyy-MM-dd
+  endDate: string;    // yyyy-MM-dd
+  userFilePath: string;
+  isStopJob?: boolean | null;  // if true, stop the job
+}
