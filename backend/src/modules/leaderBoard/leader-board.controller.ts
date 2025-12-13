@@ -675,7 +675,7 @@ export const checkCronDate = async () => {
 
 // Main function - processes accounts one by one
 export const processMatchesForLeaderboard = async (limitAccounts: number = 5, isRefreshingTodayMatches: boolean = false) => {
-  console.log("Start processMatchesForLeaderboard");
+  console.log("Start processMatchesForLeaderboard | isRefreshingTodayMatches:", isRefreshingTodayMatches);
 
   // Load configuration
   const configData = await loadConfigData();
