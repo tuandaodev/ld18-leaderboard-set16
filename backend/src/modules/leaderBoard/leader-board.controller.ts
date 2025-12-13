@@ -188,6 +188,11 @@ const persistCachedAccounts = async (dataAccounts: RiotAccountDto[]) => {
       
       if (existing) {
         // Update existing account
+
+        // Update existing account with new gameName and tagLine to match the CSV order
+        existing.gameName = account.gameName;
+        existing.tagLine = account.tagLine;
+
         if (account.puuid !== undefined) {
           existing.puuid = account.puuid;
         }
