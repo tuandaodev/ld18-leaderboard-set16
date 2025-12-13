@@ -674,7 +674,7 @@ export const checkCronDate = async () => {
 }
 
 // Main function - processes accounts one by one
-export const processMatchesForLeaderboard = async (limitAccounts: number = 5, isRefreshingTodayMatches: boolean = false) => {
+export const processMatchesForLeaderboard = async (limitAccounts: number = 5, isRefreshingTodayMatches: boolean = false, accountName: string | null = null) => {
   console.log("Start processMatchesForLeaderboard | isRefreshingTodayMatches:", isRefreshingTodayMatches);
 
   // Load configuration
@@ -697,8 +697,20 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
     }
   }
 
-  // Load 5 accounts from CachedRiotAccount where refreshedDate is null or not today
-  const accounts = await loadAccountsFromCachedRiotAccount(limitAccounts, isRefreshingTodayMatches);
+  let accounts: CachedRiotAccount[] = [];
+  if (accountName != null) {
+    const [gameName, tagLine] = accountName.split('#');
+    // Load account from CachedRiotAccount where gameName and tagLine match accountName
+    const account = await AppDataSource.getRepository(CachedRiotAccount).findOne({
+      where: { gameName: gameName, tagLine: tagLine }
+    });
+    if (account != null) {
+      accounts.push(account);
+    }
+  } else {
+    // Load 5 accounts from CachedRiotAccount where refreshedDate is null or not today
+    accounts = await loadAccountsFromCachedRiotAccount(5, isRefreshingTodayMatches);
+  }
   
   // Process each account one by one
   for (let i = 0; i < accounts.length; i++) {
@@ -813,9 +825,10 @@ export const processMatchesController = [
 
       const limit = req.body.limit ? parseInt(req.body.limit as string) : 5;
       const isRefreshingTodayMatches = req.body.isRefreshingTodayMatches ?? false;
+      const accountName = req.body.accountName ?? null;
 
       try {
-        const result = await processMatchesForLeaderboard(limit, isRefreshingTodayMatches);
+        const result = await processMatchesForLeaderboard(limit, isRefreshingTodayMatches, accountName);
         res.status(200).json({
           success: true,
           ...result,
