@@ -711,7 +711,7 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
     accounts = await loadAccountsFromCachedRiotAccount(5, isRefreshingTodayMatches);
   }
   
-  let pointsByMatches: Map<string, number> = new Map();
+  let debugAccountMatches: MatchInfo[] = [];
   // Process each account one by one
   for (let i = 0; i < accounts.length; i++) {
     const acc = accounts[i];
@@ -758,11 +758,10 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
         if (participant.riotIdGameName?.toLowerCase() === acc.gameName?.toLowerCase()
            && participant.riotIdTagline?.toLowerCase() === acc.tagLine?.toLowerCase()) {
           totalPoints += participant.totalPoints || 0;
-          if (accountName != null) {
-            pointsByMatches.set(matchId, participant.totalPoints || 0);
-          }
         }
       }
+
+      debugAccountMatches.push(matchInfo);
     }
 
     acc.totalPoints = totalPoints;
@@ -780,7 +779,7 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
   return {
     totalAccounts: accounts.length,
     demo5Accounts: accounts.slice(0, 5),
-    pointsByMatches: pointsByMatches,
+    accountMatches: debugAccountMatches,
   };
 }
 
