@@ -149,7 +149,7 @@ export const delay = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const persistCachedAccounts = async (dataAccounts: RiotAccountDto[]) => {
+const persistCachedAccounts = async (dataAccounts: RiotAccountDto[], isIgnoreCreatingNewAccount: boolean = false) => {
   try {
     if (dataAccounts.length === 0) return;
     const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
@@ -196,16 +196,19 @@ const persistCachedAccounts = async (dataAccounts: RiotAccountDto[]) => {
         }
         accountsToSave.push(existing);
       } else {
-        console.warn(`Account ${account.gameName}-${account.tagLine} not found in database, skipping...`);
         // Create new account with csvOrder
-        // const newAccount = accountRepository.create({
-        //   puuid: account.puuid ?? null,
-        //   gameName: account.gameName,
-        //   tagLine: account.tagLine,
-        //   totalPoints: account.totalPoints,
-        //   csvOrder: account.csvOrder ?? 999999999,
-        // });
-        // accountsToSave.push(newAccount);
+        if (!isIgnoreCreatingNewAccount) {
+          const newAccount = accountRepository.create({
+            puuid: account.puuid ?? null,
+            gameName: account.gameName,
+            tagLine: account.tagLine,
+            totalPoints: account.totalPoints,
+            csvOrder: account.csvOrder ?? 999999999,
+          });
+          accountsToSave.push(newAccount);
+        } else {
+          console.warn(`Account ${account.gameName}-${account.tagLine} not found in database, skipping...`);
+        }
       }
     }
     
@@ -645,7 +648,8 @@ const processAccountsInParallel = async (
     // Save batch instantly after processing
     if (batchValidAccounts.length > 0) {
       try {
-        await persistCachedAccounts(batchValidAccounts);
+        // do not add new account to database to prevent missmatch gameName and tagLine
+        await persistCachedAccounts(batchValidAccounts, true);
         if (IS_DEBUG_PROCESS) {
           console.log(`Saved batch ${Math.floor(i / concurrency) + 1}/${Math.ceil(accounts.length / concurrency)} (${batchValidAccounts.length} accounts)`);
         }
