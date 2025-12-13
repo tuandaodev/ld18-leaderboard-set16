@@ -1020,6 +1020,14 @@ export const uploadLeaderboardConfigController = [
       const failedAccounts = userAccounts.filter(x => !x.gameName || !x.tagLine);
       console.log(`Failed accounts: ${failedAccounts.length}`);
 
+      // get total user in db
+      const totalUsersSaved = await AppDataSource.getRepository(CachedRiotAccount).count();
+      // get total user in db with puuid not null
+      const totalUsersSavedWithPuuid = await AppDataSource.getRepository(CachedRiotAccount).count({
+        where: { puuid: Not(IsNull()) }
+      });
+
+
       res.status(200).json({
         success: true,
         message: 'File uploaded',
@@ -1029,6 +1037,8 @@ export const uploadLeaderboardConfigController = [
           totalFailedUsers: failedAccounts.length,
           demo3users: userAccounts.slice(0, 5),
           failedUsers: failedAccounts,
+          totalUsersSaved: totalUsersSaved,
+          totalUsersSavedWithPuuid: totalUsersSavedWithPuuid,
         }
       });
     } catch (error: any) {
