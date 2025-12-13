@@ -306,20 +306,44 @@ const processCleanUpTempFiles = async () => {
 
 cron.schedule('01 2 * * *', processCleanUpTempFiles);
 
-let isProcessingMatches = false;
-const procesMatches = async () => {
-  if (isProcessingMatches) {
+let isRefreshingMatches = false;
+const procesRefreshingMatches = async () => {
+  if (isRefreshingMatches) {
     return;
   }
-  isProcessingMatches = true;
+  isRefreshingMatches = true;
+  try {
+    await processMatchesForLeaderboard(20, true);
+  } catch (error: any) {
+    console.error('Error processing matches:', error.message);
+  } finally {
+    isRefreshingMatches = false;
+  }
+}
+// Schedule to run every 5 minutes from 12:00 to 23:59 (time check handles 23:30 cutoff)
+cron.schedule('*/5 12-23 * * *', procesRefreshingMatches);
+
+
+
+let isCalculatingMatches = false;
+const procesCalculatingMatches = async () => {
+  if (isCalculatingMatches) {
+    return;
+  }
+  isCalculatingMatches = true;
   try {
     await processMatchesForLeaderboard(20);
   } catch (error: any) {
     console.error('Error processing matches:', error.message);
   } finally {
-    isProcessingMatches = false;
+    isCalculatingMatches = false;
   }
 }
-cron.schedule('* */5 * * *', procesMatches);
+// Schedule to run every 5 minutes from 00:00 to 11:59
+cron.schedule('*/5 0-11 * * *', procesCalculatingMatches);
+
+
+
+
 
 export default app;
