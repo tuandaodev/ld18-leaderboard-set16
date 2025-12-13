@@ -5,9 +5,9 @@ export const leaderBoardRouter = Router();
 
 leaderBoardRouter.get("/list", getLeaderBoardList);
 // initUsersLeaderBoard and exportLeaderBoardCSV are now arrays of middleware
-leaderBoardRouter.get("/process-matches", processMatchesController as any);
+leaderBoardRouter.post("/process-matches", processMatchesController as any);
 
-leaderBoardRouter.get("/process-users", processUsersController);
+leaderBoardRouter.post("/process-users", processUsersController);
 
 leaderBoardRouter.post("/export-leaderboard", exportLeaderBoardCSV as any);
 
