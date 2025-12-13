@@ -454,18 +454,18 @@ const getAccountMatches = async (
 const processMatch = async (matchId: string): Promise<MatchInfo | null> => {
   let matchRes: MatchInfo | null = null;
   
-  const startTime = Date.now();
+  // const startTime = Date.now();
   const rawRes = await getMatchDetail(matchId);
-  const elapsedTime = Date.now() - startTime;
+  // const elapsedTime = Date.now() - startTime;
   
   if (IS_DEBUG_PROCESS) {
     console.log('get match detail', matchId, new Date().toLocaleTimeString());
   }
   
-  // Only delay if the request took less than 900ms to avoid rate limiting
-  if (elapsedTime < 900) {
-    await delay(900);
-  }
+  // // Only delay if the request took less than 900ms to avoid rate limiting
+  // if (elapsedTime < 900) {
+  //   await delay(900);
+  // }
   
   const isStandardGame = rawRes?.info?.tft_game_type == 'standard';
   if (rawRes != null && rawRes?.info?.endOfGameResult == 'GameComplete') {
@@ -554,15 +554,18 @@ const processAccountMatches = async (
   const uniqueMatchIds = matchIds.filter((value, index, array) => array.indexOf(value) === index);
   // Only process matches that are still missing from cache
   const matchesToProcess = uniqueMatchIds.filter(id => !cachedMatchMap.has(id));
-  // Process each match one by one
-  const matchesToSave: MatchInfo[] = [];
-  for (const matchId of matchesToProcess) {
+  // Process matches in parallel
+  const matchPromises = matchesToProcess.map(async (matchId) => {
     const matchRes = await processMatch(matchId);
     if (matchRes != null) {
-      matchesToSave.push(matchRes);
       cachedMatchMap.set(matchId, matchRes);
+      return matchRes;
     }
-  }
+    return null;
+  });
+  
+  const results = await Promise.all(matchPromises);
+  const matchesToSave: MatchInfo[] = results.filter((m): m is MatchInfo => m != null);
   await persistCachedMatches(matchesToSave);
 
   return matchesToSave;
