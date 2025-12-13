@@ -375,12 +375,17 @@ const loadAccountsFromCachedRiotAccount = async (limit: number = 5): Promise<Cac
     const today = format(new Date(), 'yyyy-MM-dd');
     
     // Query for accounts where refreshedDate is null or not today
-    const cachedAccounts = await accountRepository
+    const queryBuilder = accountRepository
       .createQueryBuilder('account')
       .where('account.puuid IS NOT NULL')
-      .andWhere('(account.refreshedDate IS NULL OR account.refreshedDate <> :today)', { today })
-      .limit(limit)
-      .getMany();
+      .andWhere('(account.refreshedDate IS NULL OR account.refreshedDate <> :today)', { today });
+    
+    // Only apply limit if it's not -1
+    if (limit !== -1) {
+      queryBuilder.limit(limit);
+    }
+    
+    const cachedAccounts = await queryBuilder.getMany();
     
     console.log(`Found ${cachedAccounts.length} accounts from CachedRiotAccount (refreshedDate is null or not today)`);
     

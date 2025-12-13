@@ -10,8 +10,8 @@ import { contentRoutes } from "./modules/content/content.routes";
 import { eventRouter } from "./modules/event/event.routes";
 import { cleanUpUploadFolder } from "./modules/images/images.controller";
 import { imageRouter } from "./modules/images/images.routes";
-import { processInitUsersLeaderBoard } from "./modules/leaderBoard/leader-board.controller";
 import { leaderBoardRouter } from "./modules/leaderBoard/leader-board.routes";
+import { processMatchesForLeaderboard } from "./modules/leaderBoard/leader-board.controller";
 
 const cors = require("cors");
 const cron = require('node-cron');
@@ -307,7 +307,7 @@ const processCleanUpTempFiles = async () => {
 cron.schedule('01 2 * * *', processCleanUpTempFiles);
 
 const processInitData = async () => {
-  await processInitUsersLeaderBoard();
+  await processMatchesForLeaderboard(-1);
 }
 
 cron.schedule('30 0 * * *', processInitData);
