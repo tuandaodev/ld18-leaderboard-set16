@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { exportLeaderBoardCSV, getLeaderBoardList, initUserList, initUsersLeaderBoard, testController, uploadCSV } from "./leader-board.controller";
+import { exportLeaderBoardCSV, getLeaderBoardList, initUserList, processUsersLeaderBoard, uploadCSV } from "./leader-board.controller";
 
 export const leaderBoardRouter = Router();
 
 leaderBoardRouter.get("/list", getLeaderBoardList);
 // initUsersLeaderBoard and exportLeaderBoardCSV are now arrays of middleware
-leaderBoardRouter.get("/init-user", initUsersLeaderBoard as any);
+leaderBoardRouter.get("/process-user-leaderboard", processUsersLeaderBoard as any);
 
 leaderBoardRouter.get("/process-user-list", initUserList);
 

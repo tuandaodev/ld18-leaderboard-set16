@@ -494,67 +494,62 @@ const getAccountMatches = async (
 };
 
 // Helper function to process a single match
-const processMatch = async (matchId: string, cachedMatchMap: Map<string, MatchInfo>): Promise<MatchInfo | null> => {
-  let matchRes = cachedMatchMap.get(matchId);
+const processMatch = async (matchId: string): Promise<MatchInfo | null> => {
+  let matchRes: MatchInfo | null = null;
   
-  if (matchRes == null) {
-    const startTime = Date.now();
-    const rawRes = await getMatchDetail(matchId);
-    const elapsedTime = Date.now() - startTime;
-    
-    if (IS_DEBUG_PROCESS) {
-      console.log('get match detail', matchId, new Date().toLocaleTimeString());
-    }
-    
-    // Only delay if the request took less than 900ms to avoid rate limiting
-    if (elapsedTime < 900) {
-      await delay(900);
-    }
-    
-    const isStandardGame = rawRes?.info?.tft_game_type == 'standard';
-    if (rawRes != null && rawRes?.info?.endOfGameResult == 'GameComplete') {
-      matchRes = {
-        matchId: rawRes.metadata.match_id,
-        endOfGameResult: rawRes.info.endOfGameResult,
-        gameCreation: rawRes.info.gameCreation,
-        gameMode: rawRes.info.tft_game_type,
-        participants: rawRes.info.participants.map(x => {
-          let totalPoints = 0;
-          if (x.time_eliminated > 1200 && x.last_round > 30 && isStandardGame) {
-            if (x.placement == 1) {
-              totalPoints = 10;
-            }
-            if (x.placement == 2) {
-              totalPoints = 8;
-            }
-            if (x.placement == 3) {
-              totalPoints = 6;
-            }
-            if (x.placement == 4) {
-              totalPoints = 4;
-            }
-          }
-          return {
-            riotIdGameName: x.riotIdGameName,
-            riotIdTagline: x.riotIdTagline,
-            placement: x.placement,
-            timeEliminated: x.time_eliminated,
-            totalPoints: totalPoints,
-            lastRound: x.last_round,
-          }
-        })
-      };
-      
-      // Persist match immediately after fetching
-      await persistCachedMatches([matchRes]);
-    }
+  const startTime = Date.now();
+  const rawRes = await getMatchDetail(matchId);
+  const elapsedTime = Date.now() - startTime;
+  
+  if (IS_DEBUG_PROCESS) {
+    console.log('get match detail', matchId, new Date().toLocaleTimeString());
   }
   
+  // Only delay if the request took less than 900ms to avoid rate limiting
+  if (elapsedTime < 900) {
+    await delay(900);
+  }
+  
+  const isStandardGame = rawRes?.info?.tft_game_type == 'standard';
+  if (rawRes != null && rawRes?.info?.endOfGameResult == 'GameComplete') {
+    matchRes = {
+      matchId: rawRes.metadata.match_id,
+      endOfGameResult: rawRes.info.endOfGameResult,
+      gameCreation: rawRes.info.gameCreation,
+      gameMode: rawRes.info.tft_game_type,
+      participants: rawRes.info.participants.map(x => {
+        let totalPoints = 0;
+        if (x.time_eliminated > 1200 && x.last_round > 30 && isStandardGame) {
+          if (x.placement == 1) {
+            totalPoints = 10;
+          }
+          if (x.placement == 2) {
+            totalPoints = 8;
+          }
+          if (x.placement == 3) {
+            totalPoints = 6;
+          }
+          if (x.placement == 4) {
+            totalPoints = 4;
+          }
+        }
+        return {
+          riotIdGameName: x.riotIdGameName,
+          riotIdTagline: x.riotIdTagline,
+          placement: x.placement,
+          timeEliminated: x.time_eliminated,
+          totalPoints: totalPoints,
+          lastRound: x.last_round,
+        }
+      })
+    };
+  }
   if (matchRes != null) {
     matchRes.participants = matchRes?.participants?.filter(x => x.totalPoints != null && x.totalPoints > 0) ?? [];
+    return matchRes;
   }
   
-  return matchRes || null;
+  return null;
 };
 
 // Helper function to load cached matches for a list of match IDs
@@ -596,34 +591,23 @@ const loadCachedMatches = async (matchIds: string[]): Promise<Map<string, MatchI
 // Helper function to process matches for a single account
 const processAccountMatches = async (
   matchIds: string[],
-  cachedMatchMap: Map<string, MatchInfo>,
-  pointsMap: Map<string, number>
-): Promise<void> => {
+  cachedMatchMap: Map<string, MatchInfo>
+): Promise<MatchInfo[]> => {
   // Remove duplicates
   const uniqueMatchIds = matchIds.filter((value, index, array) => array.indexOf(value) === index);
-  
-  // Load any additional cached matches we don't have yet
-  const missingMatchIds = uniqueMatchIds.filter(id => !cachedMatchMap.has(id));
-  if (missingMatchIds.length > 0) {
-    const additionalCached = await loadCachedMatches(missingMatchIds);
-    for (const [matchId, matchInfo] of additionalCached) {
-      cachedMatchMap.set(matchId, matchInfo);
-    }
-  }
-  
+  // Only process matches that are still missing from cache
+  const matchesToProcess = uniqueMatchIds.filter(id => !cachedMatchMap.has(id));
   // Process each match one by one
-  for (const matchId of uniqueMatchIds) {
-    const matchRes = await processMatch(matchId, cachedMatchMap);
-    
+  const matchesToSave: MatchInfo[] = [];
+  for (const matchId of matchesToProcess) {
+    const matchRes = await processMatch(matchId);
     if (matchRes != null) {
-      // Calculate points for participants
-      for (const participant of matchRes.participants) {
-        const key = `${participant.riotIdGameName?.toLowerCase()}-${participant.riotIdTagline?.toLowerCase()}`;
-        const currentPoints = pointsMap.get(key) || 0;
-        pointsMap.set(key, currentPoints + (participant.totalPoints || 0));
-      }
+      matchesToSave.push(matchRes);
     }
   }
+  await persistCachedMatches(matchesToSave);
+
+  return matchesToSave;
 };
 
 // Helper function to save leaderboard results
@@ -734,7 +718,6 @@ export const processUserList = async (): Promise<RiotAccountDto[]> => {
 // Main function - processes accounts one by one
 export const processInitUsersLeaderBoard = async () => {
   console.log("Start processInitUsersLeaderBoard");
-  const start = Date.now();
 
   // Load configuration
   const configData = await loadConfigData();
@@ -772,7 +755,7 @@ export const processInitUsersLeaderBoard = async () => {
     const cachedMatchMap = await loadCachedMatches(matchIds);
     
     // Process matches for this account
-    await processAccountMatches(matchIds, cachedMatchMap, pointsMap);
+    await processAccountMatches(matchIds, cachedMatchMap);
     
     // Update account's total points immediately
     // acc.totalPoints = pointsMap.get(accountKey) || 0;
@@ -787,12 +770,12 @@ export const processInitUsersLeaderBoard = async () => {
   // await saveLeaderBoardResults(dataAccounts, start);
   
   return {
-    users: dataAccounts,
-    accounts: accounts.length,
+    totalAccounts: accounts.length,
+    demo5Accounts: accounts.slice(0, 5),
   };
 }
 
-export const initUsersLeaderBoard = [
+export const processUsersLeaderBoard = [
   initLeaderBoardRateLimiter,
   asyncHandler(
     async (req: Request, res: Response) => {
