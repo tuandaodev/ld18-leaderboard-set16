@@ -586,7 +586,7 @@ const loadAccountsWithoutPuuid = async (): Promise<CachedRiotAccount[]> => {
 // Helper function to process accounts in parallel batches with concurrency control
 const processAccountsInParallel = async (
   accounts: CachedRiotAccount[],
-  concurrency: number = 10
+  concurrency: number = 20
 ): Promise<RiotAccountDto[]> => {
   const dataAccounts: RiotAccountDto[] = [];
   const results: (RiotAccountDto | null)[] = new Array(accounts.length);
@@ -622,13 +622,28 @@ const processAccountsInParallel = async (
     const batchResults = await Promise.all(batchPromises);
     
     // Store results and collect valid accounts
+    const batchValidAccounts: RiotAccountDto[] = [];
     batchResults.forEach((result, batchOffset) => {
       const globalIndex = batchIndex + batchOffset;
       results[globalIndex] = result;
       if (result != null) {
         dataAccounts.push(result);
+        batchValidAccounts.push(result);
       }
     });
+    
+    // Save batch instantly after processing
+    if (batchValidAccounts.length > 0) {
+      try {
+        await persistCachedAccounts(batchValidAccounts);
+        if (IS_DEBUG_PROCESS) {
+          console.log(`Saved batch ${Math.floor(i / concurrency) + 1}/${Math.ceil(accounts.length / concurrency)} (${batchValidAccounts.length} accounts)`);
+        }
+      } catch (error: any) {
+        console.error(`Error saving batch ${Math.floor(i / concurrency) + 1}:`, error.message);
+        // Continue processing other batches even if one fails
+      }
+    }
   }
   
   return dataAccounts;
@@ -642,16 +657,9 @@ export const processUserList = async (): Promise<RiotAccountDto[]> => {
     return [];
   }
   
-  // Process accounts in parallel with concurrency control (10 concurrent requests)
-  const dataAccounts = await processAccountsInParallel(accounts, 10);
-
-  // Save accounts in batches of 10
-  const batchSize = 10;
-  for (let i = 0; i < dataAccounts.length; i += batchSize) {
-    const batch = dataAccounts.slice(i, i + batchSize);
-    await persistCachedAccounts(batch);
-    console.log(`Saved batch ${Math.floor(i / batchSize) + 1} of ${Math.ceil(dataAccounts.length / batchSize)} (${batch.length} accounts)`);
-  }
+  // Process accounts in parallel with concurrency control (20 concurrent requests)
+  // Accounts are saved instantly after each batch is processed
+  const dataAccounts = await processAccountsInParallel(accounts, 20);
 
   return dataAccounts;
 }
