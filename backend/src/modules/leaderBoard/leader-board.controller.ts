@@ -157,16 +157,16 @@ const persistCachedAccounts = async (dataAccounts: RiotAccountDto[]) => {
     const validAccounts = dataAccounts.filter(acc => acc && acc.gameName && acc.tagLine);
     if (validAccounts.length === 0) return;
     
-    // Get all existing accounts in one query using OR conditions
+    // Get all existing accounts in one query using OR conditions (case-insensitive)
     const queryBuilder = accountRepository.createQueryBuilder('account');
     const conditions = validAccounts.map((acc, index) => 
-      `(account.gameName = :gameName${index} AND account.tagLine = :tagLine${index})`
+      `(LOWER(account.gameName) = :gameName${index} AND LOWER(account.tagLine) = :tagLine${index})`
     ).join(' OR ');
     
     const parameters: any = {};
     validAccounts.forEach((acc, index) => {
-      parameters[`gameName${index}`] = acc.gameName;
-      parameters[`tagLine${index}`] = acc.tagLine;
+      parameters[`gameName${index}`] = acc.gameName.toLowerCase();
+      parameters[`tagLine${index}`] = acc.tagLine.toLowerCase();
     });
     
     const existingAccounts = conditions ? await queryBuilder
@@ -1103,16 +1103,47 @@ export const uploadLeaderboardConfigController = [
         } as RiotAccountDto))
         .filter(x => x.gameName && x.tagLine);
 
-      // Remove duplicates while preserving the first occurrence's order and csvOrder
-      const seen = new Set<string>();
+      // Remove duplicates within CSV (case-insensitive) while preserving the first occurrence's order and csvOrder
+      const seenInCSV = new Set<string>();
       riotAccountAccounts = riotAccountAccounts.filter((x) => {
         const key = `${x.gameName.toLowerCase()}-${x.tagLine.toLowerCase()}`;
-        if (seen.has(key)) {
+        if (seenInCSV.has(key)) {
           // Skip duplicates, keep only the first occurrence
           return false;
         }
-        seen.add(key);
+        seenInCSV.add(key);
         return true;
+      });
+
+      // Query database for existing accounts (case-insensitive comparison)
+      const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
+      // Build OR conditions for each account pair (case-insensitive)
+      const conditions = riotAccountAccounts.map((acc, index) => 
+        `(LOWER(account.gameName) = :gameName${index} AND LOWER(account.tagLine) = :tagLine${index})`
+      ).join(' OR ');
+      
+      const parameters: any = {};
+      riotAccountAccounts.forEach((acc, index) => {
+        parameters[`gameName${index}`] = acc.gameName.toLowerCase();
+        parameters[`tagLine${index}`] = acc.tagLine.toLowerCase();
+      });
+      
+      const existingAccounts = conditions ? await accountRepository
+        .createQueryBuilder('account')
+        .where(conditions, parameters)
+        .getMany() : [];
+
+      // Create a map of existing accounts (case-insensitive key)
+      const existingMap = new Map<string, CachedRiotAccount>();
+      for (const existing of existingAccounts) {
+        const key = `${existing.gameName.toLowerCase()}-${existing.tagLine.toLowerCase()}`;
+        existingMap.set(key, existing);
+      }
+
+      // Filter out accounts that already exist in database (case-insensitive)
+      riotAccountAccounts = riotAccountAccounts.filter((x) => {
+        const key = `${x.gameName.toLowerCase()}-${x.tagLine.toLowerCase()}`;
+        return !existingMap.has(key);
       });
       
       // Save in batches of 50
