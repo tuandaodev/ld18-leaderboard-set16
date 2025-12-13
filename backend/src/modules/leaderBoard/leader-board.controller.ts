@@ -565,18 +565,17 @@ export const processUsersController = asyncHandler(
           account.tagLine = accRes.tagLine;
           account.puuid = accRes.puuid;
           await account.save();
+        } else {
+          const errorCode: string = (accRes as any)?.errorCode;
+          if (errorCode == '404') {
+            account.errorMessage = '404 Not Found';
+            await account.save();
+            continue;
+          }
         }
       } catch (error: any) {
-        // Handle 404 errors by setting error message
-        if (error.response?.status === 404) {
-          account.errorMessage = `404 Not Found`;
-          await account.save();
-          console.log(`Account not found (404), error message saved.`);
-        } else {
-          // Re-throw other errors
-          account.errorMessage = `Error: ${error.message}`;
-          await account.save();
-        }
+        account.errorMessage = `Error: ${error.message}`;
+        await account.save();
       }
     }
 
