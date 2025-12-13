@@ -115,9 +115,11 @@ let methodRateLimiter: RateLimiterConfig | null = null;
 /**
  * Update rate limiters based on response headers
  */
-const updateRateLimitersFromHeaders = (headers: any): void => {
+const updateRateLimitersFromHeaders = async (headers: any): Promise<void> => {
   const appRateLimit = parseRateLimit(headers['x-app-rate-limit']);
   const methodRateLimit = parseRateLimit(headers['x-method-rate-limit']);
+  const appRateLimitCount = parseRateLimitCount(headers['x-app-rate-limit-count']);
+  const methodRateLimitCount = parseRateLimitCount(headers['x-method-rate-limit-count']);
   
   // Update app rate limiters
   for (const limit of appRateLimit) {
@@ -132,6 +134,33 @@ const updateRateLimitersFromHeaders = (headers: any): void => {
         window: limit.window,
       });
     }
+    
+    // Sync count from header if available (only when creating new limiter)
+    // The count header reflects the state after the current request
+    const countInfo = appRateLimitCount.find(c => c.window === limit.window);
+    if (countInfo && countInfo.count > 0 && !existing) {
+      // Only sync when creating a new limiter to start with correct state
+      const config = appRateLimiters.get(limit.window);
+      if (config) {
+        // Consume points to sync with server state (count - 1 because current request already consumed 1)
+        try {
+          const pointsToConsume = Math.min(countInfo.count - 1, limit.limit - 1);
+          if (pointsToConsume > 0) {
+            // Consume points to sync state (non-blocking - use try/catch to handle limits)
+            for (let i = 0; i < pointsToConsume; i++) {
+              try {
+                await config.limiter.consume('riot-api');
+              } catch {
+                // If we can't consume more, we're at the limit - that's fine
+                break;
+              }
+            }
+          }
+        } catch {
+          // Ignore errors during sync - limiter will handle it on next request
+        }
+      }
+    }
   }
   
   // Update method rate limiter (use the most restrictive one)
@@ -143,9 +172,11 @@ const updateRateLimitersFromHeaders = (headers: any): void => {
       return currentRate < prevRate ? current : prev;
     });
     
-    if (!methodRateLimiter || 
+    const wasNewLimiter = !methodRateLimiter || 
         methodRateLimiter.limit !== mostRestrictive.limit ||
-        methodRateLimiter.window !== mostRestrictive.window) {
+        methodRateLimiter.window !== mostRestrictive.window;
+    
+    if (wasNewLimiter) {
       methodRateLimiter = {
         limiter: new RateLimiterMemory({
           points: mostRestrictive.limit,
@@ -154,6 +185,29 @@ const updateRateLimitersFromHeaders = (headers: any): void => {
         limit: mostRestrictive.limit,
         window: mostRestrictive.window,
       };
+    }
+    
+    // Sync method rate limiter count from header if available (only when creating new limiter)
+    // The count header reflects the state after the current request
+    const countInfo = methodRateLimitCount.find(c => c.window === mostRestrictive.window);
+    if (countInfo && countInfo.count > 0 && methodRateLimiter && wasNewLimiter) {
+      // Only sync when creating a new limiter to start with correct state
+      try {
+        const pointsToConsume = Math.min(countInfo.count - 1, mostRestrictive.limit - 1);
+        if (pointsToConsume > 0) {
+          // Consume points to sync state (non-blocking - use try/catch to handle limits)
+          for (let i = 0; i < pointsToConsume; i++) {
+            try {
+              await methodRateLimiter.limiter.consume('riot-api');
+            } catch {
+              // If we can't consume more, we're at the limit - that's fine
+              break;
+            }
+          }
+        }
+      } catch {
+        // Ignore errors during sync - limiter will handle it on next request
+      }
     }
   }
 };
@@ -209,7 +263,14 @@ const fetchSingleMatchDetail = async (
       const response = await axios.get(url);
       
       // Update rate limiters based on response headers
-      updateRateLimitersFromHeaders(response.headers);
+      await updateRateLimitersFromHeaders(response.headers);
+
+      // print rate limit value from header (important numbers only)
+      const appCounts = parseRateLimitCount(response.headers['x-app-rate-limit-count']);
+      const methodCounts = parseRateLimitCount(response.headers['x-method-rate-limit-count']);
+      
+      console.log('App counts:', appCounts.map(c => `${c.count}/${c.window}s`).join(', '));
+      console.log('Method counts:', methodCounts.map(c => `${c.count}/${c.window}s`).join(', '));
       
       return response.data;
     } catch (error: any) {
@@ -217,7 +278,7 @@ const fetchSingleMatchDetail = async (
       if (error.response?.status === 429) {
         // Update rate limiters from error response headers if available
         if (error.response?.headers) {
-          updateRateLimitersFromHeaders(error.response.headers);
+          await updateRateLimitersFromHeaders(error.response.headers);
         }
         
         const retryAfter = error.response?.headers['retry-after'];

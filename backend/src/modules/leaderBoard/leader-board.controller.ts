@@ -732,7 +732,7 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
     }
   } else {
     // Load 5 accounts from CachedRiotAccount where refreshedDate is null or not today
-    accounts = await loadAccountsFromCachedRiotAccount(5, isRefreshingTodayMatches);
+    accounts = await loadAccountsFromCachedRiotAccount(limitAccounts, isRefreshingTodayMatches);
   }
   
   let debugAccountMatches: MatchInfo[] = [];
