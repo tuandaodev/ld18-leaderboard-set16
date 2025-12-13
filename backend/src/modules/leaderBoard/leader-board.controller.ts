@@ -1,18 +1,18 @@
-import { Request, Response } from "express";
-import fs from 'fs';
+import { UTCDate } from "@date-fns/utc";
 import crypto from 'crypto';
+import { format } from "date-fns";
+import { Request, Response } from "express";
+import rateLimit from "express-rate-limit";
+import fs from 'fs';
 import multer from "multer";
 import path from "path";
-import rateLimit from "express-rate-limit";
 import { In, IsNull, Not } from "typeorm";
-import { asyncHandler } from "../../middleware/async";
 import { AppDataSource } from "../../data-source";
 import { CachedMatch } from "../../entity/CachedMatch";
 import { CachedRiotAccount } from "../../entity/CachedRiotAccount";
-import { AccountDto, ConfigData, CsvTeamDto, LeaderBoardDto, MatchInfo, RiotAccountDto } from "./leader-board.dto";
+import { asyncHandler } from "../../middleware/async";
+import { AccountDto, ConfigData, CsvTeamDto, MatchInfo, RiotAccountDto } from "./leader-board.dto";
 import { convertToAccountDto, convertToCsvTeamDto, getCSVForTeams, getCSVForUsers, getMatchDetail, getMatches, getRiotAccountById } from "./leader-board.service";
-import { format } from "date-fns";
-import { UTCDate } from "@date-fns/utc";
 
 const { xss } = require('express-xss-sanitizer');
 
@@ -109,48 +109,37 @@ const validateDataFilePath = (filePath: string, baseDir: string): string | null 
 
 export const getLeaderBoardList = asyncHandler(
   async (req: Request, res: Response) => {
-    // Get and sanitize date string from request
-    const dateString = sanitizeDateString(req.query.date as string);
-    const dataDir = path.resolve(__dirname, "../../data");
-    
-    let userFilePath = path.resolve(dataDir, "user-leaderboard.json");
-    
-    if (dateString) {
-      // Construct path safely
-      const fileName = `user-leaderboard-${dateString}.json`;
-      const potentialPath = path.join(dataDir, fileName);
-      
-      // Validate path stays within data directory (prevent path traversal)
-      const validatedPath = validateDataFilePath(potentialPath, dataDir);
-      if (validatedPath) {
-        userFilePath = validatedPath;
-      } else {
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid date parameter'
-        });
-      }
-    }
-
-    let userData;
     try {
-      // Use async file operations
-      const jsonString = await fs.promises.readFile(userFilePath, 'utf-8');
-      userData = JSON.parse(jsonString);
+      const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
+      
+      // Query accounts from database with totalPoints > 0, sorted by totalPoints descending, limit 100
+      const cachedAccounts = await accountRepository
+        .createQueryBuilder('account')
+        .where('account.totalPoints > :minPoints', { minPoints: 0 })
+        .orderBy('account.totalPoints', 'DESC')
+        .limit(100)
+        .getMany();
+
+      // Map CachedRiotAccount entities to RiotAccountDto
+      const users: RiotAccountDto[] = cachedAccounts.map(account => ({
+        gameName: account.gameName,
+        tagLine: account.tagLine,
+        // puuid: account.puuid ?? null,
+        totalPoints: account.totalPoints ?? 0,
+      }));
+
+      res.status(200).json({
+        success: true,
+        data: users
+      });
     } catch (error: any) {
       // Don't expose internal error details
-      console.error('Error reading leaderboard file:', error.message);
-      userData = { users: [] };
+      console.error('Error loading leaderboard from database:', error.message);
+      res.status(500).json({
+        success: false,
+        message: 'Unable to load leaderboard data'
+      });
     }
-
-    const users: RiotAccountDto[] = (userData?.users ?? [])
-      .filter((user: RiotAccountDto) => (user.totalPoints ?? 0) > 0)
-      .sort((a: RiotAccountDto, b: RiotAccountDto) => (b.totalPoints ?? 0) - (a.totalPoints ?? 0))
-      .slice(0, 100);
-    res.status(200).json({
-      success: true,
-      data: users
-    });
   }
 );
 
@@ -368,7 +357,7 @@ const loadAccountsFromCSV = async (configData: ConfigData): Promise<AccountDto[]
 };
 
 // Helper function to load 5 accounts from CachedRiotAccount where refreshedDate is null or not today
-const loadAccountsFromCachedRiotAccount = async (limit: number = 5): Promise<CachedRiotAccount[]> => {
+const loadAccountsFromCachedRiotAccount = async (limit: number = 5, isRefreshingTodayMatches: boolean = false): Promise<CachedRiotAccount[]> => {
   const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
   
   try {
@@ -378,9 +367,14 @@ const loadAccountsFromCachedRiotAccount = async (limit: number = 5): Promise<Cac
     // Query for accounts where refreshedDate is null or not today
     const queryBuilder = accountRepository
       .createQueryBuilder('account')
-      .where('account.puuid IS NOT NULL')
-      .andWhere('(account.refreshedDate IS NULL OR account.refreshedDate <> :today)', { today })
-      .orderBy('account.refreshedAt', 'ASC');
+      .where('account.puuid IS NOT NULL');
+    
+    // Only add the refreshedDate condition if not refreshing today's matches
+    if (!isRefreshingTodayMatches) {
+      queryBuilder.andWhere('(account.refreshedDate IS NULL OR account.refreshedDate <> :today)', { today });
+    }
+    
+    queryBuilder.orderBy('account.refreshedAt', 'ASC');
     
     // Only apply limit if it's not -1
     if (limit !== -1) {
@@ -579,38 +573,6 @@ const processAccountMatches = async (
   return matchesToSave;
 };
 
-// Helper function to save leaderboard results
-const saveLeaderBoardResults = async (
-  dataAccounts: RiotAccountDto[],
-  startTime: number
-): Promise<void> => {
-  const result: LeaderBoardDto = {
-    users: dataAccounts,
-    createdIn: (Date.now() - startTime) / 1000,
-    createdDate: new Date().toISOString()
-  };
-  
-  const outputPath = path.resolve(__dirname, "../../data/user-leaderboard.json");
-  try {
-    await fs.promises.writeFile(outputPath, JSON.stringify(result), 'utf8');
-    console.log('write user json complete');
-  } catch (error: any) {
-    console.error('Error writing user leaderboard:', error.message);
-    throw new Error('Unable to save user leaderboard');
-  }
-
-  // backup user-leaderboard.json by date string yyyy-mm-dd
-  const dateString = new Date().toISOString().split('T')[0];
-  const outputBackupPath = path.resolve(__dirname, `../../data/user-leaderboard-${dateString}.json`);
-  try {
-    await fs.promises.writeFile(outputBackupPath, JSON.stringify(result), 'utf8');
-    console.log('write user json backup complete');
-  } catch (error: any) {
-    console.error('Error writing user leaderboard backup:', error.message);
-    // Don't throw here, backup failure is not critical
-  }
-};
-
 export const processUsersController = asyncHandler(
   async (req: Request, res: Response) => {
     if (!validateApiKey(req)) {
@@ -701,7 +663,7 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
   }
 
   // Load 5 accounts from CachedRiotAccount where refreshedDate is null or not today
-  const accounts = await loadAccountsFromCachedRiotAccount(limitAccounts);
+  const accounts = await loadAccountsFromCachedRiotAccount(limitAccounts, isRefreshingTodayMatches);
   
   // Process each account one by one
   for (let i = 0; i < accounts.length; i++) {
