@@ -400,44 +400,41 @@ const transformMatchToMatchInfo = (rawRes: RiotMatchDto | null, matchId?: string
   if (!rawRes) return null;
   
   const isStandardGame = rawRes?.info?.tft_game_type == 'standard';
-  if (rawRes?.info?.endOfGameResult == 'GameComplete') {
-    const matchRes: MatchInfo = {
-      matchId: matchId || rawRes.metadata.match_id,
-      endOfGameResult: rawRes.info.endOfGameResult,
-      gameCreation: rawRes.info.gameCreation,
-      gameMode: rawRes.info.tft_game_type,
-      participants: rawRes.info.participants.map(x => {
-        let totalPoints = 0;
-        if (x.time_eliminated > 1200 && x.last_round > 30 && isStandardGame) {
-          if (x.placement == 1) {
-            totalPoints = 10;
-          }
-          if (x.placement == 2) {
-            totalPoints = 8;
-          }
-          if (x.placement == 3) {
-            totalPoints = 6;
-          }
-          if (x.placement == 4) {
-            totalPoints = 4;
-          }
+  const isCompletedGame = rawRes?.info?.endOfGameResult == 'GameComplete';
+  const matchRes: MatchInfo = {
+    matchId: matchId || rawRes.metadata.match_id,
+    endOfGameResult: rawRes.info.endOfGameResult,
+    gameCreation: rawRes.info.gameCreation,
+    gameMode: rawRes.info.tft_game_type,
+    participants: rawRes.info.participants.map(x => {
+      let totalPoints = 0;
+      if (x.time_eliminated > 1200 && x.last_round > 30 && isStandardGame && isCompletedGame) {
+        if (x.placement == 1) {
+          totalPoints = 10;
         }
-        return {
-          riotIdGameName: x.riotIdGameName,
-          riotIdTagline: x.riotIdTagline,
-          placement: x.placement,
-          timeEliminated: x.time_eliminated,
-          totalPoints: totalPoints,
-          lastRound: x.last_round,
+        if (x.placement == 2) {
+          totalPoints = 8;
         }
-      })
-    };
-    
-    matchRes.participants = matchRes?.participants?.filter(x => x.totalPoints != null && x.totalPoints > 0) ?? [];
-    return matchRes;
-  }
+        if (x.placement == 3) {
+          totalPoints = 6;
+        }
+        if (x.placement == 4) {
+          totalPoints = 4;
+        }
+      }
+      return {
+        riotIdGameName: x.riotIdGameName,
+        riotIdTagline: x.riotIdTagline,
+        placement: x.placement,
+        timeEliminated: x.time_eliminated,
+        totalPoints: totalPoints,
+        lastRound: x.last_round,
+      }
+    })
+  };
   
-  return null;
+  matchRes.participants = matchRes?.participants?.filter(x => x.totalPoints != null && x.totalPoints > 0) ?? [];
+  return matchRes;
 };
 
 const processMatch = async (matchId: string): Promise<MatchInfo | null> => {
