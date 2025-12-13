@@ -12,7 +12,8 @@ import { CachedMatch } from "../../entity/CachedMatch";
 import { CachedRiotAccount } from "../../entity/CachedRiotAccount";
 import { asyncHandler } from "../../middleware/async";
 import { AccountDto, ConfigData, CsvTeamDto, MatchInfo, RiotAccountDto } from "./leader-board.dto";
-import { convertToAccountDto, convertToCsvTeamDto, getCSVForTeams, getCSVForUsers, getMatchDetail, getMatches, getRiotAccountById } from "./leader-board.service";
+import { RiotMatchDto } from "./leader-board.riot-dto";
+import { convertToAccountDto, convertToCsvTeamDto, getCSVForTeams, getCSVForUsers, getMatchDetail, getMatches, getMatchesDetails, getRiotAccountById } from "./leader-board.service";
 
 const { xss } = require('express-xss-sanitizer');
 
@@ -451,26 +452,14 @@ const getAccountMatches = async (
 };
 
 // Helper function to process a single match
-const processMatch = async (matchId: string): Promise<MatchInfo | null> => {
-  let matchRes: MatchInfo | null = null;
-  
-  // const startTime = Date.now();
-  const rawRes = await getMatchDetail(matchId);
-  // const elapsedTime = Date.now() - startTime;
-  
-  if (IS_DEBUG_PROCESS) {
-    console.log('get match detail', matchId, new Date().toLocaleTimeString());
-  }
-  
-  // // Only delay if the request took less than 900ms to avoid rate limiting
-  // if (elapsedTime < 900) {
-  //   await delay(900);
-  // }
+// Helper function to transform RiotMatchDto to MatchInfo
+const transformMatchToMatchInfo = (rawRes: RiotMatchDto | null, matchId?: string): MatchInfo | null => {
+  if (!rawRes) return null;
   
   const isStandardGame = rawRes?.info?.tft_game_type == 'standard';
-  if (rawRes != null && rawRes?.info?.endOfGameResult == 'GameComplete') {
-    matchRes = {
-      matchId: rawRes.metadata.match_id,
+  if (rawRes?.info?.endOfGameResult == 'GameComplete') {
+    const matchRes: MatchInfo = {
+      matchId: matchId || rawRes.metadata.match_id,
       endOfGameResult: rawRes.info.endOfGameResult,
       gameCreation: rawRes.info.gameCreation,
       gameMode: rawRes.info.tft_game_type,
@@ -500,13 +489,29 @@ const processMatch = async (matchId: string): Promise<MatchInfo | null> => {
         }
       })
     };
-  }
-  if (matchRes != null) {
+    
     matchRes.participants = matchRes?.participants?.filter(x => x.totalPoints != null && x.totalPoints > 0) ?? [];
     return matchRes;
   }
   
   return null;
+};
+
+const processMatch = async (matchId: string): Promise<MatchInfo | null> => {
+  // const startTime = Date.now();
+  const rawRes = await getMatchDetail(matchId);
+  // const elapsedTime = Date.now() - startTime;
+  
+  if (IS_DEBUG_PROCESS) {
+    console.log('get match detail', matchId, new Date().toLocaleTimeString());
+  }
+  
+  // // Only delay if the request took less than 900ms to avoid rate limiting
+  // if (elapsedTime < 900) {
+  //   await delay(900);
+  // }
+  
+  return transformMatchToMatchInfo(rawRes, matchId);
 };
 
 // Helper function to load cached matches for a list of match IDs
@@ -554,18 +559,32 @@ const processAccountMatches = async (
   const uniqueMatchIds = matchIds.filter((value, index, array) => array.indexOf(value) === index);
   // Only process matches that are still missing from cache
   const matchesToProcess = uniqueMatchIds.filter(id => !cachedMatchMap.has(id));
-  // Process matches in parallel
-  const matchPromises = matchesToProcess.map(async (matchId) => {
-    const matchRes = await processMatch(matchId);
+  
+  if (matchesToProcess.length === 0) {
+    return [];
+  }
+  
+  // Use getMatchesDetails which handles rate limiting automatically
+  const startTime = Date.now();
+  const matchDetails = await getMatchesDetails(matchesToProcess);
+  const elapsedTime = Date.now() - startTime;
+  if (IS_DEBUG_PROCESS) {
+    console.log(`get matches details took ${elapsedTime}ms`, new Date().toLocaleTimeString());
+  }
+  
+  // Transform results and update cache
+  const matchesToSave: MatchInfo[] = [];
+  for (let i = 0; i < matchesToProcess.length; i++) {
+    const matchId = matchesToProcess[i];
+    const rawRes = matchDetails[i];
+    const matchRes = transformMatchToMatchInfo(rawRes, matchId);
+    
     if (matchRes != null) {
       cachedMatchMap.set(matchId, matchRes);
-      return matchRes;
+      matchesToSave.push(matchRes);
     }
-    return null;
-  });
+  }
   
-  const results = await Promise.all(matchPromises);
-  const matchesToSave: MatchInfo[] = results.filter((m): m is MatchInfo => m != null);
   await persistCachedMatches(matchesToSave);
 
   return matchesToSave;

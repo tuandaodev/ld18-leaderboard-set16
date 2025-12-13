@@ -1,6 +1,7 @@
 import axios from "axios";
 import { parse } from 'csv-parse';
 import fs from "fs";
+import { RateLimiterMemory } from "rate-limiter-flexible";
 import { AccountDto, CsvTeamDto } from "./leader-board.dto";
 import { ChampionMasteriesDetail, RiotMatchDto } from "./leader-board.riot-dto";
 
@@ -72,6 +73,194 @@ export const getMatchDetail = async (matchId: string): Promise<RiotMatchDto> => 
     console.error(`Error calling API to get match detail: ${matchId}`, error.message);
     return null as any;
   }
+};
+
+/**
+ * Parse rate limit header (e.g., "500:10,30000:600" means 500 requests per 10 seconds, 30000 requests per 600 seconds)
+ */
+const parseRateLimit = (headerValue: string | undefined): Array<{ limit: number; window: number }> => {
+  if (!headerValue) return [];
+  
+  return headerValue.split(',').map(part => {
+    const [limit, window] = part.trim().split(':').map(Number);
+    return { limit, window };
+  });
+};
+
+/**
+ * Parse rate limit count header (e.g., "1:10,1:600" means current count for each window)
+ */
+const parseRateLimitCount = (headerValue: string | undefined): Array<{ count: number; window: number }> => {
+  if (!headerValue) return [];
+  
+  return headerValue.split(',').map(part => {
+    const [count, window] = part.trim().split(':').map(Number);
+    return { count, window };
+  });
+};
+
+/**
+ * Rate limiter instances for Riot API
+ * These are dynamically updated based on response headers
+ */
+interface RateLimiterConfig {
+  limiter: RateLimiterMemory;
+  limit: number;
+  window: number;
+}
+
+let appRateLimiters: Map<number, RateLimiterConfig> = new Map();
+let methodRateLimiter: RateLimiterConfig | null = null;
+
+/**
+ * Update rate limiters based on response headers
+ */
+const updateRateLimitersFromHeaders = (headers: any): void => {
+  const appRateLimit = parseRateLimit(headers['x-app-rate-limit']);
+  const methodRateLimit = parseRateLimit(headers['x-method-rate-limit']);
+  
+  // Update app rate limiters
+  for (const limit of appRateLimit) {
+    const existing = appRateLimiters.get(limit.window);
+    if (!existing || existing.limit !== limit.limit) {
+      appRateLimiters.set(limit.window, {
+        limiter: new RateLimiterMemory({
+          points: limit.limit,
+          duration: limit.window,
+        }),
+        limit: limit.limit,
+        window: limit.window,
+      });
+    }
+  }
+  
+  // Update method rate limiter (use the most restrictive one)
+  if (methodRateLimit.length > 0) {
+    // Find the most restrictive limit (lowest requests per second)
+    const mostRestrictive = methodRateLimit.reduce((prev, current) => {
+      const prevRate = prev.limit / prev.window;
+      const currentRate = current.limit / current.window;
+      return currentRate < prevRate ? current : prev;
+    });
+    
+    if (!methodRateLimiter || 
+        methodRateLimiter.limit !== mostRestrictive.limit ||
+        methodRateLimiter.window !== mostRestrictive.window) {
+      methodRateLimiter = {
+        limiter: new RateLimiterMemory({
+          points: mostRestrictive.limit,
+          duration: mostRestrictive.window,
+        }),
+        limit: mostRestrictive.limit,
+        window: mostRestrictive.window,
+      };
+    }
+  }
+};
+
+/**
+ * Consume rate limit points and wait if necessary
+ */
+const consumeRateLimit = async (key: string = 'riot-api'): Promise<void> => {
+  // Try to consume from method rate limiter first (most restrictive)
+  if (methodRateLimiter) {
+    try {
+      await methodRateLimiter.limiter.consume(key);
+    } catch (rejRes: any) {
+      // Rate limit exceeded, wait for the reset time
+      const msBeforeNext = rejRes.msBeforeNext || 1000;
+      await new Promise(resolve => setTimeout(resolve, msBeforeNext));
+      // Retry after waiting
+      await methodRateLimiter.limiter.consume(key);
+    }
+  }
+  
+  // Also consume from all app rate limiters
+  for (const config of appRateLimiters.values()) {
+    try {
+      await config.limiter.consume(key);
+    } catch (rejRes: any) {
+      const msBeforeNext = rejRes.msBeforeNext || 1000;
+      await new Promise(resolve => setTimeout(resolve, msBeforeNext));
+      await config.limiter.consume(key);
+    }
+  }
+};
+
+/**
+ * Get multiple match details with rate limit handling using rate-limiter-flexible
+ * @param matchIds Array of match IDs to fetch
+ * @param options Optional configuration
+ * @returns Array of match details (null for failed requests)
+ */
+export const getMatchesDetails = async (
+  matchIds: string[],
+  options?: {
+    maxRetries?: number;
+    retryDelay?: number;
+  }
+): Promise<(RiotMatchDto | null)[]> => {
+  const maxRetries = options?.maxRetries ?? 3;
+  const retryDelay = options?.retryDelay ?? 1000;
+  
+  const results: (RiotMatchDto | null)[] = [];
+  
+  for (let i = 0; i < matchIds.length; i++) {
+    const matchId = matchIds[i];
+    let retries = 0;
+    let success = false;
+    
+    while (retries <= maxRetries && !success) {
+      try {
+        // Consume rate limit before making request (if limiters are initialized)
+        // On first request, limiters might not be initialized yet
+        if (methodRateLimiter || appRateLimiters.size > 0) {
+          await consumeRateLimit('riot-api');
+        }
+        
+        const url = getMatchDetailURL(matchId);
+        const response = await axios.get(url);
+        
+        // Update rate limiters based on response headers
+        updateRateLimitersFromHeaders(response.headers);
+        
+        // Store the result
+        results.push(response.data);
+        success = true;
+      } catch (error: any) {
+        // Handle 429 Too Many Requests
+        if (error.response?.status === 429) {
+          // Update rate limiters from error response headers if available
+          if (error.response?.headers) {
+            updateRateLimitersFromHeaders(error.response.headers);
+          }
+          
+          const retryAfter = error.response?.headers['retry-after'];
+          const waitTime = retryAfter 
+            ? parseInt(retryAfter) * 1000 
+            : retryDelay * Math.pow(2, retries); // Exponential backoff
+          
+          console.warn(`Rate limited for match ${matchId}. Waiting ${waitTime}ms before retry ${retries + 1}/${maxRetries}`);
+          
+          if (retries < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            retries++;
+          } else {
+            console.error(`Max retries reached for match ${matchId}`);
+            results.push(null);
+            success = true; // Exit loop even though it failed
+          }
+        } else {
+          // Other errors - log and move on
+          console.error(`Error calling API to get match detail: ${matchId}`, error.message);
+          results.push(null);
+          success = true; // Exit loop
+        }
+      }
+    }
+  }
+  
+  return results;
 };
 
 export const getChampionMasteriesURL = (puuid: string, championId: string): string => {
