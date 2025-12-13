@@ -11,7 +11,8 @@ import { CachedMatch } from "../../entity/CachedMatch";
 import { CachedRiotAccount } from "../../entity/CachedRiotAccount";
 import { AccountDto, CsvTeamDto, LeaderBoardDto, MatchInfo, RiotAccountDto } from "./leader-board.dto";
 import { convertToAccountDto, convertToCsvTeamDto, getCSVForTeams, getCSVForUsers, getMatchDetail, getMatches, getRiotAccountById } from "./leader-board.service";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
+import { UTCDate } from "@date-fns/utc";
 
 const { xss } = require('express-xss-sanitizer');
 
@@ -396,31 +397,6 @@ const loadAccountsFromCachedRiotAccount = async (limit: number = 5): Promise<Cac
   }
 };
 
-// Helper function to load cached accounts map from database
-const loadCachedAccountsMap = async (): Promise<Map<string, RiotAccountDto>> => {
-  const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
-  const cachedAccountMap = new Map<string, RiotAccountDto>();
-  
-  try {
-    const cachedAccounts = await accountRepository.find();
-    console.log('loaded cached accounts from database', cachedAccounts.length);
-    
-    for (const cached of cachedAccounts) {
-      const key = `${cached.gameName.toLowerCase()}-${cached.tagLine.toLowerCase()}`;
-      cachedAccountMap.set(key, {
-        puuid: cached.puuid,
-        gameName: cached.gameName,
-        tagLine: cached.tagLine,
-        totalPoints: cached.totalPoints
-      });
-    }
-  } catch (error: any) {
-    console.error('Error reading cached accounts from database:', error.message);
-  }
-  
-  return cachedAccountMap;
-};
-
 // Helper function to get or fetch Riot account
 const getOrFetchRiotAccount = async (
   acc: CachedRiotAccount,
@@ -713,14 +689,14 @@ export const processUserList = async (): Promise<RiotAccountDto[]> => {
 }
 
 // Main function - processes accounts one by one
-export const processMatchesForLeaderboard = async (limit: number = 5) => {
+export const processMatchesForLeaderboard = async (limitAccounts: number = 5) => {
   console.log("Start processMatchesForLeaderboard");
 
   // Load configuration
   const configData = await loadConfigData();
   
   // Load 5 accounts from CachedRiotAccount where refreshedDate is null or not today
-  const accounts = await loadAccountsFromCachedRiotAccount(limit);
+  const accounts = await loadAccountsFromCachedRiotAccount(limitAccounts);
   
   // Process each account one by one
   for (let i = 0; i < accounts.length; i++) {
@@ -760,7 +736,10 @@ export const processMatchesForLeaderboard = async (limit: number = 5) => {
 
     acc.totalPoints = totalPoints;
     acc.totalMatches = matchIds.length;
-    
+    acc.refreshedAt = new UTCDate();
+    acc.refreshedDate = format(new Date(), 'yyyy-MM-dd');
+    await AppDataSource.getRepository(CachedRiotAccount).save(acc);
+
     console.log(`Completed account ${i + 1}/${accounts.length}: ${acc.gameName}-${acc.tagLine} | (${totalPoints} points, ${matchIds.length} matches)`);
   }
   

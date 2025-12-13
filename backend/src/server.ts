@@ -306,10 +306,20 @@ const processCleanUpTempFiles = async () => {
 
 cron.schedule('01 2 * * *', processCleanUpTempFiles);
 
-const processInitData = async () => {
-  await processMatchesForLeaderboard(-1);
+let isProcessingMatches = false;
+const procesMatches = async () => {
+  if (isProcessingMatches) {
+    return;
+  }
+  isProcessingMatches = true;
+  try {
+    await processMatchesForLeaderboard(20);
+  } catch (error: any) {
+    console.error('Error processing matches:', error.message);
+  } finally {
+    isProcessingMatches = false;
+  }
 }
-
-cron.schedule('30 0 * * *', processInitData);
+cron.schedule('* */5 * * *', procesMatches);
 
 export default app;
