@@ -761,7 +761,11 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
         }
       }
 
-      debugAccountMatches.push(matchInfo);
+      if (accountName != null) {
+        const [gameName, tagLine] = accountName.split('#');
+        matchInfo.participants = matchInfo.participants.filter(participant => participant.riotIdGameName?.toLowerCase() === gameName?.toLowerCase() && participant.riotIdTagline?.toLowerCase() === tagLine?.toLowerCase());
+        debugAccountMatches.push(matchInfo);
+      }
     }
 
     acc.totalPoints = totalPoints;
