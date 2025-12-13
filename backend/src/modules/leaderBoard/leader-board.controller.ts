@@ -188,32 +188,24 @@ const persistCachedAccounts = async (dataAccounts: RiotAccountDto[]) => {
       
       if (existing) {
         // Update existing account
-
-        // Update existing account with new gameName and tagLine to match the CSV order
-        existing.gameName = account.gameName;
-        existing.tagLine = account.tagLine;
-
         if (account.puuid !== undefined) {
           existing.puuid = account.puuid;
         }
         if (account.totalPoints !== undefined) {
           existing.totalPoints = account.totalPoints;
         }
-        // Update csvOrder to preserve CSV order
-        if (account.csvOrder !== undefined && account.csvOrder !== null) {
-          existing.csvOrder = account.csvOrder;
-        }
         accountsToSave.push(existing);
       } else {
+        console.warn(`Account ${account.gameName}-${account.tagLine} not found in database, skipping...`);
         // Create new account with csvOrder
-        const newAccount = accountRepository.create({
-          puuid: account.puuid ?? null,
-          gameName: account.gameName,
-          tagLine: account.tagLine,
-          totalPoints: account.totalPoints,
-          csvOrder: account.csvOrder ?? null,
-        });
-        accountsToSave.push(newAccount);
+        // const newAccount = accountRepository.create({
+        //   puuid: account.puuid ?? null,
+        //   gameName: account.gameName,
+        //   tagLine: account.tagLine,
+        //   totalPoints: account.totalPoints,
+        //   csvOrder: account.csvOrder ?? 999999999,
+        // });
+        // accountsToSave.push(newAccount);
       }
     }
     
@@ -544,6 +536,18 @@ export const processUsersController = asyncHandler(
     const configData = await loadConfigData();
     const processedAccounts = await processUserList();
 
+    // Process rest accounts one by one
+    const restAccounts = await loadAccountsWithoutPuuid();
+    for (const account of restAccounts) {
+      const accRes = await getOrFetchRiotAccount(account);
+      if (accRes != null && accRes.puuid != null) {
+        account.gameName = accRes.gameName;
+        account.tagLine = accRes.tagLine;
+        account.puuid = accRes.puuid;
+        account.save();
+      }
+    }
+
     // Get total count of accounts in CachedRiotAccount
     const totalAccounts = await AppDataSource.getRepository(CachedRiotAccount).count();
     const totalProcessedAccounts = await AppDataSource.getRepository(CachedRiotAccount).count({
@@ -563,6 +567,7 @@ export const processUsersController = asyncHandler(
         totalProcessedUsers: totalProcessedAccounts,
         processedUsers: processedAccounts.length,
         demo5processedUsers: processedAccounts.slice(0, 5),
+        failedBatchProcessAccounts: restAccounts.slice(0, 5),
       }
     });
   }
