@@ -54,4 +54,11 @@ export class CachedRiotAccount extends Base {
     default: false,
   })
   isCompleted?: boolean;
+
+  @Column({
+    name: "csv_order",
+    type: "integer",
+    nullable: true,
+  })
+  csvOrder?: number | null;
 }

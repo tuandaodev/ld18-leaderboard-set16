@@ -40,6 +40,7 @@ export class RiotAccountDto {
   tagLine: string;
   puuid?: string | null;
   totalPoints?: number;
+  csvOrder?: number | null;
 }
 
 export class MatchDetailDto {

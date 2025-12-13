@@ -179,7 +179,7 @@ const persistCachedAccounts = async (dataAccounts: RiotAccountDto[]) => {
       existingMap.set(key, existing);
     }
     
-    // Prepare accounts for batch save
+    // Prepare accounts for batch save, preserving CSV order
     const accountsToSave: CachedRiotAccount[] = [];
     for (const account of validAccounts) {
       const key = `${account.gameName.toLowerCase()}-${account.tagLine.toLowerCase()}`;
@@ -193,18 +193,30 @@ const persistCachedAccounts = async (dataAccounts: RiotAccountDto[]) => {
         if (account.totalPoints !== undefined) {
           existing.totalPoints = account.totalPoints;
         }
+        // Update csvOrder to preserve CSV order
+        if (account.csvOrder !== undefined && account.csvOrder !== null) {
+          existing.csvOrder = account.csvOrder;
+        }
         accountsToSave.push(existing);
       } else {
-        // Create new account
+        // Create new account with csvOrder
         const newAccount = accountRepository.create({
           puuid: account.puuid ?? null,
           gameName: account.gameName,
           tagLine: account.tagLine,
           totalPoints: account.totalPoints,
+          csvOrder: account.csvOrder ?? null,
         });
         accountsToSave.push(newAccount);
       }
     }
+    
+    // Sort accounts by csvOrder before saving to ensure order is preserved
+    accountsToSave.sort((a, b) => {
+      const orderA = a.csvOrder ?? Number.MAX_SAFE_INTEGER;
+      const orderB = b.csvOrder ?? Number.MAX_SAFE_INTEGER;
+      return orderA - orderB;
+    });
     
     // Batch save all accounts
     if (accountsToSave.length > 0) {
@@ -213,63 +225,6 @@ const persistCachedAccounts = async (dataAccounts: RiotAccountDto[]) => {
   } catch (error: any) {
     console.error('Error saving cached accounts to database:', error.message);
     throw new Error('Unable to save cached accounts');
-  }
-};
-
-const updateCachedAccountsTotalPoints = async (dataAccounts: RiotAccountDto[]) => {
-  try {
-    if (dataAccounts.length === 0) return;
-    
-    const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
-    
-    // Filter valid accounts with totalPoints
-    const accountsToUpdate = dataAccounts.filter(acc => 
-      acc && acc.gameName && acc.tagLine && acc.totalPoints !== undefined
-    );
-    if (accountsToUpdate.length === 0) return;
-    
-    // Get all existing accounts in one query using OR conditions
-    const queryBuilder = accountRepository.createQueryBuilder('account');
-    const conditions = accountsToUpdate.map((acc, index) => 
-      `(account.gameName = :gameName${index} AND account.tagLine = :tagLine${index})`
-    ).join(' OR ');
-    
-    const parameters: any = {};
-    accountsToUpdate.forEach((acc, index) => {
-      parameters[`gameName${index}`] = acc.gameName;
-      parameters[`tagLine${index}`] = acc.tagLine;
-    });
-    
-    const existingAccounts = conditions ? await queryBuilder
-      .where(conditions, parameters)
-      .getMany() : [];
-    
-    // Create a map for faster lookup
-    const pointsMap = new Map<string, number>();
-    accountsToUpdate.forEach(acc => {
-      const key = `${acc.gameName.toLowerCase()}-${acc.tagLine.toLowerCase()}`;
-      pointsMap.set(key, acc.totalPoints || 0);
-    });
-    
-    // Update totalPoints for existing accounts
-    const accountsToSave: CachedRiotAccount[] = [];
-    for (const existing of existingAccounts) {
-      const key = `${existing.gameName.toLowerCase()}-${existing.tagLine.toLowerCase()}`;
-      const totalPoints = pointsMap.get(key);
-      if (totalPoints !== undefined && existing.totalPoints !== totalPoints) {
-        existing.totalPoints = totalPoints;
-        accountsToSave.push(existing);
-      }
-    }
-    
-    // Batch save updated accounts
-    if (accountsToSave.length > 0) {
-      await accountRepository.save(accountsToSave);
-      console.log(`Updated totalPoints for ${accountsToSave.length} accounts`);
-    }
-  } catch (error: any) {
-    console.error('Error updating cached accounts totalPoints:', error.message);
-    throw new Error('Unable to update cached accounts totalPoints');
   }
 };
 
@@ -412,23 +367,15 @@ const getAccountMatches = async (
     const startTime = Date.now();
     const accRes = await getMatches(puuid, start, count, startDate, endDate);
     const elapsedTime = Date.now() - startTime;
-    
-    if (IS_DEBUG_PROCESS) {
-      console.log('get matches', gameName, accRes?.length || 0, new Date().toLocaleTimeString());
-    }
-    
     // Only delay if the request took less than 900ms to avoid rate limiting
     if (elapsedTime < 900) {
       await delay(900);
     }
-    
     if (accRes == null || accRes.length === 0) {
       break;
     }
-    
     totalMatches += accRes.length;
     matchIds.push(...accRes);
-    
     if (accRes.length < count) {
       if (IS_DEBUG_PROCESS) {
         console.log('get account matches', gameName, totalMatches, new Date().toLocaleTimeString());
@@ -560,7 +507,7 @@ const processAccountMatches = async (
   const matchDetails = await getMatchesDetails(matchesToProcess);
   const elapsedTime = (Date.now() - startTime) / 1000;
   if (IS_DEBUG_PROCESS) {
-    console.log(`get ${matchesToProcess.length} matches details took ${elapsedTime}s | ${new Date().toLocaleTimeString()}`);
+    console.log(`Get new ${matchesToProcess.length} matches details ${elapsedTime}s | ${new Date().toLocaleTimeString()}`);
   }
   
   // Transform results and update cache
@@ -791,11 +738,6 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
       }
       continue;
     }
-
-    if (IS_DEBUG_PROCESS) {
-      console.log(`Found ${matchIds.length} matches for ${acc.gameName}-${acc.tagLine}`);
-    }
-    
     // Load cached matches for this account's matches
     const cachedMatchMap = await loadCachedMatches(matchIds);
     
@@ -1141,19 +1083,28 @@ export const uploadLeaderboardConfigController = [
       await fs.promises.writeFile(configFilePath, JSON.stringify(configData, null, 2), 'utf-8');
 
       // Add userAccounts to CachedRiotAccount table
-      let riotAccountAccounts: RiotAccountDto[] = userAccounts.filter(x => x.gameName && x.tagLine).map(x => {
-        return {
+      // Map with csvOrder to preserve CSV order (before filtering)
+      let riotAccountAccounts: RiotAccountDto[] = userAccounts
+        .map((x, index) => ({
           gameName: x.gameName,
           tagLine: x.tagLine,
           puuid: null,
           totalPoints: 0,
-        } as RiotAccountDto;
-      });
+          csvOrder: index + 1, // 1-based index to preserve CSV order
+        } as RiotAccountDto))
+        .filter(x => x.gameName && x.tagLine);
 
-      // Remove duplicates
-      riotAccountAccounts = riotAccountAccounts.filter((x, index, self) =>
-        index === self.findIndex((t) => t.gameName === x.gameName && t.tagLine === x.tagLine)
-      );
+      // Remove duplicates while preserving the first occurrence's order and csvOrder
+      const seen = new Set<string>();
+      riotAccountAccounts = riotAccountAccounts.filter((x) => {
+        const key = `${x.gameName.toLowerCase()}-${x.tagLine.toLowerCase()}`;
+        if (seen.has(key)) {
+          // Skip duplicates, keep only the first occurrence
+          return false;
+        }
+        seen.add(key);
+        return true;
+      });
       
       // Save in batches of 50
       const BATCH_SIZE = 50;

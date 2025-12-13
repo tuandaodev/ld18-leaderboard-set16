@@ -12,6 +12,7 @@ import { InitDatabase1764693369392 } from "./migrations/1764693369392-init-datab
 import { InitData1764693419027 } from "./migrations/1764693419027-init-data";
 import { InitContentConfig1764694038203 } from "./migrations/1764694038203-init-content-config";
 import { AddCacheEntities1765556367767 } from "./migrations/1765556367767-add-cache-entities";
+import { AddCsvOrderToCachedRiotAccount1765629718906 } from "./migrations/1765629718906-add-csv-order-to-cached-riot-account";
 
 // Add new entities here
 export const AppEntites = [
@@ -35,7 +36,8 @@ export const AppDataSource = new DataSource({
     InitDatabase1764693369392,
     InitData1764693419027,
     InitContentConfig1764694038203,
-    AddCacheEntities1765556367767
+    AddCacheEntities1765556367767,
+    AddCsvOrderToCachedRiotAccount1765629718906
   ],
   cache: false,
   synchronize: true,
