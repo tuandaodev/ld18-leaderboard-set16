@@ -6,7 +6,6 @@ import rateLimit from "express-rate-limit";
 import fs from 'fs';
 import multer from "multer";
 import path from "path";
-import { RateLimiterMemory } from "rate-limiter-flexible";
 import { In, IsNull, Not } from "typeorm";
 import { AppDataSource } from "../../data-source";
 import { CachedMatch } from "../../entity/CachedMatch";
@@ -14,7 +13,7 @@ import { CachedRiotAccount } from "../../entity/CachedRiotAccount";
 import { asyncHandler } from "../../middleware/async";
 import { AccountDto, ConfigData, CsvTeamDto, MatchInfo, RiotAccountDto } from "./leader-board.dto";
 import { RiotMatchDto } from "./leader-board.riot-dto";
-import { convertToAccountDto, convertToCsvTeamDto, getCSVForTeams, getCSVForUsers, getMatchDetail, getMatches, getMatchesDetails, getRiotAccountById } from "./leader-board.service";
+import { convertToAccountDto, convertToCsvTeamDto, getCSVForTeams, getCSVForUsers, getMatchDetail, getMatches, getMatchesDetails, getRiotAccountById, IS_DEBUG_PROCESS } from "./leader-board.service";
 
 const { xss } = require('express-xss-sanitizer');
 
@@ -334,14 +333,6 @@ const persistCachedMatches = async (matches: MatchInfo[], ignoreExistingMatches:
 };
 
 export const BATCH_SIZE = 20;
-export const IS_DEBUG_PROCESS = true;
-
-// Rate limiter for account fetching - conservative limits to avoid API throttling
-// 20 requests per 1 second (allows for parallel processing while respecting rate limits)
-const accountRateLimiter = new RateLimiterMemory({
-  points: 20, // Number of requests
-  duration: 1, // Per 1 second
-});
 
 // Helper function to load config data
 const loadConfigData = async (): Promise<ConfigData> => {
@@ -396,30 +387,12 @@ const loadAccountsFromCachedRiotAccount = async (limit: number = 5, isRefreshing
   }
 };
 
-// Helper function to get or fetch Riot account with rate limiting
+// Helper function to get or fetch Riot account
+// Rate limiting is handled by getRiotAccountById in the service layer
 const getOrFetchRiotAccount = async (
   acc: CachedRiotAccount,
 ): Promise<RiotAccountDto | null> => {
-  try {
-    // Consume rate limit before making request
-    await accountRateLimiter.consume('riot-account-api');
-  } catch (rejRes: any) {
-    // Rate limit exceeded, wait for the reset time
-    const msBeforeNext = rejRes.msBeforeNext || 1000;
-    if (IS_DEBUG_PROCESS) {
-      console.log(`Rate limit exceeded for account ${acc.gameName}-${acc.tagLine}, waiting ${msBeforeNext}ms`);
-    }
-    await new Promise(resolve => setTimeout(resolve, msBeforeNext));
-    // Retry after waiting
-    await accountRateLimiter.consume('riot-account-api');
-  }
-  
-  const startTime = Date.now();
   let accRes = await getRiotAccountById(acc.gameName, acc.tagLine);
-  const elapsedTime = Date.now() - startTime;
-  if (IS_DEBUG_PROCESS) {
-    console.log('get riot account', acc.gameName, acc.tagLine, new Date().toLocaleTimeString(), `(${elapsedTime}ms)`);
-  }
   return accRes || null;
 };
 
@@ -851,11 +824,20 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
       }
     }
 
+    // length of cachedMatchMap should be equal to matchIds.length
+    let isCompleted = true;
+    if (cachedMatchMap.size !== matchIds.length) {
+      isCompleted = false;
+      console.error(`Cached match map size ${cachedMatchMap.size} does not match matchIds length ${matchIds.length} for ${acc.gameName}-${acc.tagLine}`);
+    }
+
     acc.totalPoints = totalPoints;
     acc.totalMatches = matchIds.length;
     acc.refreshedAt = new UTCDate();
-    acc.refreshedDate = format(new Date(), 'yyyy-MM-dd');
-    acc.isCompleted = true;
+    if (isCompleted) {
+      acc.refreshedDate = format(new Date(), 'yyyy-MM-dd');
+      acc.isCompleted = true;
+    }
     await AppDataSource.getRepository(CachedRiotAccount).save(acc);
 
     if (IS_DEBUG_PROCESS) {

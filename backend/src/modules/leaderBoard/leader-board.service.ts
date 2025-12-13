@@ -5,6 +5,8 @@ import { RateLimiterMemory } from "rate-limiter-flexible";
 import { AccountDto, CsvTeamDto } from "./leader-board.dto";
 import { ChampionMasteriesDetail, RiotMatchDto } from "./leader-board.riot-dto";
 
+export const IS_DEBUG_PROCESS = true;
+
 export const getRiotAccountByIdURL = (gameName: string, gameTag: string): string => {
   const apiKey = process.env.RIOT_TOKEN;
   return `https://asia.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${gameName}/${gameTag}?api_key=${apiKey}`;
@@ -14,11 +16,28 @@ export const getRiotAccountById = async (gameName: string, gameTag: string): Pro
   if (gameName == null || gameTag == null) {
     return null;
   }
+  
+  // Consume rate limit before making request (if limiters are initialized)
+  if (methodRateLimiter || appRateLimiters.size > 0) {
+    await consumeRateLimit('riot-api');
+  }
+  
   const url = getRiotAccountByIdURL(gameName, gameTag);
   try {
     const response = await axios.get(url);
+    
+    // Update rate limiters based on response headers
+    await updateRateLimitersFromHeaders(response.headers);
+    
     return response.data;
   } catch (error: any) {
+    // Handle 429 Too Many Requests
+    if (error.response?.status === 429) {
+      // Update rate limiters from error response headers if available
+      if (error.response?.headers) {
+        await updateRateLimitersFromHeaders(error.response.headers);
+      }
+    }
     console.error(`Error calling API for ${gameName} ${gameTag}:`, error.message);
     return null;
   }
@@ -215,7 +234,7 @@ const updateRateLimitersFromHeaders = async (headers: any): Promise<void> => {
 /**
  * Consume rate limit points and wait if necessary
  */
-const consumeRateLimit = async (key: string = 'riot-api'): Promise<void> => {
+export const consumeRateLimit = async (key: string = 'riot-api'): Promise<void> => {
   // Try to consume from method rate limiter first (most restrictive)
   if (methodRateLimiter) {
     try {
@@ -269,8 +288,9 @@ const fetchSingleMatchDetail = async (
       const appCounts = parseRateLimitCount(response.headers['x-app-rate-limit-count']);
       const methodCounts = parseRateLimitCount(response.headers['x-method-rate-limit-count']);
       
-      console.log('App counts:', appCounts.map(c => `${c.count}/${c.window}s`).join(', '));
-      console.log('Method counts:', methodCounts.map(c => `${c.count}/${c.window}s`).join(', '));
+      if (IS_DEBUG_PROCESS) {
+        console.log('App counts:', appCounts.map(c => `${c.count}/${c.window}s`).join(', '), '| Method counts:', methodCounts.map(c => `${c.count}/${c.window}s`).join(', '));
+      }
       
       return response.data;
     } catch (error: any) {
