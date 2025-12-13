@@ -345,16 +345,6 @@ const loadConfigData = async (): Promise<ConfigData> => {
   }
 };
 
-// Helper function to load accounts from CSV
-const loadAccountsFromCSV = async (configData: ConfigData): Promise<AccountDto[]> => {
-  const filePath = path.resolve(__dirname, '../../', configData.userFilePath);
-  if (!fs.existsSync(filePath)) {
-    console.log('file not found', filePath);
-    throw new Error('CSV file not found');
-  }
-  const records = await getCSVForUsers(filePath);
-  return convertToAccountDto(records);
-};
 
 // Helper function to load 5 accounts from CachedRiotAccount where refreshedDate is null or not today
 const loadAccountsFromCachedRiotAccount = async (limit: number = 5, isRefreshingTodayMatches: boolean = false): Promise<CachedRiotAccount[]> => {
@@ -385,7 +375,8 @@ const loadAccountsFromCachedRiotAccount = async (limit: number = 5, isRefreshing
     
     const cachedAccounts = await queryBuilder.getMany();
     
-    console.log(`Found ${cachedAccounts.length} accounts from CachedRiotAccount (refreshedDate is null or not today)`);
+    if (IS_DEBUG_PROCESS)
+      console.log(`Found ${cachedAccounts.length} accounts from CachedRiotAccount (refreshedDate is null or not today)`);
     
     return cachedAccounts;
   } catch (error: any) {
@@ -590,8 +581,11 @@ export const processUsersController = asyncHandler(
     const totalProcessedAccounts = await AppDataSource.getRepository(CachedRiotAccount).count({
       where: { puuid: Not(IsNull()) }
     });
-    console.log(`Total accounts in CachedRiotAccount: ${totalAccounts}`);
-    console.log(`Total processed accounts in CachedRiotAccount: ${totalProcessedAccounts}`);
+
+    if (IS_DEBUG_PROCESS) {
+      console.log(`Total accounts in CachedRiotAccount: ${totalAccounts}`);
+      console.log(`Total processed accounts in CachedRiotAccount: ${totalProcessedAccounts}`);
+    }
 
     res.status(200).json({
       success: true,
@@ -614,7 +608,10 @@ const loadAccountsWithoutPuuid = async (): Promise<CachedRiotAccount[]> => {
     const cachedAccounts = await accountRepository.find({
       where: { puuid: IsNull() }
     });
-    console.log(`Found ${cachedAccounts.length} accounts without puuid`);
+
+    if (IS_DEBUG_PROCESS) {
+      console.log(`Found ${cachedAccounts.length} accounts without puuid`);
+    }
     
     return cachedAccounts;
   } catch (error: any) {
@@ -632,7 +629,9 @@ export const processUserList = async (): Promise<RiotAccountDto[]> => {
   // Process each account one by one
   for (let i = 0; i < accounts.length; i++) {
     const acc = accounts[i];
-    console.log(`Processing account ${i + 1}/${accounts.length}: ${acc.gameName}-${acc.tagLine}`);
+    if (IS_DEBUG_PROCESS) {
+      console.log(`Processing account ${i + 1}/${accounts.length}: ${acc.gameName}-${acc.tagLine}`);
+    }
     // Get or fetch Riot account
     const accRes = await getOrFetchRiotAccount(acc);
     if (accRes == null) {
@@ -716,7 +715,9 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
   // Process each account one by one
   for (let i = 0; i < accounts.length; i++) {
     const acc = accounts[i];
-    console.log(`Processing account ${i + 1}/${accounts.length}: ${acc.gameName}-${acc.tagLine}`);
+    if (IS_DEBUG_PROCESS) {
+      console.log(`Processing account ${i + 1}/${accounts.length}: ${acc.gameName}-${acc.tagLine}`);
+    }
 
     if (acc.puuid == null) {
       console.log(`Skipping account ${acc.gameName}-${acc.tagLine} (no puuid)`);
@@ -729,7 +730,9 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
       continue;
     }
 
-    console.log(`Found ${matchIds.length} matches for ${acc.gameName}-${acc.tagLine}`);
+    if (IS_DEBUG_PROCESS) {
+      console.log(`Found ${matchIds.length} matches for ${acc.gameName}-${acc.tagLine}`);
+    }
     
     // Load cached matches for this account's matches
     const cachedMatchMap = await loadCachedMatches(matchIds);
@@ -739,7 +742,9 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
 
     if (isRefreshingTodayMatches) {
       // Skip updating total points and total matches
-      console.log(`Refreshing today matches, skipping updating total points and total matches for ${acc.gameName}-${acc.tagLine}`);
+      if (IS_DEBUG_PROCESS) {
+        console.log(`Refreshing today matches, skipping updating total points and total matches for ${acc.gameName}-${acc.tagLine}`);
+      }
       acc.refreshedAt = new UTCDate();
       await AppDataSource.getRepository(CachedRiotAccount).save(acc);
       continue;
@@ -767,7 +772,9 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
     acc.isCompleted = true;
     await AppDataSource.getRepository(CachedRiotAccount).save(acc);
 
-    console.log(`Completed account ${i + 1}/${accounts.length}: ${acc.gameName}-${acc.tagLine} | (${totalPoints} points, ${matchIds.length} matches)`);
+    if (IS_DEBUG_PROCESS) {
+      console.log(`Completed account ${i + 1}/${accounts.length}: ${acc.gameName}-${acc.tagLine} | (${totalPoints} points, ${matchIds.length} matches)`);
+    }
   }
   
   return {
@@ -1071,7 +1078,9 @@ export const uploadLeaderboardConfigController = [
 
       // Count failed accounts
       const failedAccounts = userAccounts.filter(x => !x.gameName || !x.tagLine);
-      console.log(`Failed accounts: ${failedAccounts.length}`);
+      if (IS_DEBUG_PROCESS) {
+        console.log(`Failed accounts: ${failedAccounts.length}`);
+      }
 
       // get total user in db
       const totalUsersSaved = await AppDataSource.getRepository(CachedRiotAccount).count();
