@@ -324,11 +324,11 @@ const procesRefreshingMatches = async () => {
   const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
   const count = await accountRepository.count({ where: { 
     puuid: Not(IsNull()),
-    isCompleted: true
+    isCompleted: false
    }
   });
   if (count > 0) {
-    console.log("There are accounts has puuid and isCompleted is true, skipping procesRefreshingMatches | count:", count);
+    console.log("There are accounts has puuid and isCompleted is false, skipping procesRefreshingMatches | count:", count);
     return;
   }
 
