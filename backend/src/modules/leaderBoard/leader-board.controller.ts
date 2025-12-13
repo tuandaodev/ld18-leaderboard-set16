@@ -543,22 +543,40 @@ export const processUsersController = asyncHandler(
     // Process rest accounts one by one
     const restAccounts = await loadAccountsWithoutPuuid();
     for (const account of restAccounts) {
-      const accRes = await getOrFetchRiotAccount(account);
-      if (accRes != null && accRes.puuid != null) {
-        // check if account already exists in CachedRiotAccount
-        const existingAccount = await AppDataSource.getRepository(CachedRiotAccount).findOne({
-          where: { puuid: accRes.puuid }
-        });
-        if (existingAccount != null) {
-          console.log(`Account ${accRes.gameName}-${accRes.tagLine} already exists in CachedRiotAccount, deleting...`);
-          // remove this rest account in db
-          await AppDataSource.getRepository(CachedRiotAccount).delete(account.id);
+      try {
+
+        if (account.errorMessage === '404 Not Found') {
           continue;
         }
-        account.gameName = accRes.gameName;
-        account.tagLine = accRes.tagLine;
-        account.puuid = accRes.puuid;
-        account.save();
+
+        const accRes = await getOrFetchRiotAccount(account);
+        if (accRes != null && accRes.puuid != null) {
+          // check if account already exists in CachedRiotAccount
+          const existingAccount = await AppDataSource.getRepository(CachedRiotAccount).findOne({
+            where: { puuid: accRes.puuid }
+          });
+          if (existingAccount != null) {
+            console.log(`Account ${accRes.gameName}-${accRes.tagLine} already exists in CachedRiotAccount, deleting...`);
+            // remove this rest account in db
+            await AppDataSource.getRepository(CachedRiotAccount).delete(account.id);
+            continue;
+          }
+          account.gameName = accRes.gameName;
+          account.tagLine = accRes.tagLine;
+          account.puuid = accRes.puuid;
+          await account.save();
+        }
+      } catch (error: any) {
+        // Handle 404 errors by setting error message
+        if (error.response?.status === 404) {
+          account.errorMessage = `404 Not Found`;
+          await account.save();
+          console.log(`Account not found (404), error message saved.`);
+        } else {
+          // Re-throw other errors
+          account.errorMessage = `Error: ${error.message}`;
+          await account.save();
+        }
       }
     }
 
@@ -581,7 +599,7 @@ export const processUsersController = asyncHandler(
         totalProcessedUsers: totalProcessedAccounts,
         processedUsers: processedAccounts.length,
         demo5processedUsers: processedAccounts.slice(0, 5),
-        failedBatchProcessAccounts: restAccounts.slice(0, 5),
+        failedBatchProcessAccounts: restAccounts,
       }
     });
   }

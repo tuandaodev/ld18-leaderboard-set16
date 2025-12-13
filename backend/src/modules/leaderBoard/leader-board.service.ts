@@ -38,6 +38,10 @@ export const getRiotAccountById = async (gameName: string, gameTag: string): Pro
         await updateRateLimitersFromHeaders(error.response.headers);
       }
     }
+    // Re-throw 404 errors so they can be handled by the caller
+    if (error.response?.status === 404) {
+      throw error;
+    }
     console.error(`Error calling API for ${gameName} ${gameTag}:`, error.message);
     return null;
   }

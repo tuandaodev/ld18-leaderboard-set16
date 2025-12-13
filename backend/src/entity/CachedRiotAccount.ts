@@ -61,4 +61,11 @@ export class CachedRiotAccount extends Base {
     nullable: true,
   })
   csvOrder?: number | null;
+
+  @Column({
+    name: "error_message",
+    type: "varchar",
+    nullable: true,
+  })
+  errorMessage?: string | null;
 }
