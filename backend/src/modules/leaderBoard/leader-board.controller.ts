@@ -305,7 +305,7 @@ const loadConfigData = async (): Promise<ConfigData> => {
 
 
 // Helper function to load 5 accounts from CachedRiotAccount where refreshedDate is null or not today
-const loadAccountsFromCachedRiotAccount = async (limit: number = 5, isRefreshingTodayMatches: boolean = false): Promise<CachedRiotAccount[]> => {
+const loadAccountsFromCachedRiotAccount = async (limit: number = 5, isRefreshingTodayMatches: boolean = false, isRevert: boolean = false): Promise<CachedRiotAccount[]> => {
   const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
   
   try {
@@ -324,7 +324,11 @@ const loadAccountsFromCachedRiotAccount = async (limit: number = 5, isRefreshing
       queryBuilder.andWhere('account.isCompleted = :isCompleted', { isCompleted: true });
     }
 
-    queryBuilder.orderBy('account.refreshedAt', 'ASC');
+    if (isRevert) {
+      queryBuilder.orderBy('account.refreshedAt', 'DESC');
+    } else {
+      queryBuilder.orderBy('account.refreshedAt', 'ASC');
+    }
     
     // Only apply limit if it's not -1
     if (limit !== -1) {
@@ -699,7 +703,7 @@ export const checkCronDate = async () => {
 }
 
 // Main function - processes accounts one by one
-export const processMatchesForLeaderboard = async (limitAccounts: number = 5, isRefreshingTodayMatches: boolean = false, accountName: string | null = null) => {
+export const processMatchesForLeaderboard = async (limitAccounts: number = 5, isRefreshingTodayMatches: boolean = false, accountName: string | null = null, isRevert: boolean = false) => {
   console.log("Start processMatchesForLeaderboard | isRefreshingTodayMatches:", isRefreshingTodayMatches);
 
   // Load configuration
@@ -734,7 +738,7 @@ export const processMatchesForLeaderboard = async (limitAccounts: number = 5, is
     }
   } else {
     // Load 5 accounts from CachedRiotAccount where refreshedDate is null or not today
-    accounts = await loadAccountsFromCachedRiotAccount(limitAccounts, isRefreshingTodayMatches);
+    accounts = await loadAccountsFromCachedRiotAccount(limitAccounts, isRefreshingTodayMatches, isRevert);
   }
   
   let debugAccountMatches: MatchInfo[] = [];

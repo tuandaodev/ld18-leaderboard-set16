@@ -367,6 +367,29 @@ const procesCalculatingMatches = async () => {
 // Schedule to run every 5 minutes from 00:00 to 11:59
 cron.schedule('*/5 0-23 * * *', procesCalculatingMatches);
 
+let isCalculatingMatchesRevert = false;
+const procesCalculatingMatchesRevert = async () => {
+  if (isCalculatingMatchesRevert) {
+    return;
+  }
+
+  if (!checkCronDate()) {
+    console.log("Cron date is not valid, skipping procesCalculatingMatchesRevert");
+    return;
+  }
+
+  isCalculatingMatchesRevert = true;
+  try {
+    await processMatchesForLeaderboard(5);
+  } catch (error: any) {
+    console.error('Error processing matches:', error.message);
+  } finally {
+    isCalculatingMatchesRevert = false;
+  }
+}
+// Schedule to run every 5 minutes from 00:00 to 11:59
+cron.schedule('*/3 0-23 * * *', procesCalculatingMatchesRevert);
+
 let isResettingCompleted = false;
 const processResettingCompleted = async () => {
   if (isResettingCompleted) {
