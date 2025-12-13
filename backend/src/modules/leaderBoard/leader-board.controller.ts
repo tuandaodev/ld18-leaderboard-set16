@@ -693,12 +693,14 @@ const processAccountsInParallel = async (
 
 export const processUserList = async (): Promise<RiotAccountDto[]> => {
   // Load accounts from CachedRiotAccount that don't have puuid
-  const accounts = await loadAccountsWithoutPuuid();
+  let accounts = await loadAccountsWithoutPuuid();
+  // filter accounts that errorMessage is not '404 Not Found'
+  accounts = accounts.filter(account => account.errorMessage !== '404 Not Found');
   
   if (accounts.length === 0) {
     return [];
   }
-  
+
   // Process accounts in parallel with concurrency control (20 concurrent requests)
   // Accounts are saved instantly after each batch is processed
   const dataAccounts = await processAccountsInParallel(accounts, 20);
