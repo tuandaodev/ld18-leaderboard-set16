@@ -13,6 +13,7 @@ import i18n from "i18next";
 import { initReactI18next, useTranslation } from "react-i18next";
 import translationEN from "./locales/en/translation.json";
 import translationVI from "./locales/vi/translation.json";
+import { ReactTagManager } from "react-gtm-ts";
 
 const resources = {
   en: {
@@ -40,11 +41,14 @@ const NotFound = lazy(() => import("@components/routes/NotFound"));
 const Campaign = lazy(() => import("@components/routes/Admin/Campaign"));
 const Events = lazy(() => import("@components/routes/Admin/Events"));
 const EventForm = lazy(() => import("@components/routes/Admin/Events/EventForm"));
-const Leaders = lazy(() => import("@components/routes/Admin/Leaders"));
-const CommunityEvents = lazy(() => import("@components/routes/Admin/CommunityEvents"));
-const PartnerGamingCenter = lazy(() => import("@components/routes/Admin/PartnerGamingCenter"));
 const CMS = lazy(() => import("@components/routes/Admin/CMS"));
 const LandingPage = lazy(() => import("@components/routes/LandingPage"));
+
+ReactTagManager.init({
+  code: 'GTM-NCCKRXW2', // GTM Code
+  debug: false, // debug mode (default false)
+  performance: false, // starts GTM only after user interaction (improve initial page load)
+});
 
 function App() {
   // zustand

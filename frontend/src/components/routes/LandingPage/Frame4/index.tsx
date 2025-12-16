@@ -18,6 +18,7 @@ import {
   EventImage,
   EventName,
 } from "./Frame4.styles";
+import { ReactTagManager } from "react-gtm-ts";
 
 interface EventResult {
   id: number;
@@ -58,7 +59,12 @@ export default function Frame4() {
 
   const events = eventsData?.data?.result || [];
 
-  const handleEventClick = (eventUrl: string) => {
+  const handleEventClick = (eventUrl: string, index: number) => {
+    // map index to event id: 0->4 1->3 2->2 3->1
+    const eventId = 4 - index;
+    ReactTagManager.action({
+      event: 'click_sukien' + eventId,
+    });
     window.open(eventUrl, "_blank");
   };
 
@@ -93,15 +99,15 @@ export default function Frame4() {
                 Không có sự kiện nào
               </div>
             ) : (
-              events.map((event) => (
+              events.map((event, index) => (
                 <EventBox
                   key={event.id}
-                  onClick={() => handleEventClick(event.eventUrl)}
+                  onClick={() => handleEventClick(event.eventUrl, index)}
                 >
                   <EventImage
                     src={event.bannerFile.startsWith("http") ? event.bannerFile : `${API_DOMAIN}${event.bannerFile}`}
                     alt={event.eventName}
-                    onError={(e) => {
+                    onError={(e: any) => {
                       (e.target as HTMLImageElement).src = "https://placehold.co/300x200?text=No+Image";
                     }}
                   />

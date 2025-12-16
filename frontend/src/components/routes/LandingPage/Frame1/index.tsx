@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { ReactTagManager } from 'react-gtm-ts';
 import { Frame1Wrapper, ContentContainer, Column1, Column2, VideoPlayerContainer, VideoButtonContainer, VideoButton, CTAButton, TitleImage, DescImage } from "./Frame1.styles";
 import titleImg from '../../../../img/f1/title.png';
 import descImg from '../../../../img/f1/desc.png';
@@ -203,6 +204,9 @@ export default function Frame1() {
           </VideoButtonContainer>
           
           <CTAButton onClick={() => {
+            ReactTagManager.action({
+              event: 'click_vaogamengay',
+            });
             window.open('https://tftmobile-vng.go.link/set16', '_blank');
           }}>
             <img src={ctaImg} alt="Vào Game Ngay" />

@@ -33,6 +33,7 @@ import {
   TopThreeContainer
 } from "./Frame3.styles";
 import RuleDetailPopup from "./RuleDetailPopup";
+import { ReactTagManager } from "react-gtm-ts";
 
 interface Frame3Props {
   f3Rule: string;
@@ -136,6 +137,9 @@ export default function Frame3({ f3Rule }: Frame3Props) {
                   src={ctaImg} 
                   alt="Tham Gia Ngay" 
                   onClick={() => {
+                    ReactTagManager.action({
+                      event: 'click_thamgiangay',
+                    });
                     window.open('https://forms.gle/zAvraST9pEtNEkM17', '_blank');
                   }}
                 />

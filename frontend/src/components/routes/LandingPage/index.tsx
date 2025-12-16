@@ -18,6 +18,7 @@ import {
   PortraitDescription,
 } from "./LandingPage.styles";
 import TopNavigation from "./TopNavigation";
+import { ReactTagManager } from "react-gtm-ts";
 
 interface LanguageContent {
   lang: string;
@@ -82,6 +83,9 @@ export default function LandingPage() {
   }, [contentConfigsResponse?.data]);
 
   const handleOpenNapXu = () => {
+    ReactTagManager.action({
+      event: 'click_napxudtcl',
+    });
     window.open(NAP_XU_URL, "_blank");
   };
 

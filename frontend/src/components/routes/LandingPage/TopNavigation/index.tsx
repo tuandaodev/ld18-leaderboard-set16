@@ -14,6 +14,7 @@ import {
   NavWrapper,
   StyledActionButton
 } from "./TopNavigation.styles";
+import { ReactTagManager } from "react-gtm-ts";
 
 export default function TopNavigation() {
   const [activeSection, setActiveSection] = useState("home");
@@ -207,6 +208,9 @@ export default function TopNavigation() {
               $normalImage={btnNormal} 
               $hoverImage={btnHover}
               onClick={() => {
+                ReactTagManager.action({
+                  event: 'click_vaochoingay',
+                });
                 window.open('https://tftmobile-vng.go.link/set16', '_blank');
               }}
             >

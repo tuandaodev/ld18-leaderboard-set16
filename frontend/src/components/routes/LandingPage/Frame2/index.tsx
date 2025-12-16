@@ -22,6 +22,7 @@ import {
   ThongTinButton,
   Col3Image,
 } from './Frame2.styles';
+import { ReactTagManager } from 'react-gtm-ts';
 
 export default function Frame2() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -78,6 +79,9 @@ export default function Frame2() {
         <Column1>
           <Col1Image src={col1Img} alt="Column 1" />
           <Col1Button onClick={() => {
+            ReactTagManager.action({
+              event: 'click_vannhanngay',
+            });
             window.open('https://tftmobile-vng.go.link/set16', '_blank');
           }}>
             <img src={btnCtaImg} alt="Vào Nhận Ngay" />
