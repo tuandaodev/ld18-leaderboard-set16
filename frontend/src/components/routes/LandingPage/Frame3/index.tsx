@@ -68,7 +68,7 @@ export default function Frame3({ f3Rule }: Frame3Props) {
   const { data: leaderboardData, error: leaderboardError, isLoading: isLoadingLeaderboard } = useAxiosSWR<GetLeaderboardResponse>(
     ENDPOINTS.getLeaderboardList,
     {
-      params: searchContent ? { query: searchContent } : undefined,
+      params: searchContent ? { searchContent: searchContent } : undefined,
       forSWR: {
         revalidateOnMount: true,
       }
