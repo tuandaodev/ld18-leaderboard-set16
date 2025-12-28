@@ -111,6 +111,7 @@ export const SecondRow = styled.div`
   @media (max-width: 1600px) {
     max-width: 1100px;
     gap: 12px;
+    zoom: 88%;
   }
 
   @media (max-width: 1366px) {

@@ -52,6 +52,7 @@ export const ContentContainer = styled.div`
   @media (max-width: 1600px) {
     max-width: 1400px;
     gap: 3rem;
+    zoom: 88%;
   }
 
   @media (max-width: 1366px) {

@@ -56,6 +56,7 @@ export const Container = styled.div`
 
   @media (max-width: 1600px) {
     max-width: 1400px;
+    zoom: 88%;
   }
 
   @media (max-width: 1366px) {

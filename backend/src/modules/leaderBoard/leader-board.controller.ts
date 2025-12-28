@@ -112,11 +112,19 @@ export const getLeaderBoardList = asyncHandler(
   async (req: Request, res: Response) => {
     try {
       const accountRepository = AppDataSource.getRepository(CachedRiotAccount);
-      
-      // Query accounts from database with totalPoints > 0, sorted by totalPoints descending, limit 100
-      const cachedAccounts = await accountRepository
+      const { searchContent } = req.query;
+
+      // Build query with optional gameName filter
+      let queryBuilder = accountRepository
         .createQueryBuilder('account')
-        .where('account.totalPoints > :minPoints', { minPoints: 0 })
+        .where('account.totalPoints > :minPoints', { minPoints: 0 });
+
+      if (typeof searchContent === 'string' && searchContent.trim() !== '') {
+        // Case-insensitive search for gameName
+        queryBuilder = queryBuilder.andWhere('LOWER(account.gameName) LIKE :searchContent', { searchContent: `%${searchContent.trim().toLowerCase()}%` });
+      }
+
+      const cachedAccounts = await queryBuilder
         .orderBy('account.totalPoints', 'DESC')
         .addOrderBy('account.csvOrder', 'ASC')
         .limit(100)

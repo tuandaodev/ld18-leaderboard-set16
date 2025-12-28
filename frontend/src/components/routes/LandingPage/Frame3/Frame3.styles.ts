@@ -1,7 +1,9 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 import bg3 from '../../../../img/f3/bg.png';
 import tableBg from '../../../../img/f3/table_bg.png';
 import tableHeaderBg from '../../../../img/f3/table_header_bg.png';
+
+
 
 export const Frame3Wrapper = styled.section`
   width: 100%;
@@ -92,6 +94,7 @@ export const ContentWrapper = styled.div`
   @media (max-width: 1600px) {
     max-width: 1200px;
     margin-left: 30px;
+    zoom: 88%;
   }
 
   @media (max-width: 1366px) {
@@ -456,6 +459,43 @@ export const TableTitleImage = styled.img`
   }
 `;
 
+export const SearchBoxInput = styled.input`
+  width: 100%;
+  padding: 4px 16px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  margin-top: 20px;
+  box-sizing: border-box;
+  background: transparent;
+  color: #fff;
+  &::placeholder {
+    color: #fff;
+    opacity: 1;
+  }
+
+  @media (max-width: 1920px) {
+    margin-top: 16px;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 1600px) {
+    margin-top: 13px;
+    font-size: 0.8rem;
+  }
+
+  @media (max-width: 1366px) {
+    margin-top: 13px;
+    font-size: 0.75rem;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    margin-top: 8px;
+    font-size: 0.6rem;
+  }
+`;
+
 export const TableHeader = styled.div`
   display: grid;
   grid-template-columns: 80px 1fr 150px;
@@ -470,14 +510,14 @@ export const TableHeader = styled.div`
   background-size: 100% 100%;
   background-repeat: no-repeat;
   background-position: center;
-  margin-top: 40px;
+  margin-top: 10px;
   font-family: 'GS3 ITC Giovanni', sans-serif;
 
   @media (max-width: 1920px) {
     font-size: 18px;
     padding: 8px 15px;
     gap: 15px;
-    margin-top: 30px;
+    margin-top: 8px;
     grid-template-columns: 70px 1fr 130px;
   }
 
@@ -485,7 +525,7 @@ export const TableHeader = styled.div`
     font-size: 16px;
     padding: 7px 12px;
     gap: 12px;
-    margin-top: 25px;
+    margin-top: 5px;
     grid-template-columns: 60px 1fr 110px;
   }
 
@@ -493,7 +533,7 @@ export const TableHeader = styled.div`
     font-size: 14px;
     padding: 6px 10px;
     gap: 10px;
-    margin-top: 22px;
+    margin-top: 5px;
     grid-template-columns: 55px 1fr 100px;
   }
 
@@ -501,7 +541,7 @@ export const TableHeader = styled.div`
     font-size: 11.2px;
     padding: 4.8px 8px;
     gap: 8px;
-    margin-top: 17.6px;
+    margin-top: 5px;
     grid-template-columns: 44px 1fr 80px;
   }
 `;

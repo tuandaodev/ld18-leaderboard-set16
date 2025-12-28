@@ -1,6 +1,7 @@
 import { ENDPOINTS } from "@components/api/endpoints";
 import useAxiosSWR from "@components/api/useAxiosSWR";
 import { useState } from "react";
+import { useRef, useEffect } from "react";
 import mainArtImg from '../../../../img/f3/MAIN ART.png';
 import btnRulesImg from '../../../../img/f3/btn_rules.png';
 import ctaImg from '../../../../img/f3/cta.png';
@@ -30,7 +31,8 @@ import {
   Top1Image,
   Top2Image,
   Top3Image,
-  TopThreeContainer
+  TopThreeContainer,
+  SearchBoxInput
 } from "./Frame3.styles";
 import RuleDetailPopup from "./RuleDetailPopup";
 import { ReactTagManager } from "react-gtm-ts";
@@ -52,11 +54,21 @@ interface GetLeaderboardResponse {
 
 export default function Frame3({ f3Rule }: Frame3Props) {
   const [isRuleDetailOpen, setIsRuleDetailOpen] = useState(false);
+  const [searchContent, setSearchContent] = useState(""); // for API param
+  const [searchInput, setSearchInput] = useState(""); // for input box
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [searchContent]);
   
   // Fetch leaderboard from API
   const { data: leaderboardData, error: leaderboardError, isLoading: isLoadingLeaderboard } = useAxiosSWR<GetLeaderboardResponse>(
     ENDPOINTS.getLeaderboardList,
     {
+      params: searchContent ? { query: searchContent } : undefined,
       forSWR: {
         revalidateOnMount: true,
       }
@@ -108,6 +120,23 @@ export default function Frame3({ f3Rule }: Frame3Props) {
               <RankingTableWrapper>
                 <RankingTableContainer>
                   <TableTitleImage src={tableTitleImg} alt="Bảng xếp hạng" />
+
+                  {/* Search Box */}
+                  <div style={{ width: '100%', display: 'flex' }}>
+                    <SearchBoxInput
+                      ref={searchInputRef}
+                      type="text"
+                      placeholder="Tìm kiếm RIOT ID..."
+                      value={searchInput}
+                      onChange={e => setSearchInput(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          setSearchContent(searchInput.trim());
+                        }
+                      }}
+                    />
+                  </div>
+
                   <TableHeader>
                     <TableCell style={{ whiteSpace: 'nowrap' }}>STT</TableCell>
                     <TableCell style={{ whiteSpace: 'nowrap' }}>RIOT ID</TableCell>
