@@ -463,6 +463,8 @@ export const SearchBoxWrapper = styled.div`
   width: 100%;
   display: flex;
   align-items: center;
+  position: relative;
+  z-index: 11;
 
   .search-btn {
     margin-left: 4px;
