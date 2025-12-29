@@ -459,6 +459,50 @@ export const TableTitleImage = styled.img`
   }
 `;
 
+export const SearchBoxWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  align-items: center;
+
+  .search-btn {
+    margin-left: 4px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: none;
+    background-color: #066a73;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+
+  margin-top: 20px;
+
+  .search-btn:hover {
+    filter: brightness(1.2);
+  }
+
+  @media (max-width: 1920px) {
+    margin-top: 16px;
+  }
+
+  @media (max-width: 1600px) {
+    margin-top: 13px;
+  }
+
+  @media (max-width: 1366px) {
+    margin-top: 13px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    margin-top: 8px;
+  }
+`;
+
 export const SearchBoxInput = styled.input`
   width: 100%;
   padding: 4px 16px;
@@ -466,7 +510,6 @@ export const SearchBoxInput = styled.input`
   border: 1px solid #ccc;
   border-radius: 8px;
   outline: none;
-  margin-top: 20px;
   box-sizing: border-box;
   background: transparent;
   color: #fff;
@@ -476,22 +519,18 @@ export const SearchBoxInput = styled.input`
   }
 
   @media (max-width: 1920px) {
-    margin-top: 16px;
     font-size: 0.9rem;
   }
 
   @media (max-width: 1600px) {
-    margin-top: 13px;
     font-size: 0.8rem;
   }
 
   @media (max-width: 1366px) {
-    margin-top: 13px;
     font-size: 0.75rem;
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
-    margin-top: 8px;
     font-size: 0.6rem;
   }
 `;

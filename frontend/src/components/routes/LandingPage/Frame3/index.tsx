@@ -32,7 +32,8 @@ import {
   Top2Image,
   Top3Image,
   TopThreeContainer,
-  SearchBoxInput
+  SearchBoxInput,
+  SearchBoxWrapper
 } from "./Frame3.styles";
 import RuleDetailPopup from "./RuleDetailPopup";
 import { ReactTagManager } from "react-gtm-ts";
@@ -122,11 +123,11 @@ export default function Frame3({ f3Rule }: Frame3Props) {
                   <TableTitleImage src={tableTitleImg} alt="Bảng xếp hạng" />
 
                   {/* Search Box */}
-                  <div style={{ width: '100%', display: 'flex' }}>
+                  <SearchBoxWrapper>
                     <SearchBoxInput
                       ref={searchInputRef}
                       type="text"
-                      placeholder="Tìm kiếm RIOT ID..."
+                      placeholder="Nhập RIOT ID..."
                       value={searchInput}
                       onChange={e => setSearchInput(e.target.value)}
                       onKeyDown={e => {
@@ -135,7 +136,14 @@ export default function Frame3({ f3Rule }: Frame3Props) {
                         }
                       }}
                     />
-                  </div>
+                    <button
+                      className="search-btn"
+                      onClick={() => setSearchContent(searchInput.trim())}
+                      aria-label="Tìm kiếm"
+                    >
+                      Tìm kiếm
+                    </button>
+                  </SearchBoxWrapper>
 
                   <TableHeader>
                     <TableCell style={{ whiteSpace: 'nowrap' }}>STT</TableCell>
